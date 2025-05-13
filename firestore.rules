@@ -1,0 +1,225 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --- Helper Functions ---
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function userHasRole(role) {
+      // Assumes custom claim 'appRole' is set on Firebase Auth token by backend
+      return isAuthenticated() && request.auth.token.appRole == role;
+    }
+
+    function isWorker() {
+      return userHasRole("WORKER");
+    }
+
+    function isBuyer() {
+      return userHasRole("BUYER");
+    }
+
+    function isGigParticipant(gigDoc) {
+      return gigDoc != null && gigDoc.data != null &&
+             isAuthenticated() &&
+             (request.auth.uid == gigDoc.data.buyerUid || request.auth.uid == gigDoc.data.workerUid);
+    }
+
+    // Checks if a specific field, if it exists and is being written to, remains unchanged.
+    // Allows the field to be set if it doesn't exist yet (create or adding field to existing doc).
+    // Allows the field to be absent from the write request.
+    function fieldIsUnchangedIfExists(fieldName) {
+      return (
+        // Case 1: Field is not part of the incoming write request at all.
+        !(fieldName in request.resource.data) ||
+        // Case 2: Field did not exist in the document before this write. (i.e. it's being created)
+        !(fieldName in resource.data) ||
+        // Case 3: Field existed, is part of the write, AND its value is the same as before.
+        (request.resource.data[fieldName] == resource.data[fieldName])
+      );
+    }
+
+    // --- Users Collection (`users`) ---
+    match /users/{userId} {
+      allow read: if true;
+
+      allow create: if isOwner(userId)
+                      && request.resource.data.uid == userId
+                      && request.resource.data.keys().hasAll(['uid', 'displayName', 'profileImageUrl', 'currentRole', 'createdAt', 'fcmToken'])
+                      && request.resource.data.createdAt == request.time;
+
+      allow update: if isOwner(userId)
+                      && fieldIsUnchangedIfExists('uid')
+                      && fieldIsUnchangedIfExists('createdAt')
+                      && fieldIsUnchangedIfExists('currentRole') // Role changes should be backend-controlled
+                      && fieldIsUnchangedIfExists('averageRating') // Calculated by backend
+                      && fieldIsUnchangedIfExists('totalGigsCompleted') // Calculated by backend
+                      // Allow updating specific, safe fields by client
+                      && request.resource.data.keys().hasAny(['displayName', 'profileImageUrl', 'isOnline', 'lastSeen', 'fcmToken'])
+                      // Ensure no other fields are being snuck in beyond those explicitly allowed for update or those that are immutable
+                      && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['displayName', 'profileImageUrl', 'isOnline', 'lastSeen', 'fcmToken']);
+
+
+      allow delete: if false;
+
+
+      // --- Worker Profiles Sub-collection (`workerProfiles`) ---
+      match /workerProfiles/{profileDocId} { // Assuming profileDocId == userId
+        allow read: if true;
+
+        allow create: if isOwner(userId) && isWorker()
+                        && request.resource.data.uid == userId
+                        && request.resource.data.keys().hasOnly(['uid', 'bio', 'introVideoUrl', 'publicSkills', 'publicBadges', 'availabilityStatus', 'availabilitySummary', 'qrCodeUrl', 'semanticProfileKeywords', 'responseRatePercent']);
+
+        allow update: if isOwner(userId) && isWorker()
+                        && fieldIsUnchangedIfExists('uid')
+                        && fieldIsUnchangedIfExists('semanticProfileKeywords') // Backend managed
+                        && fieldIsUnchangedIfExists('responseRatePercent')   // Backend managed
+                        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['bio', 'introVideoUrl', 'publicSkills', 'publicBadges', 'availabilityStatus', 'availabilitySummary', 'qrCodeUrl']);
+
+        allow delete: if false;
+      }
+
+      // --- Buyer Profiles Sub-collection (`buyerProfiles`) ---
+      match /buyerProfiles/{profileDocId} { // Assuming profileDocId == userId
+        allow read: if true;
+
+        allow create: if isOwner(userId) && isBuyer()
+                        && request.resource.data.uid == userId
+                        && request.resource.data.keys().hasOnly(['uid', 'companyName', 'publicBadges']);
+
+        allow update: if isOwner(userId) && isBuyer()
+                        && fieldIsUnchangedIfExists('uid')
+                        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['companyName', 'publicBadges']);
+
+        allow delete: if false;
+      }
+
+      // --- Notifications Sub-collection (`notifications`) ---
+      match /notifications/{notificationId} {
+        allow read: if isOwner(userId);
+        allow create: if false; // Backend created
+
+        allow update: if isOwner(userId)
+                        && request.resource.data.keys().hasOnly(['isRead'])
+                        && request.resource.data.isRead == true
+                        && resource.data.isRead == false;
+
+        allow delete: if isOwner(userId);
+      }
+    }
+
+
+    // --- Gigs Collection (`gigs`) ---
+    match /gigs/{gigId} {
+      allow read: if true;
+
+      allow create: if isBuyer()
+                      && request.resource.data.buyerUid == request.auth.uid
+                      && request.resource.data.keys().hasAll(['gigId', 'title', 'publicDescription', 'roleNeeded', 'status', 'publicLocation', 'dateTime', 'durationHours', 'publicRate', 'buyerUid', 'buyerDisplayName', 'buyerProfileImageUrl', 'requiredSkillsKeywords', 'createdAt'])
+                      && request.resource.data.status == 'PENDING_WORKER_ACCEPTANCE'
+                      && request.resource.data.createdAt == request.time
+                      && request.resource.data.workerUid == null;
+
+      allow update: if isAuthenticated()
+                      // Immutable fields after creation by client
+                      && fieldIsUnchangedIfExists('gigId')
+                      && fieldIsUnchangedIfExists('buyerUid')
+                      && fieldIsUnchangedIfExists('createdAt')
+                      && fieldIsUnchangedIfExists('buyerDisplayName') // Set on create by buyer
+                      && fieldIsUnchangedIfExists('buyerProfileImageUrl') // Set on create by buyer
+                      // Scenario 1: Buyer updates their own gig BEFORE a worker is assigned or if PENDING
+                      && (
+                          request.auth.uid == resource.data.buyerUid &&
+                          (resource.data.status == 'PENDING_WORKER_ACCEPTANCE' || resource.data.workerUid == null) &&
+                          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['title', 'publicDescription', 'roleNeeded', 'publicLocation', 'dateTime', 'durationHours', 'publicRate', 'status', 'requiredSkillsKeywords'])
+                      )
+                      // Scenario 2: Worker accepts the gig
+                      || (
+                          isWorker() &&
+                          resource.data.status == 'PENDING_WORKER_ACCEPTANCE' && // Gig must be pending
+                          request.resource.data.status == 'ACCEPTED' &&         // Status changes to ACCEPTED
+                          request.resource.data.workerUid == request.auth.uid && // Worker assigns themselves
+                          request.resource.data.workerDisplayName != null &&     // Worker provides their display name
+                          request.resource.data.workerProfileImageUrl != null && // Worker provides their image URL
+                          // Ensure only these fields are part of the worker's acceptance update
+                          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'workerUid', 'workerDisplayName', 'workerProfileImageUrl'])
+                      )
+                      // Scenario 3: Assigned worker updates status to IN_PROGRESS or PENDING_COMPLETION
+                      || (
+                          isWorker() &&
+                          request.auth.uid == resource.data.workerUid &&
+                          resource.data.status == 'ACCEPTED' &&
+                          (request.resource.data.status == 'IN_PROGRESS' || request.resource.data.status == 'PENDING_COMPLETION') &&
+                          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+                      )
+                      // Scenario 4: Buyer updates status to PENDING_COMPLETION
+                      || (
+                          isBuyer() &&
+                          request.auth.uid == resource.data.buyerUid &&
+                          (resource.data.status == 'ACCEPTED' || resource.data.status == 'IN_PROGRESS') &&
+                          request.resource.data.status == 'PENDING_COMPLETION' &&
+                          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+                      );
+
+      allow delete: if isBuyer() && request.auth.uid == resource.data.buyerUid && resource.data.status == 'PENDING_WORKER_ACCEPTANCE';
+
+      // --- Chat Messages Sub-collection (`chatMessages`) ---
+      match /chatMessages/{messageId} {
+        allow read: if isGigParticipant(get(/databases/$(database)/documents/gigs/$(gigId)));
+
+        allow create: if isGigParticipant(get(/databases/$(database)/documents/gigs/$(gigId)))
+                        && request.resource.data.senderUid == request.auth.uid
+                        && request.resource.data.keys().hasAll(['messageId', 'senderUid', 'receiverUid', 'text', 'timestamp', 'isRead', 'moderationStatus'])
+                        && request.resource.data.timestamp == request.time
+                        && request.resource.data.isRead == false
+                        && request.resource.data.moderationStatus == 'PENDING';
+
+        allow update: if false;
+        allow delete: if isOwner(request.resource.data.senderUid);
+      }
+    }
+
+    // --- Gig Offers Collection (`gigOffers`) ---
+    match /gigOffers/{offerId} {
+      allow read: if isAuthenticated() && (request.auth.uid == resource.data.buyerUid || request.auth.uid == resource.data.workerUid);
+
+      allow create: if isBuyer()
+                      && request.resource.data.buyerUid == request.auth.uid
+                      && request.resource.data.keys().hasAll(['offerId', 'gigTitle', 'buyerUid', 'workerUid', 'offeredRate', 'status', 'createdAt', 'expiresAt'])
+                      && request.resource.data.status == 'SENT'
+                      && request.resource.data.createdAt == request.time;
+
+      allow update: if isWorker() && request.auth.uid == resource.data.workerUid
+                      && resource.data.status == 'SENT'
+                      && (request.resource.data.status == 'ACCEPTED' || request.resource.data.status == 'DECLINED')
+                      && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']);
+
+
+      allow delete: if isBuyer() && request.auth.uid == resource.data.buyerUid && resource.data.status == 'SENT';
+    }
+
+    // --- Public Reviews Collection (`public_reviews`) ---
+    match /public_reviews/{reviewId} {
+      allow read: if true;
+      allow write: if false; // Managed entirely by the backend
+    }
+
+    // --- Badge Definitions Collection (`badge_definitions`) ---
+    match /badge_definitions/{badgeDefId} {
+      allow read: if true;
+      allow write: if false; // Managed entirely by the backend/admin
+    }
+
+    // Development/Fallback Rule - REMOVE OR RESTRICT FOR PRODUCTION
+    match /{document=**} {
+      allow read, write: if request.time < timestamp.date(2025, 6, 12);
+    }
+  }
+}
