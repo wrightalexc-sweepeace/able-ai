@@ -12,7 +12,7 @@ export async function POST(request: Request) {
     }
 
     const { firebaseUid, lastRoleUsed, lastViewVisited } = await request.json();
-    const sessionFirebaseUid = (session.user as any)?.uid; // Assuming uid is firebaseUid in session
+    const sessionFirebaseUid = (session.user)?.uid; // Assuming uid is firebaseUid in session
 
     if (!firebaseUid || firebaseUid !== sessionFirebaseUid) {
         return NextResponse.json({ error: 'Mismatched user or UID missing' }, { status: 400 });
