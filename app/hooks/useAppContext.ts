@@ -29,7 +29,8 @@ export function useAppContext(): AppContextValue {
 
     // Function to call API to update context in PG and then update NextAuth session
     const updateUserContext = async (updates: { lastRoleUsed?: 'BUYER' | 'WORKER'; lastViewVisited?: string }) => {
-        if (!isAuthenticated || !user?.uid) return;
+        const isViewQA = localStorage.getItem('isViewQA') === 'true';
+        if (!isViewQA || !isAuthenticated || !user?.uid) return;
 
         try {
             // 1. Call your backend API to update PostgreSQL
