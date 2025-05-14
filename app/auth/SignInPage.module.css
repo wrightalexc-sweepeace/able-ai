@@ -1,0 +1,144 @@
+/* app/signin/SignInPage.module.css */
+.container {
+  min-height: 100vh;
+  background-color: #161616; /* Dark background */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  font-family: var(--font-family);
+}
+
+.card {
+  padding: 2rem 1.5rem;
+  width: 100%;
+  max-width: 420px; /* Max width for the card */
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.logoWrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0.5rem;
+}
+
+.header {
+  margin-bottom: 0.5rem;
+}
+
+.header h1 {
+  /* Styles for "Welcome! Please register..." */
+  color: #ffffff;
+  font-size: 24px; /* Specific mobile style */
+  font-family: var(--font-family); /* Source Sans Pro from global */
+  font-weight: 700; /* Specific mobile style */
+  line-height: 28px; /* Specific mobile style */
+  margin-bottom: 0.5rem;
+  white-space: pre-line; /* To handle the line break in the text */
+}
+
+.header p {
+  /* Subtitle, if any - currently not used in page.tsx for the main welcome */
+  color: #a0a0a0;
+  font-size: 0.875rem; /* Keeping this distinct if a separate p tag is used */
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.inputGroup {
+  /* Wrapper for label + input */
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem; /* Adjusted to make space for specific label style */
+}
+
+.label {
+  /* Styles for "Phone Number", "Email Address", "Password" */
+  color: #ffffff; /* Specific mobile style */
+  font-size: 14px; /* Specific mobile style */
+  font-family: var(--font-family); /* Source Sans Pro from global */
+  line-height: 16px; /* Specific mobile style */
+  font-weight: 500; /* Slightly bolder for label */
+}
+
+.roleSelection {
+  margin-top: 0.5rem;
+  color: #a0a0a0; /* Keeping this color as it wasn't specified for change */
+}
+
+.roleSelection p {
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.75rem;
+  color: #ffffff; /* Assuming role selection prompt should also be white */
+}
+
+.roleOptions {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-start;
+}
+
+.roleOption {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 14px; /* Match label font size */
+  color: #c2c2c2; /* Match input text color */
+  cursor: pointer;
+}
+
+.roleOption input[type="radio"] {
+  accent-color: var(--primary-color);
+  cursor: pointer;
+  width: 1em;
+  height: 1em;
+}
+
+.errorMessage {
+  color: var(--error-color);
+  background-color: rgba(239, 68, 68, 0.1);
+  padding: 0.75rem;
+  border-radius: var(--border-radius);
+  font-size: 0.875rem;
+  text-align: center;
+  border: 1px solid var(--error-color);
+  margin-top: 0.5rem;
+}
+
+.toggleButton {
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 0.875rem;
+  padding: 0.5rem 0;
+  margin-top: 1rem;
+  text-align: center;
+  width: 100%;
+}
+
+.toggleButton:hover {
+  color: #675ff0;
+}
+
+.submitWrapper {
+  display: flex;
+  justify-content: flex-end; /* Aligns the button to the right if it's not full width */
+  margin-top: 1.5rem; /* Add some space above the button */
+}
+
+/* If the button is full-width on desktop, justify-content: flex-end might not be needed
+     but it won't harm. For mobile, the icon button is fixed width, so this positions it. */
+@media (min-width: 768px) {
+  .submitWrapper {
+    justify-content: center; /* Or flex-start, if button is full width anyway */
+  }
+}

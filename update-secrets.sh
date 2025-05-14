@@ -1,4 +1,5 @@
 #!/bin/bash
+# based on https://medium.com/evenbit/configuring-firebase-app-hosting-with-google-secrets-manager-2b83c09f3ad9
 source ./env.local
 echo $GEMINI_API_KEY | firebase apphosting:secrets:set --force --data-file - gemini-api-key
 echo $AUTH_SECRET | firebase apphosting:secrets:set --force --data-file - auth-secret
