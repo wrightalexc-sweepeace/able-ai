@@ -67,7 +67,7 @@ export function useAppContext(): AppContextValue {
         isSuperAdmin: user?.appRole === 'SUPER_ADMIN',
         isQA: user?.appRole === 'QA',
         isBuyerMode: isAuthenticated && user?.lastRoleUsed === 'BUYER',
-        isWorkerMode: isAuthenticated && user?.lastRoleUsed === 'WORKER',
+        isWorkerMode: isAuthenticated && user?.lastRoleUsed === 'GIG_WORKER',
         canBeBuyer: !!user?.isBuyer,
         canBeGigWorker: !!user?.isGigWorker,
         lastViewVisited: user?.lastViewVisited || null,

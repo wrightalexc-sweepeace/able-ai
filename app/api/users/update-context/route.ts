@@ -23,7 +23,8 @@ export async function POST(request: Request) {
         if (updatedUser) {
             return NextResponse.json({ success: true, user: { // Return only what needs to update the session
                 lastRoleUsed: updatedUser.lastRoleUsed,
-                lastViewVisited: updatedUser.lastViewVisited,
+                lastViewVisitedBuyer: updatedUser.lastViewVisitedBuyer,
+                lastViewVisitedWorker: updatedUser.lastViewVisitedWorker,
             }});
         }
         return NextResponse.json({ error: 'Failed to update user context' }, { status: 500 });
