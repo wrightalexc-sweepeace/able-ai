@@ -5,17 +5,19 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 1rem;
+  padding: 2rem;
   font-family: var(--font-family);
+  border-radius: 24px;
 }
 
 .card {
-  padding: 2rem 1.5rem;
+  /* padding: 2rem 1.5rem; */
   width: 100%;
   max-width: 420px; /* Max width for the card */
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  /* gap: 1.5rem; */
+  
 }
 
 .logoWrapper {
@@ -31,7 +33,7 @@
 .header h1 {
   /* Styles for "Welcome! Please register..." */
   color: #ffffff;
-  font-size: 24px; /* Specific mobile style */
+  font-size: 22px; /* Specific mobile style */
   font-family: var(--font-family); /* Source Sans Pro from global */
   font-weight: 700; /* Specific mobile style */
   line-height: 28px; /* Specific mobile style */
