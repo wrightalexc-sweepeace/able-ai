@@ -1,4 +1,4 @@
-import { User as NextAuthUser } from "next-auth";
+import NextAuth, { User as NextAuthUser } from "next-auth";
 import type { NextAuthOptions } from "next-auth";
 import { FirestoreAdapter } from "@auth/firebase-adapter";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -45,12 +45,15 @@ export const authOptions = {
       async authorize(credentials): Promise<ExtendedUser | null> {
         const idToken = credentials?.idToken;
         const roleFromClient = credentials?.role;
+        // console.log("Credentials received:", credentials);
 
         if (idToken) {
           try {
             const decodedToken = await firebaseAdmin
               .auth()
               .verifyIdToken(idToken);
+            
+            // console.log("decodedToken received:", decodedToken);
             if (!decodedToken.uid || !decodedToken.email) return null;
 
             const pgUser = await findOrCreatePgUserAndUpdateRole({
@@ -64,6 +67,7 @@ export const authOptions = {
                 | "GIG_WORKER"
                 | undefined,
             });
+            // console.log("pgUser received:", pgUser);
 
             if (!pgUser) return null;
 
@@ -89,6 +93,8 @@ export const authOptions = {
             console.error("Error verifying Firebase ID token:", err);
             return null;
           }
+        } else {
+          console.error("No ID token provided");
         }
         return null;
       },
@@ -104,6 +110,7 @@ export const authOptions = {
 
   callbacks: {
     async jwt({ token, user, trigger, session }) {
+      // console.log("JWT Callback:", { token, user, trigger, session });
       const extendedUser = user as ExtendedUser | undefined;
       if (extendedUser) {
         // On sign-in
@@ -129,6 +136,11 @@ export const authOptions = {
       return token;
     },
     async session({ session, token }) {
+      console.log("Session Callback:", { session, token });
+      if (!session) {
+        console.error("Session is null or undefined");
+        return session;
+      };
       // Standard NextAuth session.user fields
       if (session.user) {
         session.user.name =
@@ -156,10 +168,12 @@ export const authOptions = {
 
   events: {
     async signIn({ user, isNewUser = false }) {
-      console.log(`User signed in: ${user.id}, New User: ${isNewUser}`);
+      console.log(`User signed in: ${user.id}, New User: ${JSON.stringify(user)} ${isNewUser}`);
       // Potentially trigger other actions here, like updating last login in PG
     },
   },
   debug: process.env.NODE_ENV !== "production",
   adapter: FirestoreAdapter(firestore),
 } satisfies NextAuthOptions;
+
+export const { signIn, signOut, auth } = NextAuth(authOptions)

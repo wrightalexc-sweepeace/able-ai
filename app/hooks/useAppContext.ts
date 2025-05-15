@@ -1,12 +1,19 @@
 // app/hooks/useAppContext.ts (example)
 "use client";
 
-import { useSession } from "next-auth/react";
-import { Session, User } from "next-auth"; // Import Session type
+import { User } from "firebase/auth";
+import { useFirebaseAuth } from "./useFirebaseAuth";
+
+interface ExtendedUser extends User {
+    appRole?: 'ADMIN' | 'SUPER_ADMIN' | 'QA';
+    lastRoleUsed?: 'BUYER' | 'WORKER';
+    lastViewVisited?: string;
+    isBuyer?: boolean;
+    isGigWorker?: boolean;
+}
 
 interface AppContextValue {
-    session: Session | null;
-    user?: User;
+    user: ExtendedUser | null;
     isLoading: boolean;
     isAuthenticated: boolean;
     isAdmin: boolean;
@@ -21,57 +28,58 @@ interface AppContextValue {
 }
 
 export function useAppContext(): AppContextValue {
-    const { data: session, status, update: updateNextAuthSession } = useSession();
-    const user = session?.user;
+    const { user: firebaseUser, loading } = useFirebaseAuth();
+    const user = firebaseUser as ExtendedUser | null;
+    const isAuthenticated = !!user;
 
-    const isAuthenticated = status === "authenticated";
-    const isLoading = status === "loading";
-
-    // Function to call API to update context in PG and then update NextAuth session
-    const updateUserContext = async (updates: { lastRoleUsed?: 'BUYER' | 'WORKER'; lastViewVisited?: string }) => {
+    // Function to call API to update context in PG
+    const updateUserContext = async (updates: { lastRoleUsed?: 'BUYER' | 'WORKER'; lastViewVisited?: string }) => {        
         const isViewQA = localStorage.getItem('isViewQA') === 'true';
         if (!isViewQA || !isAuthenticated || !user?.uid) return;
 
         try {
-            // 1. Call your backend API to update PostgreSQL
-            const response = await fetch('/api/users/update-context', { // Create this API route
+            // Call backend API to update PostgreSQL
+            const response = await fetch('/api/users/update-context', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ firebaseUid: user.uid, ...updates }),
             });
+            
             if (!response.ok) {
                 throw new Error('Failed to update user context in backend');
             }
-            const updatedPgData = await response.json();
 
-            // 2. Trigger NextAuth session update to reflect changes from PG
-            // Pass the specific fields you want to update in the session
-            await updateNextAuthSession({
-                userContext: { // This 'userContext' key is arbitrary, ensure your JWT callback handles it
-                    lastRoleUsed: updatedPgData.user?.lastRoleUsed || updates.lastRoleUsed,
-                    lastViewVisited: updatedPgData.user?.lastViewVisited || updates.lastViewVisited,
-                }
-            });
+            const updatedPgData = await response.json();
+            
+            // Update local storage for immediate client-side updates
+            if (updates.lastRoleUsed) {
+                localStorage.setItem('currentRole', updatedPgData.lastRoleUsed);
+            }
+            if (updates.lastViewVisited) {
+                localStorage.setItem('lastViewVisited', updatedPgData.lastViewVisited);
+            }
 
         } catch (error) {
             console.error("Error updating user context:", error);
         }
     };
 
+    // Get role info from local storage for immediate updates
+    const currentRole = typeof window !== 'undefined' ? localStorage.getItem('currentRole') as 'BUYER' | 'WORKER' | null : null;
+    const lastViewVisitedFromStorage = typeof window !== 'undefined' ? localStorage.getItem('lastViewVisited') : null;
 
     return {
-        session,
         user,
-        isLoading,
+        isLoading: loading,
         isAuthenticated,
         isAdmin: user?.appRole === 'ADMIN',
         isSuperAdmin: user?.appRole === 'SUPER_ADMIN',
         isQA: user?.appRole === 'QA',
-        isBuyerMode: isAuthenticated && user?.lastRoleUsed === 'BUYER',
-        isWorkerMode: isAuthenticated && user?.lastRoleUsed === 'GIG_WORKER',
+        isBuyerMode: isAuthenticated && (currentRole === 'BUYER' || user?.lastRoleUsed === 'BUYER'),
+        isWorkerMode: isAuthenticated && (currentRole === 'WORKER' || user?.lastRoleUsed === 'WORKER'),
         canBeBuyer: !!user?.isBuyer,
         canBeGigWorker: !!user?.isGigWorker,
-        lastViewVisited: user?.lastViewVisited || null,
+        lastViewVisited: lastViewVisitedFromStorage || user?.lastViewVisited || null,
         updateUserContext,
     };
 }

@@ -11,7 +11,7 @@ import {
     onIdTokenChanged as _onIdTokenChanged,
 
     // Types
-    type Auth, // Firebase Auth instance type
+    // type Auth, // Firebase Auth instance type
     type User, // Firebase User type
     type UserCredential // Type for result of signIn/createUser
 } from "firebase/auth";

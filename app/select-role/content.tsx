@@ -1,18 +1,23 @@
-// app/select-role/page.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation"; // App Router navigation
 import { useAppContext } from "@/app/hooks/useAppContext";
-import { useFirebaseAuth } from "@/app/hooks/useFirebaseAuth";
+import { useSession } from "next-auth/react"
+
 import Logo from "@/app/components/brand/Logo"; // Reusing Logo
 import ActionButton from "./ActionButton";
 import styles from "./SelectRolePage.module.css";
 
-export default function SelectRolePage() {
+export default function SelectRoleContent() {
   const router = useRouter();
-  const { user, loading: loadingAuth } = useFirebaseAuth();
-  const { updateUserContext } = useAppContext();
+  const { data: session, status } = useSession()
+  const {
+    user,
+    updateUserContext,
+    isAuthenticated,
+    isLoading: loadingAuth,
+  } = useAppContext();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const isViewQA = React.useMemo(() => {
@@ -22,10 +27,11 @@ export default function SelectRolePage() {
 
   // Redirect if not authenticated or auth state is still loading
   useEffect(() => {
-    if (!loadingAuth && !isViewQA && !user) {
-      router.push("/signin"); // Or your login page
+    if (!loadingAuth && !isViewQA && !isAuthenticated) {
+      router.push("/auth"); // Or your login page
     }
-  }, [user, loadingAuth, router, isViewQA]);
+    console.log({user, session, status});
+  }, [isAuthenticated, loadingAuth, router]);
 
   const handleRoleSelection = async (role: "BUYER" | "WORKER") => {
     if (!updateUserContext) {
@@ -61,7 +67,7 @@ export default function SelectRolePage() {
     // setLoading(false) will be handled by navigation or if error occurs
   };
 
-  if (!isViewQA && (loadingAuth || (!loadingAuth && !user))) {
+  if (!isViewQA && (loadingAuth || (!loadingAuth && !isAuthenticated))) {
     // Show a loading spinner or skeleton screen while auth is checked
     return (
       <div className={styles.container}>
@@ -79,7 +85,7 @@ export default function SelectRolePage() {
 
         <div className={styles.greeting}>
           <p className={styles.intro}>
-            Hello, I&apos;m Able, it&apos;s lovely to meet you.
+            Hello, I'm Able, it's lovely to meet you.
           </p>
           <p className={styles.question}>What do you want to do today?</p>
         </div>

@@ -54,12 +54,11 @@
 
 /* For larger screens, make buttons side-by-side */
 @media (min-width: 480px) {
-    .card {
-        background-color: #1f1f1f; /* Slightly lighter card */
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
-        border-radius: 1.25rem; /* 20px */
-        
-    }
+  .card {
+    background-color: #1f1f1f; /* Slightly lighter card */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    border-radius: 1.25rem; /* 20px */
+  }
   /* Adjust breakpoint as needed */
   .actions {
     flex-direction: column;
