@@ -113,7 +113,8 @@
   border: 1px solid var(--error-color);
   margin-top: 0.5rem;
   display: flex;
-  gap: 0.8rem;
+  gap: 1rem;
+  justify-content: space-around;
 }
 
 .errorCloseBtn {

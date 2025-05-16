@@ -55,7 +55,7 @@ export default function SignInPage() {
       await handleFirebaseSignIn(idToken);
     } catch (err: any) {
       console.error("Firebase Email/Password Sign In Error:", err);
-      setError(err.message || "Failed to sign in.");
+      setError("Email or password is incorrect.");
       setLoading(false);
     }
   };
@@ -92,7 +92,7 @@ export default function SignInPage() {
   }
 
   return (
-    <div className={`container ${styles.container}`}>
+    <div className={styles.container}>
       <div className={styles.card}>
         <div className={styles.logoWrapper}>
           <Logo />
