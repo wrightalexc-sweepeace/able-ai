@@ -1,0 +1,138 @@
+/* app/components/onboarding/VideoRecorderBubble.module.css */
+.videoBubbleWrapper {
+  display: flex;
+  gap: 0.5rem;
+  max-width: 90%;
+  width: 100%;
+}
+
+.alignUser {
+  align-self: flex-end;
+}
+
+.videoBubbleContent {
+  flex-grow: 1;
+  background-color: #2b2b2b;
+  padding: 0.75rem 1rem;
+  border-radius: 1.25rem;
+  border-bottom-right-radius: 0.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem; /* Space between elements inside the bubble */
+}
+
+.label {
+  display: block;
+  color: #a0a0a0;
+  font-size: 0.8rem;
+  margin-bottom: 0.25rem; /* Reduced margin as gap is on parent */
+}
+
+.videoPreviewContainer {
+  width: 100%;
+  aspect-ratio: 16 / 9; /* Common video aspect ratio */
+  background-color: #1e1e1e; /* Dark background for preview area */
+  border-radius: 0.5rem;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.videoPreview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Or 'contain' if you prefer */
+}
+
+.noPreview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #737373;
+  text-align: center;
+  height: 100%;
+}
+.noPreview svg {
+  margin-bottom: 0.5rem;
+}
+.noPreview p {
+  font-size: 0.85rem;
+}
+
+
+.controls {
+  display: flex;
+  justify-content: center; /* Center the button(s) */
+  gap: 0.5rem;
+}
+
+.controlButton {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-family: var(--font-family);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 0.2s ease;
+}
+
+.controlButton:hover {
+  background-color: var(--primary-color-dark); /* Assuming you have a darker shade */
+}
+
+.controlButton:disabled {
+  background-color: #555;
+  cursor: not-allowed;
+}
+
+.stopButton {
+  background-color: #e53e3e; /* Red for stop */
+}
+.stopButton:hover {
+  background-color: #c53030; /* Darker red */
+}
+
+.errorDisplay {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #e53e3e; /* Error color */
+  font-size: 0.85rem;
+  padding: 0.5rem;
+  background-color: rgba(229, 62, 62, 0.1);
+  border-radius: 0.25rem;
+}
+
+.uploadFallback {
+  margin-top: 0.5rem;
+  border-top: 1px solid #3a3a3a;
+  padding-top: 0.75rem;
+}
+
+.fileInput {
+  display: none;
+}
+
+.fileInputLabel {
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Center fallback label content */
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  color: var(--primary-color-light); /* Lighter primary or a distinct color */
+  cursor: pointer;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.fileInputLabel:hover {
+  text-decoration: underline;
+}

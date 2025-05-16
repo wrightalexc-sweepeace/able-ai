@@ -1,0 +1,33 @@
+/* app/onboard-worker/OnboardWorkerPage.module.css */
+.finalSubmitButton {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 9999px; /* Pill shape */
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  align-self: center;
+  margin-top: 1.5rem;
+  transition: background-color 0.2s ease;
+}
+
+.finalSubmitButton:hover:not(:disabled) {
+  background-color: var(--primary-color-dark); /* Assuming a darker primary color variable */
+}
+
+.finalSubmitButton:disabled {
+  background-color: #555;
+  cursor: not-allowed;
+}
+
+.loadingContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: #161616; /* Matches ChatBotLayout background */
+  color: white;
+  font-size: 1.2rem;
+  text-align: center;
+}

@@ -1,0 +1,85 @@
+/* app/components/onboarding/LocationMapLinkBubble.module.css */
+.locationBubbleWrapper {
+  display: flex;
+  gap: 0.5rem;
+  max-width: 90%;
+  width: 100%;
+}
+
+.alignUser {
+  align-self: flex-end;
+}
+
+.locationBubbleContent {
+  flex-grow: 1;
+  background-color: #2b2b2b;
+  padding: 0.75rem 1rem;
+  border-radius: 1.25rem;
+  border-bottom-right-radius: 0.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.label {
+  display: block;
+  color: #a0a0a0;
+  font-size: 0.8rem;
+  margin-bottom: 0.1rem; /* Adjusted as content has its own gap */
+}
+
+.mapLink {
+  display: inline-flex; /* Changed from flex to inline-flex for better wrapping if needed */
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0; /* Match other interactive elements */
+  color: var(--primary-color);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-family: var(--font-family);
+  border-radius: 0.25rem; /* Slight rounding for focus visibility */
+}
+
+.mapLink:hover,
+.mapLink:focus {
+  text-decoration: underline;
+  outline: none; /* Or a custom focus style */
+}
+.mapLink.disabledLink {
+  color: #737373;
+  cursor: not-allowed;
+  text-decoration: none;
+}
+.mapLink.disabledLink:hover {
+    text-decoration: none;
+}
+
+
+.externalIcon {
+  margin-left: 0.25rem;
+  opacity: 0.7;
+}
+
+.locationTextDisplay {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  color: #c2c2c2; /* Match input field text color */
+  font-size: 0.9rem;
+  font-family: var(--font-family);
+}
+
+.locationPlaceholder {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  color: #737373; /* Placeholder text color */
+  font-size: 0.9rem;
+  font-style: italic;
+  font-family: var(--font-family);
+}
+
+/* Styles for a potential future InputBubble integrated here would be inherited
+   or you might need specific overrides if InputBubble is nested directly. */

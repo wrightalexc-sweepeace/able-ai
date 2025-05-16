@@ -1,0 +1,102 @@
+/* app/components/onboarding/ShareLinkBubble.module.css */
+.shareLinkBubbleWrapper {
+  display: flex;
+  gap: 0.5rem;
+  max-width: 90%;
+  width: 100%;
+}
+
+.alignUser {
+  align-self: flex-end; /* Or flex-start if it's a bot message with a link */
+}
+
+.shareLinkBubbleContent {
+  flex-grow: 1;
+  background-color: #2b2b2b;
+  padding: 0.75rem 1rem;
+  border-radius: 1.25rem;
+  border-bottom-right-radius: 0.25rem; /* Adjust if senderType can vary */
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem; /* Slightly less gap for tighter content */
+}
+
+.label {
+  display: block;
+  color: #a0a0a0;
+  font-size: 0.8rem;
+  /* margin-bottom: 0.1rem; */ /* Gap handled by parent */
+}
+
+.linkContainer {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background-color: #3a3a3a; /* Slightly different background for the link area */
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  overflow: hidden; /* To ensure copy button doesn't overflow weirdly */
+}
+
+.linkIcon {
+  color: var(--primary-color-light); /* A lighter shade or distinct color */
+  flex-shrink: 0;
+}
+
+.shareLink {
+  color: #c2c2c2;
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-family: var(--font-family);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; /* Show ellipsis for long links */
+  flex-grow: 1; /* Allow link to take available space */
+}
+
+.shareLink:hover,
+.shareLink:focus {
+  text-decoration: underline;
+  outline: none;
+}
+.shareLink.disabledLink {
+  color: #737373;
+  cursor: not-allowed;
+  text-decoration: none;
+}
+.shareLink.disabledLink:hover {
+    text-decoration: none;
+}
+
+.noLinkText {
+  color: #737373;
+  font-size: 0.9rem;
+  font-style: italic;
+  flex-grow: 1;
+}
+
+.copyButton {
+  background-color: transparent;
+  border: none;
+  color: #a0a0a0; /* Neutral color for copy icon */
+  cursor: pointer;
+  padding: 0.25rem; /* Small padding around icon */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.25rem;
+  flex-shrink: 0;
+}
+
+.copyButton:hover:not(:disabled) {
+  color: var(--primary-color); /* Highlight on hover */
+}
+
+.copyButton:disabled {
+  color: #555;
+  cursor: not-allowed;
+}
+
+.copiedIcon {
+  color: #48bb78; /* Green for success/copied */
+}
