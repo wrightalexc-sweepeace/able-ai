@@ -9,6 +9,23 @@
   font-family: var(--font-family);
 }
 
+.forgotPassword {
+  color: var(--primary-color);
+  font-size: 0.875rem;
+  text-decoration: none;
+  text-align: right;
+  display: block;
+  margin-top: 0.25rem;
+}
+
+.forgotPassword:hover {
+  text-decoration: underline;
+}
+
+.linkText {
+  color: var(--primary-color);
+}
+
 .card {
   /* padding: 2rem 1.5rem; */
   width: 100%;
@@ -122,6 +139,17 @@
   font-size: 1rem;
 }
 
+.errorLink {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 600;
+  margin-left: 0.5rem;
+}
+
+.errorLink:hover {
+  text-decoration: underline;
+}
+
 .toggleButton {
   background: none;
   border: none;
@@ -134,6 +162,19 @@
   width: 100%;
   font-weight: 700;
   outline: none;
+}
+
+.forgotPassword {
+  color: var(--primary-color);
+  font-size: 0.875rem;
+  text-decoration: none;
+  text-align: right;
+  display: block;
+  margin-top: 0.25rem;
+}
+
+.forgotPassword:hover {
+  text-decoration: underline;
 }
 
 .linkText {

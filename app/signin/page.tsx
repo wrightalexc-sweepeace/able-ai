@@ -22,7 +22,7 @@ export default function SignInPage() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [isRegistering, setIsRegistering] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<React.ReactNode | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleFirebaseSignIn = async (idToken: string) => {
@@ -55,7 +55,14 @@ export default function SignInPage() {
       await handleFirebaseSignIn(idToken);
     } catch (err: any) {
       console.error("Firebase Email/Password Sign In Error:", err);
-      setError("Email or password is incorrect.");
+      setError(
+        <>
+          Email or password is incorrect.{" "}
+          <a href="/reset-password" className={styles.errorLink}>
+            Reset password?
+          </a>
+        </>
+      );
       setLoading(false);
     }
   };
@@ -186,6 +193,11 @@ export default function SignInPage() {
               }
               required
             />
+            {!isRegistering && (
+              <a href="/reset-password" className={styles.forgotPassword}>
+                Forgot Password?
+              </a>
+            )}
           </div>
 
           {error && 
