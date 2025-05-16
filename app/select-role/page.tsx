@@ -11,7 +11,7 @@ import styles from "./SelectRolePage.module.css";
 
 export default function SelectRolePage() {
   const router = useRouter();
-  const { user, loading: loadingAuth } = useFirebaseAuth();
+  const { user, loading: loadingAuth, idToken } = useFirebaseAuth();
   const { updateUserContext } = useAppContext();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,7 +27,7 @@ export default function SelectRolePage() {
     }
   }, [user, loadingAuth, router, isViewQA]);
 
-  const handleRoleSelection = async (role: "BUYER" | "WORKER") => {
+  const handleRoleSelection = async (role: "BUYER" | "GIG_WORKER") => {
     if (!updateUserContext) {
       setError("User context is not available. Please try again.");
       console.error(
@@ -40,7 +40,7 @@ export default function SelectRolePage() {
     setError(null);
     try {
       // 1. Update in context (which should trigger backend update via API)
-      await updateUserContext({ lastRoleUsed: role });
+      await updateUserContext({ lastRoleUsed: role }, idToken);
 
       // 2. Save to localStorage for immediate persistence on the client
       if (typeof window !== "undefined") {
@@ -50,7 +50,7 @@ export default function SelectRolePage() {
       // 3. Navigate to the appropriate dashboard
       if (role === "BUYER") {
         router.push("/buyer/dashboard"); // Or your buyer landing page
-      } else if (role === "WORKER") {
+      } else if (role === "GIG_WORKER") {
         router.push("/worker/dashboard"); // Or your worker landing page
       }
     } catch (err) {
@@ -96,7 +96,7 @@ export default function SelectRolePage() {
           </ActionButton>
           <ActionButton
             bgColor="#41a1e8" // Darker blue for "Find Work"
-            onClick={() => handleRoleSelection("WORKER")}
+            onClick={() => handleRoleSelection("GIG_WORKER")}
             disabled={isLoading}
           >
             Find Gig Work

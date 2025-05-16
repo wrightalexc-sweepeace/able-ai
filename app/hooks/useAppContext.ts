@@ -24,7 +24,7 @@ interface AppContextValue {
     canBeBuyer: boolean;      // User *can* be a buyer
     canBeGigWorker: boolean;  // User *can* be a worker
     lastViewVisited: string | null;
-    updateUserContext: (updates: { lastRoleUsed?: 'BUYER' | 'WORKER'; lastViewVisited?: string }) => Promise<void>;
+    updateUserContext: (updates: { lastRoleUsed?: 'BUYER' | 'GIG_WORKER'; lastViewVisited?: string }, idToken?: string | null) => Promise<void>;
 }
 
 export function useAppContext(): AppContextValue {
@@ -33,24 +33,24 @@ export function useAppContext(): AppContextValue {
     const isAuthenticated = !!user;
 
     // Function to call API to update context in PG
-    const updateUserContext = async (updates: { lastRoleUsed?: 'BUYER' | 'WORKER'; lastViewVisited?: string }) => {        
+    const updateUserContext = async (updates: { lastRoleUsed?: 'BUYER' | 'GIG_WORKER'; lastViewVisited?: string }, idToken?: string | null) => {
         const isViewQA = localStorage.getItem('isViewQA') === 'true';
-        if (!isViewQA || !isAuthenticated || !user?.uid) return;
+
+        if (isViewQA || !isAuthenticated || !user?.uid) return;
 
         try {
             // Call backend API to update PostgreSQL
             const response = await fetch('/api/users/update-context', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ firebaseUid: user.uid, ...updates }),
+                body: JSON.stringify({ firebaseUid: user.uid, ...updates, idToken }),
             });
-            
             if (!response.ok) {
                 throw new Error('Failed to update user context in backend');
             }
 
             const updatedPgData = await response.json();
-            
+
             // Update local storage for immediate client-side updates
             if (updates.lastRoleUsed) {
                 localStorage.setItem('currentRole', updatedPgData.lastRoleUsed);

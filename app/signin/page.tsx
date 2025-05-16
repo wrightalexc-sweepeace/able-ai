@@ -19,13 +19,15 @@ import styles from "./SignInPage.module.css"; // Styles for this page
 export default function SignInPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState(""); // For registration
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
   const [isRegistering, setIsRegistering] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const handleFirebaseSignIn = async (idToken: string) => {
     const result = await signIn("credentials", {
+      phone,
       idToken,
       redirect: false,
     });
@@ -34,7 +36,7 @@ export default function SignInPage() {
       setError(result.error);
       console.error("NextAuth Sign In Error:", result.error);
     } else if (result?.ok) {
-      window.location.href = "/"; // Or useRouter().push('/')
+      window.location.href = "/select-role"; // Or useRouter().push('/')
     }
     setLoading(false);
   };
@@ -115,6 +117,23 @@ export default function SignInPage() {
         >
           {isRegistering && (
             <div className={styles.inputGroup}>
+              <label htmlFor="name" className={styles.label}>
+                Name
+              </label>
+              <InputField
+                type="text"
+                id="name"
+                name="name"
+                placeholder="Enter your name"
+                value={name}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                  setName(e.target.value)
+                }
+              />
+            </div>
+          )}
+          {isRegistering && (
+            <div className={styles.inputGroup}>
               <label htmlFor="phone" className={styles.label}>
                 Phone Number
               </label>
@@ -123,9 +142,9 @@ export default function SignInPage() {
                 id="phone"
                 name="phone"
                 placeholder="Enter your phone number"
-                value={name}
+                value={phone}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setName(e.target.value)
+                  setPhone(e.target.value)
                 }
               />
             </div>

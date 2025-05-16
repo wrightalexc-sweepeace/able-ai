@@ -1,24 +1,19 @@
 // app/api/users/update-context/route.ts
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth/next';
-import { authOptions } from '@/auth'; // Your NextAuth options
 import { updateUserAppContext as updatePgUserAppContext } from '@/app/lib/user.server'; // The PG update function
+import { getAuthenticatedAppForUser } from '@/app/lib/firebase/serverApp';
 
 export async function POST(request: Request) {
-    const session = await getServerSession(authOptions);
-
-    if (!session || !session.user) {
-        return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const { firebaseUid, lastRoleUsed, lastViewVisited } = await request.json();
-    const sessionFirebaseUid = (session.user)?.uid; // Assuming uid is firebaseUid in session
+    const { firebaseUid, lastRoleUsed, lastViewVisited, idToken } = await request.json();
+    const { currentUser } = await getAuthenticatedAppForUser(idToken);
+    const sessionFirebaseUid = currentUser?.uid;
 
     if (!firebaseUid || firebaseUid !== sessionFirebaseUid) {
         return NextResponse.json({ error: 'Mismatched user or UID missing' }, { status: 400 });
     }
 
     try {
+        console.log('Updating user context in PostgreSQL:', { lastRoleUsed, lastViewVisited });
         const updatedUser = await updatePgUserAppContext(firebaseUid, { lastRoleUsed, lastViewVisited });
         if (updatedUser) {
             return NextResponse.json({ success: true, user: { // Return only what needs to update the session

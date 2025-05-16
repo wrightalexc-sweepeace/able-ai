@@ -41,11 +41,13 @@ export const authOptions = {
         idToken: { label: "Firebase ID Token", type: "text" },
         // Add role here if you plan to pass it from client during signIn
         role: { label: "User Role", type: "text" },
+        phone: { label: "Phone", type: "text" },
       },
       async authorize(credentials): Promise<ExtendedUser | null> {
         const idToken = credentials?.idToken;
         const roleFromClient = credentials?.role;
-        // console.log("Credentials received:", credentials);
+        const phone = credentials?.phone;
+        console.log("Credentials received:", credentials);
 
         if (idToken) {
           try {
@@ -62,6 +64,7 @@ export const authOptions = {
               email: decodedToken.email,
               displayName: decodedToken.name,
               photoURL: decodedToken.picture,
+              phone,
               initialRoleContext: roleFromClient as
                 | "BUYER"
                 | "GIG_WORKER"

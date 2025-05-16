@@ -1,36 +1,34 @@
 // File: app/lib/user.server.ts
-import { Session, User as NextAuthUser } from "next-auth";
 import { db } from "@/app/lib/drizzle/db"; // Correct path to your Drizzle instance
 import { UsersTable, GigWorkerProfilesTable, BuyerProfilesTable, userAppRoleEnum, activeRoleContextEnum } from "@/app/lib/drizzle/schema"; // Import specific tables
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
-// Define a comprehensive AppUser type that reflects the combined user object
-// This should align with what your NextAuth session.user will look like
-export interface AppUser extends NextAuthUser {
+// Define a comprehensive AppUser type
+export interface AppUser {
   id: string; // This will be your PostgreSQL UsersTable.id
   firebaseUid: string; // Firebase UID
   email: string | null | undefined;
   fullName: string | null | undefined;
-  picture?: string | null | undefined; // From Firebase, maps to NextAuth's image
-  appRole: typeof userAppRoleEnum.enumValues[number]; // Use enum values for type safety
+  picture?: string | null | undefined; // From Firebase profile
+  appRole: typeof userAppRoleEnum.enumValues[number];
   isBuyer: boolean;
   isGigWorker: boolean;
   lastRoleUsed: typeof activeRoleContextEnum.enumValues[number] | null;
   lastViewVisitedBuyer: string | null;
   lastViewVisitedWorker: string | null;
-  // Add other relevant fields from UsersTable you want in the session/app context
 }
 
 // Type for the input to findOrCreatePgUserAndUpdateRole
 interface FindOrCreatePgUserInput {
   firebaseUid: string;
   email: string;
-  displayName: string; // From Firebase token (decodedToken.name or derived)
-  photoURL?: string | null; // From Firebase token (decodedToken.picture)
-  initialRoleContext?: typeof activeRoleContextEnum.enumValues[number] | undefined; // Hint from client on signup
+  displayName: string;
+  photoURL?: string | null;
+  phone?: string | null;
+  initialRoleContext?: typeof activeRoleContextEnum.enumValues[number] | undefined;
 }
 
-// Type for the PostgreSQL User record (Drizzle's inferred select type)
+// Type for the PostgreSQL User record
 type PgUserSelect = typeof UsersTable.$inferSelect;
 
 /**
@@ -42,7 +40,7 @@ type PgUserSelect = typeof UsersTable.$inferSelect;
 export async function findOrCreatePgUserAndUpdateRole(
   input: FindOrCreatePgUserInput
 ): Promise<PgUserSelect | null> {
-  const { firebaseUid, email, displayName, initialRoleContext } = input;
+  const { firebaseUid, email, displayName, initialRoleContext, phone } = input;
 
   try {
     // Try to find the user by firebaseUid
@@ -56,6 +54,9 @@ export async function findOrCreatePgUserAndUpdateRole(
       const updates: Partial<typeof UsersTable.$inferInsert> = { updatedAt: new Date() };
       if (pgUser.fullName !== displayName) {
         updates.fullName = displayName;
+      }
+      if (pgUser.phone !== phone) {
+        updates.phone = phone;
       }
       if (initialRoleContext === 'BUYER' && !pgUser.isBuyer) {
         updates.isBuyer = true;
@@ -76,6 +77,7 @@ export async function findOrCreatePgUserAndUpdateRole(
         }
       }
 
+      console.log("Updating existing user in PG:", { updates });
       if (Object.keys(updates).length > 1) { // More than just updatedAt
         const updatedUsers = await db
           .update(UsersTable)
@@ -100,6 +102,7 @@ export async function findOrCreatePgUserAndUpdateRole(
           isBuyer: newUserIsBuyer,
           isGigWorker: newUserIsGigWorker,
           lastRoleUsed: initialRoleContext || null, // Set initial context if provided
+          phone,
           // Other fields will use DB defaults
         })
         .returning();
@@ -124,7 +127,7 @@ export async function findOrCreatePgUserAndUpdateRole(
 }
 
 
-// --- UTILITY FUNCTIONS BASED ON PG USER OBJECT (PgUserSelect type) ---
+// --- UTILITY FUNCTIONS BASED ON PG USER OBJECT ---
 
 export function getPgUserLastRoleUsed(pgUser: PgUserSelect | null): typeof activeRoleContextEnum.enumValues[number] | null {
     return pgUser?.lastRoleUsed || null;
@@ -147,52 +150,44 @@ export function isPgUserQA(pgUser: PgUserSelect | null): boolean {
     return pgUser?.appRole === 'QA';
 }
 
-export function isPgUserActualBuyer(pgUser: PgUserSelect | null): boolean { // Renamed for clarity
+export function isPgUserActualBuyer(pgUser: PgUserSelect | null): boolean {
     return !!pgUser?.isBuyer;
 }
 
-export function isPgUserActualGigWorker(pgUser: PgUserSelect | null): boolean { // Renamed for clarity
+export function isPgUserActualGigWorker(pgUser: PgUserSelect | null): boolean {
     return !!pgUser?.isGigWorker;
 }
 
-// --- UTILITY FUNCTIONS BASED ON NEXTAUTH.JS SESSION (AppUser type) ---
-// These assume your NextAuth callbacks correctly populate the session.user with AppUser fields.
+// --- UTILITY FUNCTIONS BASED ON APP USER ---
 
-export function getSessionLastRoleUsed(session: Session | null): typeof activeRoleContextEnum.enumValues[number] | null {
-    const user = session?.user as AppUser | undefined;
+export function getUserLastRoleUsed(user: AppUser | null): typeof activeRoleContextEnum.enumValues[number] | null {
     return user?.lastRoleUsed || null;
 }
 
-export function getSessionLastViewVisited(session: Session | null, currentRoleContext?: typeof activeRoleContextEnum.enumValues[number] | null): string | null {
-    const user = session?.user as AppUser | undefined;
+export function getUserLastViewVisited(user: AppUser | null, currentRoleContext?: typeof activeRoleContextEnum.enumValues[number] | null): string | null {
     if (!user) return null;
     const roleToUse = currentRoleContext || user.lastRoleUsed;
     if (!roleToUse) return null;
     return roleToUse === 'BUYER' ? user.lastViewVisitedBuyer : user.lastViewVisitedWorker;
 }
 
-export function isSessionUserAdmin(session: Session | null): boolean {
-    const user = session?.user as AppUser | undefined;
+export function isUserAdmin(user: AppUser | null): boolean {
     return user?.appRole === 'ADMIN';
 }
 
-export function isSessionUserSuperAdmin(session: Session | null): boolean {
-    const user = session?.user as AppUser | undefined;
+export function isUserSuperAdmin(user: AppUser | null): boolean {
     return user?.appRole === 'SUPER_ADMIN';
 }
 
-export function isSessionUserQA(session: Session | null): boolean {
-    const user = session?.user as AppUser | undefined;
+export function isUserQA(user: AppUser | null): boolean {
     return user?.appRole === 'QA';
 }
 
-export function isSessionUserActualBuyer(session: Session | null): boolean {
-    const user = session?.user as AppUser | undefined;
+export function isUserBuyer(user: AppUser | null): boolean {
     return !!user?.isBuyer;
 }
 
-export function isSessionUserActualGigWorker(session: Session | null): boolean {
-    const user = session?.user as AppUser | undefined;
+export function isUserGigWorker(user: AppUser | null): boolean {
     return !!user?.isGigWorker;
 }
 
@@ -231,7 +226,7 @@ export async function updateUserAppContext(
         console.warn("Updating lastViewVisited without lastRoleUsed might lead to ambiguity. Please provide lastRoleUsed.");
     }
 
-
+    console.log("Updating user app context in PG:", { firebaseUid, updateData });
     try {
         const updatedUsers = await db
             .update(UsersTable)
@@ -246,88 +241,41 @@ export async function updateUserAppContext(
     }
 }
 
-// --- FUNCTION TO GET THE FULL AppUser (HYDRATED WITH PG DETAILS) FROM AN EXISTING SESSION ---
-export async function getHydratedAppUser(session: Session | null): Promise<AppUser | null> {
-    if (!session?.user) {
-        console.warn("getHydratedAppUser: No session or session.user provided.");
+/**
+ * Gets a hydrated AppUser object for a given Firebase UID by fetching data from PostgreSQL
+ */
+export async function getHydratedAppUser(firebaseUid: string): Promise<AppUser | null> {
+    if (!firebaseUid) {
+        console.warn("getHydratedAppUser: No Firebase UID provided.");
         return null;
     }
-
-    const nextAuthUser = session.user as Partial<AppUser> & { uid?: string }; // uid is firebaseUid from token
-
-    if (!nextAuthUser.uid) {
-        console.warn("getHydratedAppUser: Firebase UID (as 'uid') not found in NextAuth session user.");
-        // Attempt to use 'id' if 'uid' is missing and 'id' might be firebaseUid
-        if (!nextAuthUser.id) {
-             console.error("getHydratedAppUser: Neither 'uid' nor 'id' found as Firebase UID in session.");
-             return null; // Cannot proceed without Firebase UID
-        }
-        nextAuthUser.uid = nextAuthUser.id; // Assume id is firebaseUid if uid is missing
-    }
-    
-    const firebaseUid = nextAuthUser.uid;
 
     try {
         const pgUser = await db.query.UsersTable.findFirst({
             where: eq(UsersTable.firebaseUid, firebaseUid),
-            // Optionally include related profiles if needed directly on AppUser
-            // with: {
-            //   gigWorkerProfile: true,
-            //   buyerProfile: true,
-            // }
         });
 
         if (!pgUser) {
-            console.warn(`getHydratedAppUser: No PG User found for Firebase UID: ${firebaseUid}. User might have been deleted from PG or sync issue.`);
-            return { // Return a partial AppUser based on session data
-                id: firebaseUid, // Use firebaseUid as primary id in this context
-                firebaseUid: firebaseUid,
-                email: nextAuthUser.email,
-                fullName: nextAuthUser.name, // NextAuth session has 'name'
-                picture: nextAuthUser.image, // NextAuth session has 'image'
-                appRole: 'USER', // Default or unknown
-                isBuyer: false,
-                isGigWorker: false,
-                lastRoleUsed: null,
-                lastViewVisitedBuyer: null,
-                lastViewVisitedWorker: null,
-            } as AppUser;
+            console.warn(`getHydratedAppUser: No PG User found for Firebase UID: ${firebaseUid}`);
+            return null;
         }
 
-        // Combine data, prioritizing PG data for roles/flags
+        // Return user data from PostgreSQL
         return {
-            // From NextAuth session (originally from Firebase token or PG via authorize)
-            email: nextAuthUser.email || pgUser.email, // Prefer session email (usually from token)
-            name: nextAuthUser.name, // This is session.user.name
-            image: nextAuthUser.image, // This is session.user.image
-
-            // From PostgreSQL (authoritative for these)
-            id: pgUser.id, // This is the PostgreSQL UsersTable.id
+            id: pgUser.id,
             firebaseUid: pgUser.firebaseUid,
+            email: pgUser.email,
+            fullName: pgUser.fullName,
+            picture: undefined, // This will be set from Firebase user data when needed
             appRole: pgUser.appRole,
             isBuyer: pgUser.isBuyer,
             isGigWorker: pgUser.isGigWorker,
             lastRoleUsed: pgUser.lastRoleUsed,
             lastViewVisitedBuyer: pgUser.lastViewVisitedBuyer,
             lastViewVisitedWorker: pgUser.lastViewVisitedWorker,
-            fullName: pgUser.fullName, // Authoritative full name from PG
-            picture: nextAuthUser.image || undefined, // Use image from session if available for picture
         };
     } catch (error) {
-        console.error(`getHydratedAppUser: Error fetching PG User details for Firebase UID ${firebaseUid}:`, error);
-        // Fallback to a partial AppUser based on session data in case of DB error
-         return {
-            id: firebaseUid,
-            firebaseUid: firebaseUid,
-            email: nextAuthUser.email,
-            fullName: nextAuthUser.name,
-            picture: nextAuthUser.image,
-            appRole: 'USER', // Default or unknown
-            isBuyer: false,
-            isGigWorker: false,
-            lastRoleUsed: null,
-            lastViewVisitedBuyer: null,
-            lastViewVisitedWorker: null,
-        } as AppUser;
+        console.error(`getHydratedAppUser: Error fetching PG User details:`, error);
+        return null;
     }
 }
