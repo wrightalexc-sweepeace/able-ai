@@ -12,7 +12,10 @@ const SubmitButton = ({ children, disabled = false, loading = false, ...props })
       {...props}
     >
       {loading ? (
-        <span className={styles.loadingText}>Processing...</span>
+        <>
+          <span className={styles.loadingTextMobile}>...</span>
+          <span className={styles.loadingTextDesktop}>Processing...</span>
+        </>
       ) : (
         <>
           {/* Desktop Text - hidden on mobile by default */}

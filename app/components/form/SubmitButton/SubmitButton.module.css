@@ -33,9 +33,15 @@
   stroke: #0f0f0f;
 }
 
-.loadingText {
+.loadingTextDesktop {
+  display: none; /* Hidden on mobile */
   font-size: 0.9rem; /* Consistent loading text size */
   font-weight: 600;
+}
+.loadingTextMobile {
+  font-size: 0.9rem; /* Consistent loading text size */
+  font-weight: 600;
+  color: #ffffff; /* Dark text for contrast on light buttons */
 }
 
 /* Hover/Focus for Mobile Icon Button */
@@ -91,6 +97,13 @@
   .button:disabled {
     background-color: #374151; /* Desktop disabled style (from previous) */
     color: #9ca3af;
+  }
+
+  .loadingTextDesktop {
+    display: block; /* Show loading text on desktop */
+  }
+  .loadingTextMobile {
+    display: none; /* Hide loading text on mobile */
   }
 }
 
