@@ -64,8 +64,8 @@ export default function SignInPage() {
     event.preventDefault();
     setError(null);
     setLoading(true);
-    if (password.length < 6) {
-      setError("Password should be at least 6 characters.");
+    if (password.length < 10) {
+      setError("Password should be at least 10 characters.");
       setLoading(false);
       return;
     }
@@ -86,6 +86,10 @@ export default function SignInPage() {
       setLoading(false);
     }
   };
+
+  const handleCloseError = () => {
+    setError(null);
+  }
 
   return (
     <div className={`container ${styles.container}`}>
@@ -157,7 +161,7 @@ export default function SignInPage() {
               type="email"
               id="email"
               name="email"
-              placeholder="enter email"
+              placeholder="Enter your email"
               value={email}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                 setEmail(e.target.value)
@@ -174,7 +178,7 @@ export default function SignInPage() {
               id="password"
               name="password"
               placeholder={
-                isRegistering ? "make it secure..." : "Enter your password"
+                isRegistering ? "Make it secure..." : "Enter your password"
               }
               value={password}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -184,7 +188,12 @@ export default function SignInPage() {
             />
           </div>
 
-          {error && <p className={styles.errorMessage}>{error}</p>}
+          {error && 
+            <div className={styles.errorMessage}>
+              <p>{error}</p>
+              <span className={styles.errorCloseBtn} onClick={handleCloseError}>X</span>
+            </div>
+          }
 
           {/* The SubmitButton itself is placed inside the submitWrapper */}
           {/* The positioning of the button is handled by SignInPage.module.css (.submitWrapper) */}
