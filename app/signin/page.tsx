@@ -88,7 +88,7 @@ export default function SignInPage() {
   };
 
   return (
-    <div className={styles.container}>
+    <div className={`container ${styles.container}`}>
       <div className={styles.card}>
         <div className={styles.logoWrapper}>
           <Logo />

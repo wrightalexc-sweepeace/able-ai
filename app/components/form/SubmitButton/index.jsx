@@ -13,8 +13,8 @@ const SubmitButton = ({ children, disabled = false, loading = false, ...props })
     >
       {loading ? (
         <>
-          <span className={styles.loadingTextMobile}>...</span>
-          <span className={styles.loadingTextDesktop}>Processing...</span>
+          <span className={styles.loaderMobile}></span>
+          <span className={styles.loaderDesktop}></span>
         </>
       ) : (
         <>

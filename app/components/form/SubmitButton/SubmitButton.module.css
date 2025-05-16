@@ -43,6 +43,30 @@
   font-weight: 600;
   color: #ffffff; /* Dark text for contrast on light buttons */
 }
+/* Loader for mobile */
+.loaderMobile {
+  width: 30px;
+  aspect-ratio: 2;
+  --_g: no-repeat radial-gradient(circle closest-side,var(--primary-color) 90%,#0000);
+  background: 
+    var(--_g) 0%   50%,
+    var(--_g) 50%  50%,
+    var(--_g) 100% 50%;
+  background-size: calc(100%/3) 50%;
+  animation: l3 1s infinite linear;
+}
+@keyframes l3 {
+    20%{background-position:0%   0%, 50%  50%,100%  50%}
+    40%{background-position:0% 100%, 50%   0%,100%  50%}
+    60%{background-position:0%  50%, 50% 100%,100%   0%}
+    80%{background-position:0%  50%, 50%  50%,100% 100%}
+}
+
+/* Loader for desktop */
+
+.loaderDesktop {
+  display: none; /* Hidden on mobile */
+}
 
 /* Hover/Focus for Mobile Icon Button */
 .button:hover:not(:disabled) {
@@ -99,13 +123,22 @@
     color: #9ca3af;
   }
 
-  .loadingTextDesktop {
-    display: block; /* Show loading text on desktop */
+  .loaderMobile {
+    display: none; /* Hide mobile loader on desktop */
   }
-  .loadingTextMobile {
-    display: none; /* Hide loading text on mobile */
+
+  .loaderDesktop {
+    display: block; /* Show desktop loader */
+    width: fit-content;
+    clip-path: inset(0 100% 0 0);
+    animation: l5 2s steps(11) infinite;
+    color: var(--primary-color)
   }
-}
+  .loaderDesktop:before {
+    content:"Processing..."
+  }
+  @keyframes l5 {to{clip-path: inset(0 -1ch 0 0)}}
+  }
 
 /* Styles for loading state - should apply to both mobile and desktop */
 /* Ensure loading text is centered and visible when active */
