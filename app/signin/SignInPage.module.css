@@ -117,18 +117,22 @@
 .toggleButton {
   background: none;
   border: none;
-  color: var(--primary-color);
-  text-decoration: underline;
+  color: #ffffff; /* White text for the toggle button */
   cursor: pointer;
   font-size: 0.875rem;
   padding: 0.5rem 0;
   margin-top: 1rem;
   text-align: center;
   width: 100%;
+  font-weight: 700;
 }
 
-.toggleButton:hover {
-  color: #675ff0;
+.linkText {
+  color: var(--primary-color);
+}
+
+.linkText:hover {
+  color: #2d7ab5;
 }
 
 .submitWrapper {

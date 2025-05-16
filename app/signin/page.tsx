@@ -209,9 +209,17 @@ export default function SignInPage() {
             // setName("");
           }}
         >
-          {isRegistering
-            ? "Already have an account? Sign In"
-            : "Need an account? Create one"}
+          {isRegistering ? (
+              <>
+                Already have an account?{" "}
+                <span className={styles.linkText}>Sign In</span>
+              </>
+          ): (
+              <>
+                Need an account?{" "}
+                <span className={styles.linkText}>Create one</span>
+              </>
+          )}
         </button>
       </div>
     </div>
