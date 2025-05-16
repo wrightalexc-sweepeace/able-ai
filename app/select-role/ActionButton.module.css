@@ -1,8 +1,9 @@
 /* app/components/role-selection/ActionButton.module.css */
 .button {
+  flex: 1;
   padding: 0.9rem 1.25rem; /* Generous padding */
-  min-width: 180px; /* Minimum width for better tap targets */
-  font-size: 1rem; /* Clear font size */
+  min-width: 149px; /* Minimum width for better tap targets */
+  font-size: 0.9rem; /* Clear font size */
   font-family: var(--font-family);
   border: none;
   border-radius: 1.5rem; /* 24px, more rounded */

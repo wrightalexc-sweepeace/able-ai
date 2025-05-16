@@ -3,24 +3,19 @@
   min-height: 100vh;
   background-color: #161616; /* Dark background */
   display: flex;
-  align-items: center;
   justify-content: center;
-  padding: 1rem;
+  padding: 0 1rem 1rem;
   font-family: var(--font-family);
+  border-radius: 24px;
 }
 
 .card {
   max-width: 450px; /* Slightly wider card for these buttons */
   width: 100%;
-  padding: 2.5rem 1.5rem; /* More padding */
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-}
-
-.logoWrapper {
-  margin-bottom: 2rem; /* More space after logo */
 }
 
 .greeting {
@@ -28,19 +23,17 @@
 }
 
 .intro {
-  font-size: 1.25rem; /* Slightly larger */
+  font-size: 1.2rem; /* Slightly larger */
   color: white;
   font-weight: 600;
-  margin: 0 0 0.5rem 0;
-  line-height: 1.4;
+  margin-bottom: 2rem;
 }
 
 .question {
-  font-size: 1.1rem; /* Slightly larger */
-  color: #e0e0e0; /* Slightly lighter than pure white */
+  font-size: 1.1rem; 
+  color: #e0e0e0; 
   font-weight: 500;
   margin: 0;
-  line-height: 1.4;
 }
 
 .actions {
@@ -70,7 +63,7 @@
   font-style: italic;
   color: #bfbfbf;
   font-size: 0.875rem;
-  margin-top: 1rem; /* Space after actions */
+  margin-top: 5rem; /* Space after actions */
   max-width: 90%;
   line-height: 1.5;
 }
