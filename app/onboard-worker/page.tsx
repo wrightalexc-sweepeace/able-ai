@@ -1,4 +1,4 @@
-{`"use client";
+"use client";
 
 import React, { useState, useEffect, useRef, FormEvent, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
@@ -9,94 +9,14 @@ import MessageBubble from '@/app/components/onboarding/MessageBubble'; // Correc
 import InputBubble from '@/app/components/onboarding/InputBubble'; // Corrected path
 import TextAreaBubble from '@/app/components/onboarding/TextAreaBubble'; // Corrected path
 // import FileUploadBubble from '@/app/components/onboarding/FileUploadBubble'; // Corrected path - Uncomment if used
-import WorkerCard, { WorkerData } from '@/app/components/onboarding/WorkerCard'; // Import shared WorkerCard and WorkerData
+import WorkerCard from '@/app/components/onboarding/WorkerCard'; // Import shared WorkerCard and WorkerData
 
 import pageStyles from './OnboardWorkerPage.module.css';
-import workerCardStyles from '@/app/components/onboarding/WorkerCard.module.css'; // Import shared styles
 
 const BOT_AVATAR_SRC = "/images/logo-placeholder.svg";
 
-interface OnboardingStep {
-  id: number;
-  type: 'botMessage' | 'userInput' | 'userResponseDisplay' | 'workerCard' | 'terms' | 'fileUpload' | 'datePicker' | 'discountCode';
-  senderType?: 'bot' | 'user';
-  content?: string | React.ReactNode;
-  inputType?: 'text' | 'email' | 'number' | 'textarea' | 'file' | 'date';
-  inputName?: string;
-  inputPlaceholder?: string;
-  inputLabel?: string;
-  isComplete?: boolean;
-  dependsOn?: number;
-  value?: any;
-  fileLabel?: string;
-  fileMultiple?: boolean;
-  workerData?: WorkerData; // Added workerData to step
-}
-
-// WorkerData interface and WorkerCard component removed - now imported
-
-const baseInitialSteps: OnboardingStep[] = [
-  { id: 1, type: 'botMessage', content: "Hi! Tell me about yourself and what gig or gigs you need filling - we can assemble a team if you need one!" },
-  { id: 2, type: 'botMessage', content: "We have some great bartenders available. Do you need any special skills or do you have instructions for your hire?", dependsOn: 1 },
-  {
-    id: 3, type: 'userInput', inputType: 'textarea', inputName: 'additionalInstructions',
-    inputPlaceholder: 'e.g., Cocktail making experience would be ideal', inputLabel: 'Additional Instructions:', dependsOn: 2
-  },
-  { id: 4, type: 'botMessage', content: "How much you would like to pay per hour? We suggest £15 plus tips to keep a motivated and happy team!", dependsOn: 3 },
-  {
-    id: 5, type: 'userInput', inputType: 'number', inputName: 'hourlyRate',
-    inputPlaceholder: '£15', inputLabel: 'Hourly Rate:', dependsOn: 4
-  },
-  { id: 6, type: 'botMessage', content: "Where is the gig? What time and day do you need someone and for how long?", dependsOn: 5 },
-  {
-    id: 7, type: 'userInput', inputType: 'text', inputName: 'gigLocation',
-    inputPlaceholder: 'e.g., The Green Tavern, Rye Lane, Peckham, SE15 5AR', inputLabel: 'Gig Location:', dependsOn: 6
-  },
-  {
-    id: 8, type: 'userInput', inputType: 'date', inputName: 'gigDate',
-    inputLabel: 'Date of Gig:', dependsOn: 7
-  },
-  { id: 9, type: 'discountCode', content: "I have a discount code 2FREEABLE", dependsOn: 8}, // This will be rendered as a MessageBubble
-  { id: 10, type: 'botMessage', content: "Thankyou! We will apply your discount code", dependsOn: 9 },
-  { id: 11, type: 'botMessage', content: "Here are our incredible available gig workers ready to accept your gig. Click on their profile for an indepth look at their gigfolio or simply book now", dependsOn: 10 },
-  {
-        id: 12,
-        type: 'workerCard',
-        dependsOn: 11,
-        workerData: {
-            name: 'Benji Asamoah',
-            title: 'Bartender',
-            gigs: 15,
-            experience: '3 years experience',
-            keywords: 'lively, professional and hardworking',
-            hourlyRate: 15,
-            totalHours: 6,
-            totalPrice: 98.68,
-            ableFees: '6.5% +VAT',
-            stripeFees: '1.5% + 20p',
-            imageSrc: '/images/benji.jpeg', // Replace with actual image URL
-        }
-    },
-    {
-        id: 13,
-        type: 'workerCard',
-        dependsOn: 11, // Should depend on the previous message, not the previous card for parallel display
-        workerData: {
-            name: 'Jessica Hersey',
-            title: 'Bartender',
-            gigs: 11,
-            experience: '2 years experience',
-            keywords: 'charming, peaceful and kind',
-            hourlyRate: 15,
-            totalHours: 6,
-            totalPrice: 85.55,
-            ableFees: '6.5% +VAT',
-            stripeFees: '1.5% + 20p',
-            imageSrc: '/images/jessica.jpeg', // Replace with actual image URL
-        }
-    },
-];
-
+import baseInitialSteps from './initialSteps';
+import { OnboardingStep } from './OnboardingSteps';
 
 export default function OnboardWorkerPage() {
   const router = useRouter();
@@ -122,9 +42,9 @@ export default function OnboardWorkerPage() {
       baseInitialSteps.forEach(step => {
         if (step.inputName) {
           switch (step.inputType) {
-            case 'file': qaFormData[step.inputName] = \`sample-\${step.inputName}.pdf\`; break;
+            case 'file': qaFormData[step.inputName] = `sample-${step.inputName}.pdf`; break;
             case 'date': qaFormData[step.inputName] = new Date().toISOString().split('T')[0]; break;
-            default: qaFormData[step.inputName] = \`QA: \${step.inputLabel || step.inputName || 'Sample'}\`;
+            default: qaFormData[step.inputName] = `QA: ${step.inputLabel || step.inputName || 'Sample'}`;
           }
         }
       });
@@ -148,9 +68,9 @@ export default function OnboardWorkerPage() {
           let qaValue = formData[step.inputName];
           if (qaValue === undefined) {
              switch (step.inputType) {
-                case 'file': qaValue = \`sample-\${step.inputName}.pdf\`; break;
+                case 'file': qaValue = `sample-${step.inputName}.pdf`; break;
                 case 'date': qaValue = new Date().toISOString().split('T')[0]; break;
-                default: qaValue = \`QA: \${step.inputLabel || step.inputName || 'Sample Answer'}\`;
+                default: qaValue = `QA: ${step.inputLabel || step.inputName || 'Sample Answer'}`;
             }
           }
           newMessages.push({
@@ -203,7 +123,7 @@ export default function OnboardWorkerPage() {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
     if (!isViewQA && currentFocusedInputName) {
-        const inputElement = document.querySelector(\`[name="\${currentFocusedInputName}"]\`) as HTMLElement;
+        const inputElement = document.querySelector(`[name="${currentFocusedInputName}"]`) as HTMLElement;
         inputElement?.focus();
     }
   }, [chatMessages, currentFocusedInputName, isViewQA]);
@@ -272,7 +192,7 @@ export default function OnboardWorkerPage() {
     setWorkerPrice(price);
     // Mark all preceding steps as complete to show final message
     const stepsToComplete = baseInitialSteps.filter(s => s.type !== 'workerCard' && s.type !== 'botMessage' && s.id < 11); // Assuming 11 is the "Here are our workers" message
-    const updatedSteps = onboardingSteps.map(os => 
+    const updatedSteps = onboardingSteps.map(os =>
         stepsToComplete.find(sc => sc.id === os.id) ? { ...os, isComplete: true } : os
     );
      // Add user's "booking action" as a response if desired
@@ -280,7 +200,7 @@ export default function OnboardWorkerPage() {
         id: Date.now(),
         type: 'userResponseDisplay',
         senderType: 'user',
-        content: \`Booking \${name} for £\${price.toFixed(2)}...\`,
+        content: `Booking ${name} for £${price.toFixed(2)}...`,
         dependsOn: 11, // Depends on the message before cards
         isComplete: true,
     };
@@ -294,7 +214,7 @@ export default function OnboardWorkerPage() {
 
     setOnboardingSteps(updatedSteps);
     handleFinalSubmit(); // Trigger final submission logic
-    console.log(\`Booking \${name} for £\${price.toFixed(2)}\`);
+    console.log(`Booking ${name} for £${price.toFixed(2)}`);
   };
 
   const handleFinalSubmit = async (event?: FormEvent) => {
@@ -304,9 +224,9 @@ export default function OnboardWorkerPage() {
     console.log("Mock Buyer Onboarding Data:", formData, "Booked Worker:", workerName, "Price:", workerPrice);
     await new Promise(resolve => setTimeout(resolve, 1500));
     console.log("Mock submission successful!");
-    
+
     const contentMessage = workerName && workerPrice
-        ? \`Great! \${workerName} is booked for £\${workerPrice.toFixed(2)}. We've applied your discount. (Mocked)\`
+        ? `Great! ${workerName} is booked for £${workerPrice.toFixed(2)}. We've applied your discount. (Mocked)`
         : "Thanks! Your request is being processed (Mocked).";
 
     const successMessageStep: OnboardingStep = {
@@ -314,10 +234,10 @@ export default function OnboardWorkerPage() {
         type: 'botMessage',
         content: contentMessage,
     };
-    
+
     const allBaseStepsNowComplete = onboardingSteps.map(bs => ({...bs, isComplete: true}));
     const finalOnboardingState = [...allBaseStepsNowComplete, successMessageStep];
-    
+
     const finalChatMessages: OnboardingStep[] = [];
     let lastIdForDep = 0;
     finalOnboardingState.forEach(step => {
@@ -344,9 +264,9 @@ export default function OnboardWorkerPage() {
 
   const allInteractiveStepsComplete = useMemo(() => {
     if (isViewQA) return true;
-    const interactiveSteps = onboardingSteps.filter(step => 
-        step.type !== 'userResponseDisplay' && 
-        step.type !== 'botMessage' && 
+    const interactiveSteps = onboardingSteps.filter(step =>
+        step.type !== 'userResponseDisplay' &&
+        step.type !== 'botMessage' &&
         step.type !== 'workerCard' && // Worker cards are not "inputs" for completion
         (step.type === 'userInput' || step.type === 'fileUpload' || step.type === 'datePicker' || step.type === 'discountCode')
     );
@@ -364,13 +284,8 @@ export default function OnboardWorkerPage() {
           QA Mode: Full Chat Preview
         </div>
       )}
-      {isViewQA && (
-        <div style={{ background: 'rgba(255,220,220,0.8)', borderBottom: '1px solid rgba(200,0,0,0.3)', color: '#8B0000', textAlign: 'center', padding: '8px 5px', fontSize: '0.85em', fontWeight: '500' }}>
-          QA Mode: Full Chat Preview
-        </div>
-      )}
       {chatMessages.map((step) => {
-        const key = \`step-\${step.id}-\${step.senderType || step.type}-\${step.inputName || Math.random()}\`;
+        const key = `step-${step.id}-${step.senderType || step.type}-${step.inputName || Math.random()}`;
 
         if (step.type === 'botMessage') {
           return <MessageBubble key={key} text={step.content as string} senderType="bot" avatarSrc={BOT_AVATAR_SRC} />;
@@ -410,7 +325,7 @@ export default function OnboardWorkerPage() {
             return <TextAreaBubble key={key} {...commonProps} placeholder={step.inputPlaceholder} rows={3} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleInputChange(step.inputName!, e.target.value)} ref={(el: HTMLTextAreaElement | null) => { if (el && currentFocusedInputName === step.inputName) el.focus(); }}/>;
           }
           // FileUploadBubble rendering was removed in user's provided code, add back if needed
-          // if (step.inputType === 'file') { ... } 
+          // if (step.inputType === 'file') { ... }
           if (step.inputType === 'text' || step.inputType === 'email' || step.inputType === 'number' || step.inputType === 'date') {
             return <InputBubble key={key} {...commonProps} type={step.inputType} placeholder={step.inputPlaceholder} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange(step.inputName!, e.target.value)} ref={(el: HTMLInputElement | null) => { if (el && currentFocusedInputName === step.inputName) el.focus(); }}/>;
           }
@@ -420,7 +335,7 @@ export default function OnboardWorkerPage() {
 
       {/* Removed the generic "Confirm & Proceed" button as booking is per card now */}
       {/* {allInteractiveStepsComplete && !isSubmitting && !isViewQA && onboardingSteps[onboardingSteps.length-1]?.type !== 'botMessage' && ( ... )} */}
-      
+
        {isSubmitting && !isViewQA && (
          <MessageBubble key="submitting-msg" text="Processing..." senderType="bot" avatarSrc={BOT_AVATAR_SRC} />
       )}
@@ -450,4 +365,3 @@ export default function OnboardWorkerPage() {
     </ChatBotLayout>
   );
 }
-`}

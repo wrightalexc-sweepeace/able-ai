@@ -32,19 +32,18 @@ export default function WorkerDashboardPage() { // Renamed for clarity
   const THIS_HOME_ROLE = 'GIG_WORKER';
 
   useEffect(() => {
-    console.log({ isAuthenticated, loadingAuth, currentActiveRole, userPublicProfile })
-    // if (!loadingAuth) {
-    //   if (!isAuthenticated) {
-    //     router.replace('/signin');
-    //   } else if (currentActiveRole !== THIS_HOME_ROLE) {
-    //     // Attempt to switch or redirect based on actual capabilities
-    //     if (userPublicProfile?.isBuyer) { // Check if user *can* be a buyer
-    //       router.push('buyer'); // Redirect to buyer home
-    //     } else {
-    //       router.replace('/select-role'); // Fallback if current role doesn't match expected and cannot be buyer
-    //     }
-    //   }
-    // }
+    if (!loadingAuth) {
+      if (!isAuthenticated) {
+        router.replace('/signin');
+      } else if (currentActiveRole !== THIS_HOME_ROLE) {
+        // Attempt to switch or redirect based on actual capabilities
+        if (userPublicProfile?.isBuyer) { // Check if user *can* be a buyer
+          router.push('buyer'); // Redirect to buyer home
+        } else {
+          router.replace('/select-role'); // Fallback if current role doesn't match expected and cannot be buyer
+        }
+      }
+    }
   }, [isAuthenticated, loadingAuth, currentActiveRole, userPublicProfile, router, THIS_HOME_ROLE]);
 
 

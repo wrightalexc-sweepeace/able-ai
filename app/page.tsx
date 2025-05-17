@@ -9,6 +9,7 @@ import Link from "next/link";
 export default function Home() {
   const [user, setUser] = useState<User | null>(null);
   const [isProjectInfoOpen, setIsProjectInfoOpen] = useState(true);
+  const [isViewQA, setIsViewQAState] = useState<boolean>(false); // State to track isViewQA
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -18,6 +19,17 @@ export default function Home() {
     return () => unsubscribe();
   }, []);
 
+  // Effect to read initial isViewQA value from localStorage
+  useEffect(() => {
+    try {
+      const storedValue = localStorage.getItem('isViewQA');
+      setIsViewQAState(storedValue === 'true');
+    } catch (error) {
+      console.error('Error reading isViewQA from localStorage:', error);
+    }
+  }, []); // Empty dependency array means this runs once on mount
+
+
   const handleSignOut = async () => {
     try {
       await signOut(auth);
@@ -26,15 +38,25 @@ export default function Home() {
     }
   };
 
+const toggleIsViewQA = () => {
+  try {
+    const newValue = !isViewQA;
+    localStorage.setItem('isViewQA', String(newValue));
+    setIsViewQAState(newValue); // Update component state
+  } catch (error) {
+    console.error('Error toggling isViewQA in localStorage:', error);
+    // Optionally, provide user feedback
+  }
+};
   return (
     <div className={styles.page}>
       <main className={styles.main}>
         <Image
           className={styles.logo}
-          src="/next.svg"
+          src="/images/ableai.jpeg"
           alt="Next JS Logo"
           width={180}
-          height={38}
+          height={180}
           priority
         />
 
@@ -76,29 +98,69 @@ export default function Home() {
         </section>
 
         <section className={styles.pagesSection}>
-          <h2>Pages Under Development</h2>
+        <h2>Pages Under Development</h2>
           <div className={styles.pagesList}>
             <div className={styles.pageItem}>
-              <span className={styles.pageName}>/signin</span>
+              <Link href="/signin" className={styles.pageName}>/signin</Link>
               <span className={styles.badge} data-status="complete">Complete</span>
             </div>
             <div className={styles.pageItem}>
-              <span className={styles.pageName}>/select-role</span>
+              <Link href="/select-role" className={styles.pageName}>/select-role</Link>
               <span className={styles.badge} data-status="complete">Complete</span>
+            </div>
+            <div className={styles.pageItem}>
+              <Link href="/reset-password" className={styles.pageName}>/reset-password</Link>
+              <span className={styles.badge} data-status="complete">Complete</span>
+            </div>
+            <div className={styles.pageItem}>
+              <Link href="/onboard-buyer" className={styles.pageName}>/onboard-buyer</Link>
+              <span className={styles.badge} data-status="in-progress">In Progress</span>
+            </div>
+            <div className={styles.pageItem}>
+              <Link href="/onboard-worker" className={styles.pageName}>/onboard-worker</Link>
+              <span className={styles.badge} data-status="in-progress">In Progress</span>
+            </div>
+            {/* Note: Replace [userId] with an actual user ID for testing */}
+            <div className={styles.pageItem}>
+              <Link href="/user/test-user-id/buyer" className={styles.pageName}>/user/[userId]/buyer</Link>
+              <span className={styles.badge} data-status="in-progress">In Progress</span>
+            </div>
+            {/* Note: Replace [userId] with an actual user ID for testing */}
+            <div className={styles.pageItem}>
+              <Link href="/user/test-user-id/worker" className={styles.pageName}>/user/[userId]/worker</Link>
+              <span className={styles.badge} data-status="in-progress">In Progress</span>
             </div>
             <div className={styles.pageItem}>
               <span className={styles.pageName}>/buyer/dashboard</span>
-              <span className={styles.badge} data-status="in-progress">In Progress</span>
+              <span className={styles.badge} data-status="planned">Planned</span>
             </div>
             <div className={styles.pageItem}>
               <span className={styles.pageName}>/worker/dashboard</span>
-              <span className={styles.badge} data-status="in-progress">In Progress</span>
+              <span className={styles.badge} data-status="planned">Planned</span>
             </div>
             <div className={styles.pageItem}>
               <span className={styles.pageName}>/gigs/[id]</span>
               <span className={styles.badge} data-status="planned">Planned</span>
             </div>
+
           </div>
+        </section>
+
+        {/* Button to set a default role in local storage for testing */}
+        <section className={styles.userSection}>
+          <h2>Testing Tools</h2>
+          <button onClick={() => localStorage.setItem('currentActiveRole', 'BUYER')} className={styles.primary}>
+            Set Local Storage Role to BUYER
+          </button>
+           <button onClick={() => localStorage.setItem('currentActiveRole', 'WORKER')} className={styles.primary}>
+            Set Local Storage Role to WORKER
+          </button>
+           <button onClick={() => localStorage.removeItem('currentActiveRole')} className={styles.secondary}>
+            Clear Local Storage Role
+          </button>
+          <button onClick={() => toggleIsViewQA()} className={styles.secondary}>
+            Toggle isViewQA (currently {String(isViewQA)})
+          </button>
         </section>
       </main>
     </div>
