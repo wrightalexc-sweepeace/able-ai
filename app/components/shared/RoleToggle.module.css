@@ -1,0 +1,39 @@
+/* app/components/shared/RoleToggle.module.css */
+.toggleContainer {
+  display: flex;
+  align-items: center;
+  background-color: #2b2b2b; /* Darker background for the toggle itself */
+  border-radius: 9999px; /* Pill shape */
+  padding: 0.25rem;
+  width: fit-content;
+  border: 1px solid #3a3a3a; /* Subtle border */
+}
+
+.toggleButton {
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  font-size: 0.8rem; /* Smaller font */
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem; /* Space between icon and text */
+}
+
+.active {
+  background-color: var(--primary-color); /* Primary color for active */
+  color: white;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.inactive {
+  color: #a0a0a0; /* Greyed out for inactive */
+}
+
+.inactive:hover {
+  color: #ffffff; /* White on hover for inactive */
+  background-color: #3a3a3a;
+}

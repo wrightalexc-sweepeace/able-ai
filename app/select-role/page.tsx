@@ -42,16 +42,11 @@ export default function SelectRolePage() {
       // 1. Update in context (which should trigger backend update via API)
       await updateUserContext({ lastRoleUsed: role }, idToken);
 
-      // 2. Save to localStorage for immediate persistence on the client
-      if (typeof window !== "undefined") {
-        localStorage.setItem("currentActiveRole", role);
-      }
-
       // 3. Navigate to the appropriate dashboard
       if (role === "BUYER") {
-        router.push("/buyer/dashboard"); // Or your buyer landing page
+        router.push(`user/${user?.uid || 'this_user'}/buyer`); // Or your buyer landing page
       } else if (role === "GIG_WORKER") {
-        router.push("/worker/dashboard"); // Or your worker landing page
+        router.push(`user/${user?.uid || 'this_user'}/worker`); // Or your worker landing page
       }
     } catch (err) {
       console.error("Error setting role:", err);

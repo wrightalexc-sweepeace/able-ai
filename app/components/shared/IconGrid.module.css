@@ -1,0 +1,56 @@
+/* app/components/shared/IconGrid.module.css */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 2 columns by default */
+  gap: 1rem; /* Space between cards */
+  margin-bottom: 1.5rem;
+}
+
+/* Optional: For larger screens, you might want 4 columns */
+/* @media (min-width: 768px) {
+  .grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+} */
+
+.card {
+  background: #1e1e1e; /* Dark card background */
+  border-radius: 0.75rem; /* 12px */
+  padding: 1.25rem 1rem;
+  text-align: center;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center content */
+  justify-content: center; /* Center content vertically */
+  gap: 0.75rem; /* Space between icon and label */
+  text-decoration: none; /* Remove underline from Link */
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  border: 1px solid #2f2f2f; /* Subtle border */
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+  border-color: var(--primary-color);
+}
+
+.iconWrapper {
+  font-size: 1.8rem; /* Size of the icon/emoji */
+  /* If using Lucide icons, you might apply size directly to the icon component */
+  /* Example for emoji or text icon:
+  width: 48px;
+  height: 48px;
+  background-color: var(--primary-color);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  */
+}
+
+.label {
+  font-size: 0.85rem;
+  font-weight: 500;
+}

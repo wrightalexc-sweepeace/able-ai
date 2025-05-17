@@ -208,9 +208,9 @@ export async function updateUserAppContext(
         // When lastRoleUsed is updated, also update the specific lastViewVisited for that role
         if (updates.lastViewVisited) {
             if (updates.lastRoleUsed === 'BUYER') {
-                updateData.lastViewVisitedBuyer = updates.lastViewVisited;
-            } else if (updates.lastRoleUsed === 'GIG_WORKER') {
                 updateData.lastViewVisitedWorker = updates.lastViewVisited;
+            } else if (updates.lastRoleUsed === 'GIG_WORKER') {
+                updateData.lastViewVisitedBuyer = updates.lastViewVisited;
             }
         }
     } else if (updates.lastViewVisited) {

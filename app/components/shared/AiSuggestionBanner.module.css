@@ -1,0 +1,35 @@
+/* app/components/shared/AiSuggestionBanner.module.css */
+.suggestionBanner {
+  background-color: #2a2a2a; /* Dark background for the banner */
+  color: #e0e0e0;      /* Light text */
+  padding: 1rem 1.25rem;
+  border-radius: 0.75rem; /* 12px */
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: flex-start; /* Align icon with the start of the text */
+  border-left: 4px solid var(--primary-color); /* Accent border */
+}
+
+.suggestionIcon {
+  color: var(--primary-color); /* Icon color */
+  margin-right: 0.75rem;
+  flex-shrink: 0;
+  margin-top: 0.125rem; /* Fine-tune vertical alignment */
+}
+
+.suggestionContent {
+  flex: 1;
+}
+
+.suggestionTitle {
+  font-weight: 600;
+  margin: 0 0 0.25rem 0;
+  color: #ffffff; /* Brighter title */
+  font-size: 0.95rem;
+}
+
+.suggestionText {
+  font-size: 0.875rem;
+  margin: 0;
+  line-height: 1.5;
+}

@@ -6,7 +6,7 @@ import { useFirebaseAuth } from "./useFirebaseAuth";
 
 interface ExtendedUser extends User {
     appRole?: 'ADMIN' | 'SUPER_ADMIN' | 'QA';
-    lastRoleUsed?: 'BUYER' | 'WORKER';
+    lastRoleUsed?: 'BUYER' | 'GIG_WORKER';
     lastViewVisited?: string;
     isBuyer?: boolean;
     isGigWorker?: boolean;
@@ -53,10 +53,11 @@ export function useAppContext(): AppContextValue {
 
             // Update local storage for immediate client-side updates
             if (updates.lastRoleUsed) {
-                localStorage.setItem('currentRole', updatedPgData.lastRoleUsed);
+                localStorage.setItem('currentRole', updatedPgData.user.lastRoleUsed);
             }
             if (updates.lastViewVisited) {
-                localStorage.setItem('lastViewVisited', updatedPgData.lastViewVisited);
+                localStorage.setItem('lastViewVisitedBuyer', updatedPgData.user.lastViewVisitedBuyer);
+                localStorage.setItem('lastViewVisitedWorker', updatedPgData.user.lastViewVisitedWorker);
             }
 
         } catch (error) {
@@ -65,7 +66,7 @@ export function useAppContext(): AppContextValue {
     };
 
     // Get role info from local storage for immediate updates
-    const currentRole = typeof window !== 'undefined' ? localStorage.getItem('currentRole') as 'BUYER' | 'WORKER' | null : null;
+    const currentRole = typeof window !== 'undefined' ? localStorage.getItem('currentRole') as 'BUYER' | 'GIG_WORKER' | null : null;
     const lastViewVisitedFromStorage = typeof window !== 'undefined' ? localStorage.getItem('lastViewVisited') : null;
 
     return {
@@ -76,7 +77,7 @@ export function useAppContext(): AppContextValue {
         isSuperAdmin: user?.appRole === 'SUPER_ADMIN',
         isQA: user?.appRole === 'QA',
         isBuyerMode: isAuthenticated && (currentRole === 'BUYER' || user?.lastRoleUsed === 'BUYER'),
-        isWorkerMode: isAuthenticated && (currentRole === 'WORKER' || user?.lastRoleUsed === 'WORKER'),
+        isWorkerMode: isAuthenticated && (currentRole === 'GIG_WORKER' || user?.lastRoleUsed === 'GIG_WORKER'),
         canBeBuyer: !!user?.isBuyer,
         canBeGigWorker: !!user?.isGigWorker,
         lastViewVisited: lastViewVisitedFromStorage || user?.lastViewVisited || null,

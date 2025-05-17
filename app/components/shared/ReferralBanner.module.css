@@ -1,0 +1,51 @@
+/* app/components/shared/ReferralBanner.module.css */
+.banner {
+  background-color: var(--primary-color); /* Use primary color */
+  color: #ffffff;
+  border-radius: 0.75rem; /* 12px */
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.iconWrapper {
+  flex-shrink: 0;
+  /* background-color: rgba(255, 255, 255, 0.1);
+  padding: 0.5rem;
+  border-radius: 50%; */
+}
+
+.textWrapper {
+  flex-grow: 1;
+}
+
+.title {
+  font-weight: 600;
+  font-size: 1rem;
+  margin: 0 0 0.25rem 0;
+}
+
+.description {
+  font-size: 0.875rem;
+  opacity: 0.9;
+  margin: 0;
+}
+
+.button {
+  background: #ffffff;
+  color: var(--primary-color);
+  border: none;
+  padding: 0.6rem 1rem;
+  border-radius: 0.5rem; /* 8px */
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  flex-shrink: 0;
+}
+
+.button:hover {
+  background-color: #f0f0f0;
+}
