@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@auth/firebase-adapter": "^2.9.1",
+    "@radix-ui/react-switch": "^1.2.4",
     "drizzle-orm": "^0.43.1",
     "firebase": "^11.7.1",
     "firebase-admin": "^12.7.0",

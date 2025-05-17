@@ -8,7 +8,7 @@ import { Settings } from 'lucide-react';
 const SettingsButton: React.FC = () => {
   const router = useRouter();
   const handleClick = () => {
-    router.push('/settings'); // Navigate to a general settings page
+    router.push('settings'); // Navigate to a general settings page
   };
 
   return (
