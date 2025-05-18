@@ -58,7 +58,7 @@ export default function BuyerDashboardPage() { // Renamed for clarity
   const handleReferralClick = () => {
     console.log(`${THIS_HOME_ROLE} referral button clicked`);
     // Implement referral logic or navigation
-    // router.push('/referrals');
+    // router.push('referrals');
   };
 
   // Optional: Fetch summary data for upcoming gigs/offers
