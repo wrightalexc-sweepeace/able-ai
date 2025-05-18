@@ -120,6 +120,10 @@ const toggleIsViewQA = () => {
               <Link href="/onboard-worker" className={styles.pageName}>/onboard-worker</Link>
               <span className={styles.badge} data-status="in-progress">In Progress</span>
             </div>
+            <div className={styles.pageItem}>
+              <Link href="/user/test-user-id/notifications" className={styles.pageName}>/user/[userId]/notifications</Link>
+              <span className={styles.badge} data-status="in-progress">In Progress</span>
+            </div>
             {/* Note: Replace [userId] with an actual user ID for testing */}
             <div className={styles.pageItem}>
               <Link href="/user/test-user-id/buyer" className={styles.pageName}>/user/[userId]/buyer</Link>
@@ -139,18 +143,6 @@ const toggleIsViewQA = () => {
               <span className={styles.badge} data-status="in-progress">In Progress</span>
             </div>
             <div className={styles.pageItem}>
-              <span className={styles.pageName}>/buyer/dashboard</span>
-              <span className={styles.badge} data-status="planned">Planned</span>
-            </div>
-            <div className={styles.pageItem}>
-              <span className={styles.pageName}>/worker/dashboard</span>
-              <span className={styles.badge} data-status="planned">Planned</span>
-            </div>
-            <div className={styles.pageItem}>
-              <span className={styles.pageName}>/gigs/[id]</span>
-              <span className={styles.badge} data-status="planned">Planned</span>
-            </div>
-            <div className={styles.pageItem}>
               <Link href="/user/test-user-id/worker/test-worker-id/recommendation" className={styles.pageName}>/user/[userId]/worker/[workerId]/recommendation</Link>
               <span className={styles.badge} data-status="in-progress">In Progress</span>
             </div>
@@ -165,6 +157,18 @@ const toggleIsViewQA = () => {
             <div className={styles.pageItem}>
               <Link href="/legal/privacy" className={styles.pageName}>/legal/privacy</Link>
               <span className={styles.badge} data-status="complete">Complete</span>
+            </div>
+            <div className={styles.pageItem}>
+              <span className={styles.pageName}>/buyer/dashboard</span>
+              <span className={styles.badge} data-status="planned">Planned</span>
+            </div>
+            <div className={styles.pageItem}>
+              <span className={styles.pageName}>/worker/dashboard</span>
+              <span className={styles.badge} data-status="planned">Planned</span>
+            </div>
+            <div className={styles.pageItem}>
+              <span className={styles.pageName}>/gigs/[id]</span>
+              <span className={styles.badge} data-status="planned">Planned</span>
             </div>
           </div>
         </section>
