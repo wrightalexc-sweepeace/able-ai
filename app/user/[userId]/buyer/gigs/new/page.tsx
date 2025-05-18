@@ -12,7 +12,7 @@ import TextAreaBubble from '@/app/components/onboarding/TextAreaBubble'; // Corr
 import WorkerCard, { WorkerData } from '@/app/components/onboarding/WorkerCard'; // Import shared WorkerCard and WorkerData
 
 import pageStyles from './page.module.css'; // Updated import
-import chatStyles from '../../../../styles/chat.module.css'; // Import global styles
+import chatStyles from '@/app/styles/chat.module.css'; // Import global styles
 
 const BOT_AVATAR_SRC = "/images/logo-placeholder.svg";
 
