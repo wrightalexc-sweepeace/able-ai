@@ -25,6 +25,22 @@
     margin-top: 0.25rem;
 }
 
+.notificationButton {
+  background: none;
+  border: none;
+  color: #a0a0a0;
+  cursor: pointer;
+  padding: 0.5rem;
+  margin-left: auto; /* Push button to the right */
+  display: flex;
+  align-items: center;
+  transition: color 0.2s ease;
+}
+
+.notificationButton:hover {
+  color: var(--primary-color);
+}
+
 .sectionTitle {
     font-size: 1.25rem;
     font-weight: 600;

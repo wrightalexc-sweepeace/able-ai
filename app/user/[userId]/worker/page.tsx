@@ -3,6 +3,7 @@
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppContext } from '@/app/hooks/useAppContext';
+import Link from 'next/link';
 
 // Import shared components (ensure paths are correct)
 import AiSuggestionBanner from '@/app/components/shared/AiSuggestionBanner';
@@ -12,7 +13,7 @@ import RoleToggle from '@/app/components/shared/RoleToggle';
 import SettingsButton from '@/app/components/shared/SettingsButton';
 
 // Import Lucide icons as needed for the specific dashboard
-import { UserCircle, Briefcase, CalendarCheck2, DollarSign } from 'lucide-react';
+import { UserCircle, Briefcase, CalendarCheck2, DollarSign, Bell } from 'lucide-react';
 
 import styles from './HomePage.module.css'; // Create this CSS Module
 
@@ -81,6 +82,14 @@ export default function WorkerDashboardPage() { // Renamed for clarity
             <p className={styles.welcomeMessage}>
                 Welcome back, {userPublicProfile.displayName}!
             </p>
+        )}
+         {/* Notification Icon */}
+        {userPublicProfile?.uid && (
+          <Link href={`/user/${userPublicProfile.uid}/notifications`} passHref>
+            <button className={styles.notificationButton} aria-label="Notifications">
+              <Bell size={24} />
+            </button>
+          </Link>
         )}
       </header>
 
