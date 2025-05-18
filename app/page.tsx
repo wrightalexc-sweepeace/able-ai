@@ -129,6 +129,14 @@ const toggleIsViewQA = () => {
               <Link href="/user/test-user-id/buyer" className={styles.pageName}>/user/[userId]/buyer</Link>
               <span className={styles.badge} data-status="in-progress">In Progress</span>
             </div>
+            <div className={styles.pageItem}>
+              <Link href="/user/test-user-id/buyer/payments" className={styles.pageName}>/user/[userId]/buyer/payments</Link>
+              <span className={styles.badge} data-status="in-progress">In Progress</span>
+            </div>
+            <div className={styles.pageItem}>
+              <Link href="/user/test-user-id/buyer/payments/invoice" className={styles.pageName}>/user/[userId]/buyer/payments/invoice</Link>
+              <span className={styles.badge} data-status="in-progress">In Progress</span>
+            </div>
             {/* Note: Replace [userId] with an actual user ID for testing */}
             <div className={styles.pageItem}>
               <Link href="/user/test-user-id/worker" className={styles.pageName}>/user/[userId]/worker</Link>
