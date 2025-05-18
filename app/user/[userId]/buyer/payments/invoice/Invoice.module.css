@@ -169,15 +169,10 @@
     margin: 0;
   }
 
-  body {
-    margin: 0;
-    padding: 0;
-    background: white;
-  }
-
   .container {
     padding: 0;
     background: white;
+    margin: 0;
   }
 
   .printButtonContainer,
@@ -190,6 +185,7 @@
     padding: 2cm;
     box-shadow: none;
     border-radius: 0;
+    margin: 0;
   }
 
   .companyInfo h1 {
