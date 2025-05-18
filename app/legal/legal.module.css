@@ -1,0 +1,56 @@
+/* legal.module.css */
+
+.container {
+  background-color: #121212;
+  color: #fff;
+  padding: 20px;
+  font-family: sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: left;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+}
+
+.content {
+  width: 100%;
+  max-width: 700px;
+  font-size: 16px;
+  line-height: 1.6; /* Improve readability */
+}
+
+.list {
+  padding-left: 20px;
+  margin-bottom: 10px;
+}
+
+.listItem {
+  margin-bottom: 5px;
+}
+
+.botAvatar {
+  width: 40px;
+  height: 40px;
+  vertical-align: middle;
+  margin-right: 10px;
+}
+
+.legalMessage {
+    width: 100%;
+    max-width: 700px;
+    font-size: 16px;
+    line-height: 1.6; /* Improve readability */
+    background-color: #333;
+    border-radius: 10px;
+    padding: 15px;
+    margin-top: 20px;
+    font-size: 14px;
+    text-align: center;
+} 
