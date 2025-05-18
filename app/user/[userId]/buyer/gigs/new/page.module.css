@@ -1,0 +1,19 @@
+/* app/user/[userId]/buyer/gigs/new/page.module.css */
+
+.container {
+    /* Add page-specific styles here, e.g., background */
+    background-color: #121212; /* Dark background for the page */
+    color: #fff; /* Default text color */
+    min-height: 100vh; /* Ensure full height */
+    padding: 20px;
+}
+
+.loadingContainer {
+    /* Style for loading state */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #121212;
+    color: #fff;
+} 

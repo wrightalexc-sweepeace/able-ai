@@ -1,6 +1,7 @@
 import React from 'react';
 import Image from 'next/image'; // Import NextImage
 import pageStyles from './WorkerCard.module.css'; // Will create this CSS module
+import chatStyles from '../../styles/chat.module.css'; // Import global styles
 
 // Define WorkerData interface (can be shared or moved to a types file)
 export interface WorkerData {
@@ -31,7 +32,7 @@ const WorkerCard: React.FC<WorkerCardProps> = ({ worker, onBook }) => {
               alt={worker.name} 
               width={100} // Provide appropriate width
               height={100} // Provide appropriate height
-              className={pageStyles.workerImage} 
+              className={`${pageStyles.workerImage} ${chatStyles.avatarWithBorder}`} // Apply global style
               onError={(e) => { (e.target as HTMLImageElement).src = "/images/default-avatar.png"; }} // Fallback
             />
             <div className={pageStyles.workerInfo}>
@@ -41,7 +42,7 @@ const WorkerCard: React.FC<WorkerCardProps> = ({ worker, onBook }) => {
                 <p>{worker.totalHours} hours @£{worker.hourlyRate.toFixed(2)}/hr, total £{worker.totalPrice.toFixed(2)}</p>
                 <p>fees: Able {worker.ableFees}</p>
                 <p>Stripe {worker.stripeFees}</p>
-                <button onClick={() => onBook(worker.name, worker.totalPrice)} className={pageStyles.bookButton}>
+                <button onClick={() => onBook(worker.name, worker.totalPrice)} className={`${pageStyles.bookButton} ${chatStyles.tealButton}`}>
                     Yes! Book £{worker.totalPrice.toFixed(2)}
                 </button>
             </div>

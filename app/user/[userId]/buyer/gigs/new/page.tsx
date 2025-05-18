@@ -11,7 +11,8 @@ import TextAreaBubble from '@/app/components/onboarding/TextAreaBubble'; // Corr
 // import FileUploadBubble from '@/app/components/onboarding/FileUploadBubble'; // Corrected path - Uncomment if used
 import WorkerCard, { WorkerData } from '@/app/components/onboarding/WorkerCard'; // Import shared WorkerCard and WorkerData
 
-import pageStyles from './OnboardBuyerPage.module.css';
+import pageStyles from './page.module.css'; // Updated import
+import chatStyles from '../../../../styles/chat.module.css'; // Import global styles
 
 const BOT_AVATAR_SRC = "/images/logo-placeholder.svg";
 
@@ -51,8 +52,7 @@ const baseInitialSteps: OnboardingStep[] = [
     id: 7, type: 'userInput', inputType: 'text', inputName: 'gigLocation',
     inputPlaceholder: 'e.g., The Green Tavern, Rye Lane, Peckham, SE15 5AR', inputLabel: 'Gig Location:', dependsOn: 6
   },
-  {
-    id: 8, type: 'userInput', inputType: 'date', inputName: 'gigDate',
+  { id: 8, type: 'userInput', inputType: 'date', inputName: 'gigDate',
     inputLabel: 'Date of Gig:', dependsOn: 7
   },
   { id: 9, type: 'discountCode', content: "I have a discount code 2FREEABLE", dependsOn: 8}, // This will be rendered as a MessageBubble
@@ -97,7 +97,7 @@ const baseInitialSteps: OnboardingStep[] = [
 ];
 
 
-export default function OnboardBuyerPage() {
+export default function NewGigPage() {
   const router = useRouter();
   const { isAuthenticated, isLoading: loadingAuth } = useAppContext();
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -357,7 +357,7 @@ export default function OnboardBuyerPage() {
   }
 
   return (
-    <ChatBotLayout ref={chatContainerRef} onScroll={(e: React.UIEvent<HTMLDivElement>) => {}} tag='Looking for an experienced bartender'>
+    <ChatBotLayout ref={chatContainerRef} onScroll={(e: React.UIEvent<HTMLDivElement>) => {}} tag='Looking for an experienced bartender' className={pageStyles.container}>
       {isViewQA && (
         <div style={{ background: 'rgba(255,220,220,0.8)', borderBottom: '1px solid rgba(200,0,0,0.3)', color: '#8B0000', textAlign: 'center', padding: '8px 5px', fontSize: '0.85em', fontWeight: '500' }}>
           QA Mode: Full Chat Preview
@@ -433,14 +433,9 @@ export default function OnboardBuyerPage() {
             target.value = '';
           }
         }}
-        style={{
-          width: '100%',
-          padding: '10px',
-          border: '1px solid #ccc',
-          borderRadius: '5px',
-          marginTop: '10px',
-        }}
+        className={chatStyles.inputField} // Apply global input field style
+        style={{}}
       />
     </ChatBotLayout>
   );
-}
+} 

@@ -1,6 +1,7 @@
 import React, { ReactNode } from 'react';
 import Image from 'next/image';
 import styles from './MessageBubble.module.css';
+import chatStyles from '../../styles/chat.module.css'; // Import global styles
 
 interface MessageBubbleProps {
   text: ReactNode;
@@ -22,10 +23,10 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
   return (
     <div className={`${styles.messageWrapper} ${alignmentClass}`}>
       {isBot && showAvatar && avatarSrc && (
-        <Image src={avatarSrc} alt="Bot Avatar" width={32} height={32} className={styles.avatar} />
+        <Image src={avatarSrc} alt="Bot Avatar" width={32} height={32} className={`${styles.avatar} ${chatStyles.avatarWithBorder}`} />
       )}
       {!isBot && avatarSrc && showAvatar && ( // Optional: Allow user avatar if src is provided
-         <Image src={avatarSrc} alt="User Avatar" width={32} height={32} className={styles.avatar} />
+         <Image src={avatarSrc} alt="User Avatar" width={32} height={32} className={`${styles.avatar} ${chatStyles.avatarWithBorder}`} />
       )}
       <div className={`${styles.bubble} ${bubbleClass}`}>
         {text}

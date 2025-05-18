@@ -1,5 +1,6 @@
 import React, { ChangeEvent, FocusEvent, KeyboardEvent } from 'react';
 import styles from './TextAreaBubble.module.css';
+import chatStyles from '../../styles/chat.module.css'; // Import global styles
 
 interface TextAreaBubbleProps {
   id?: string;
@@ -47,7 +48,7 @@ const TextAreaBubble = React.forwardRef<HTMLTextAreaElement, TextAreaBubbleProps
             required={required}
             disabled={disabled}
             rows={rows}
-            className={styles.textAreaField}
+            className={`${styles.textAreaField} ${chatStyles.inputField}`}
             ref={ref}
           />
         </div>

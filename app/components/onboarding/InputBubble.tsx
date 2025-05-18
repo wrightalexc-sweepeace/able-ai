@@ -1,5 +1,6 @@
 import React, { ChangeEvent, FocusEvent, KeyboardEvent } from 'react';
 import styles from './InputBubble.module.css';
+import chatStyles from '../../styles/chat.module.css'; // Import global styles
 
 interface InputBubbleProps {
   id?: string;
@@ -47,7 +48,7 @@ const InputBubble = React.forwardRef<HTMLInputElement, InputBubbleProps>(
             onKeyPress={onKeyPress}
             required={required}
             disabled={disabled}
-            className={styles.inputField}
+            className={`${styles.inputField} ${chatStyles.inputField}`}
             ref={ref}
           />
         </div>
