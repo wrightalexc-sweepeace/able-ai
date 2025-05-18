@@ -170,6 +170,13 @@ const toggleIsViewQA = () => {
               <Link href="/legal/privacy" className={styles.pageName}>/legal/privacy</Link>
               <span className={styles.badge} data-status="complete">Complete</span>
             </div>
+            {/* Add link to Worker Offers page here */}
+            {user && ( // Only show if user is logged in
+                <div className={styles.pageItem}>
+                  <Link href={`/user/${user.uid}/worker/offers`} className={styles.pageName}>/user/[userId]/worker/offers</Link>
+                  <span className={styles.badge} data-status="in-progress">In Progress</span>
+                </div>
+            )}
             <div className={styles.pageItem}>
               <span className={styles.pageName}>/buyer/dashboard</span>
               <span className={styles.badge} data-status="planned">Planned</span>

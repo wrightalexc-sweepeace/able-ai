@@ -1,0 +1,130 @@
+/* app/components/shared/GigOfferCard.module.css */
+
+.card {
+  background-color: #121212;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  position: relative;
+  overflow: hidden; /* Hide overflow for rounded corners on absolute elements */
+}
+
+.expired {
+  opacity: 0.6;
+}
+
+.role {
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #fff;
+  margin-bottom: 8px;
+}
+
+.gigDetails {
+    margin-bottom: 12px;
+}
+
+.gigDetails p {
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    font-size: 0.8rem;
+}
+
+.gigLocation {
+  color: #ccc;
+}
+
+.gigTime {
+  color: #ccc;
+}
+
+.gigDate {
+  color: #ccc;
+}
+
+.gigPay {
+  color: #ccc;
+}
+
+.detailIcon {
+  margin-right: 4px;
+  color: #777;
+}
+
+.timerContainer {
+    display: flex;
+    align-items: center;
+    color: #f59e0b;
+    font-size: 0.75rem;
+    margin-top: 8px;
+  }
+
+.timerIcon {
+    margin-right: 4px;
+}
+.timerText {
+    color: #f59e0b;
+}
+
+.buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.acceptButton {
+  background-color: #5bc0de; /* Light blue from the image */
+  color: #fff;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  width: 48%;
+}
+
+.declineButton {
+  background-color: #fff;
+  color: #000;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  width: 48%;
+}
+
+.acceptButton:disabled,
+.declineButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Overlay for expired offers */
+.expiredOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7); /* Dark semi-transparent background */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  color: #fff;
+  font-size: 1.2rem;
+  font-weight: bold;
+  border-radius: 8px;
+  z-index: 2; /* Ensure it's on top */
+}
+
+.expiredText {
+  color: #ef4444; /* Red */
+}
+
+.expiredIcon {
+  margin-bottom: 8px;
+  color: #ef4444;
+} 
