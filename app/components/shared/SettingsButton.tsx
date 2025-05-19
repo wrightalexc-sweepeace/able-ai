@@ -17,7 +17,7 @@ const SettingsButton: React.FC = () => {
       className={styles.settingsButton}
       aria-label="Settings"
     >
-      <Settings size={20} />
+      <Settings size={20} color='#ffffff'/>
     </button>
   );
 };
