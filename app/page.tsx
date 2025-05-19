@@ -193,6 +193,11 @@ const toggleIsViewQA = () => {
               <Link href="/user/test-user-id/worker/gigs/test-gig-id/feedback" className={styles.pageName}>/user/test-user-id/worker/gigs/test-gig-id/feedback</Link>
               <span className={styles.badge} data-status="in-progress">In Progress</span>
             </div>
+            {/* Add link to Buyer - Feedback on Worker View here */}
+            <div className={styles.pageItem}>
+              <Link href="/user/test-user-id/buyer/gigs/gig789-buyer-awaiting/feedback" className={styles.pageName}>/user/[userId]/buyer/gigs/[gigId]/feedback</Link>
+              <span className={styles.badge} data-status="in-progress">In Progress</span>
+            </div>
           </div>
         </section>
 
