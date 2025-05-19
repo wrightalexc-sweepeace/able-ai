@@ -1,0 +1,155 @@
+/* CancelOrAmendGigDetailsPage.module.css */
+
+.viewContainer {
+  background-color: #1E1E1E; /* Dark grey main content area background */
+  color: #F0F0F0; /* Off-white primary text */
+  padding: 0 16px 24px 16px; /* Horizontal padding, bottom padding for button */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  background-color: #0D0D0D; /* Near-black header background */
+  padding: 20px 16px; /* Internal padding for header */
+  margin: 0 -16px 16px -16px; /* Extend to screen edges, add bottom margin */
+}
+
+.headerTitle {
+  font-size: 1.25rem; /* Approx 20px */
+  font-weight: bold;
+  color: #FFFFFF;
+  text-align: center;
+  margin: 0;
+}
+
+.headerSeparator {
+  border: 0;
+  height: 1px;
+  background-color: #FFFFFF;
+  margin-top: 16px;
+}
+
+.card {
+  background-color: #2C2C2E; /* Slightly lighter dark grey for cards */
+  border-radius: 16px; /* Consistent rounded corners */
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+/* Instruction Block */
+.instructionBlock {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.instructionIconContainer {
+  /* Styles for the friendly face icon, if needed directly on container */
+  flex-shrink: 0;
+}
+
+.instructionIcon {
+  color: #4A90E2; /* Blue for the icon - primary elements */
+  /* Assuming the SVG itself has white parts or they are controlled by fill/stroke */
+  width: 50px;
+  height: 50px;
+}
+
+.instructionText {
+  font-size: 0.95rem; /* Approx 15px */
+  line-height: 1.5;
+}
+
+.instructionText strong {
+  font-weight: bold;
+}
+
+/* Text Input Block */
+.textInputBlockLabel {
+  font-size: 0.95rem; /* Approx 15px */
+  margin-bottom: 8px;
+  display: block;
+}
+
+.textareaInput {
+  width: 100%;
+  background-color: #3A3A3C; /* Slightly different shade for input background if desired, or same as card */
+  border: 1px solid #4A4A4A; /* Subtle border */
+  border-radius: 8px;
+  padding: 12px;
+  color: #F0F0F0;
+  font-size: 0.9rem; /* Approx 14px */
+  min-height: 80px;
+  resize: vertical;
+}
+
+.textareaInput::placeholder {
+  color: #8E8E93; /* Medium grey placeholder */
+}
+
+/* Updated Gig Details Block */
+.detailsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.detailsTitle {
+  font-size: 1.1rem; /* Approx 17-18px */
+  font-weight: bold;
+}
+
+.editIcon {
+  color: #FFFFFF;
+  width: 24px;
+  height: 24px;
+  cursor: pointer;
+}
+
+.detailItem {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem; /* Approx 14px */
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+.detailItemLabel {
+  color: #A0A0A0; /* Lighter grey for labels if distinct style desired */
+  margin-right: 8px; /* Spacing between label and value */
+}
+
+.detailItemValue {
+  text-align: right;
+  font-weight: 500; /* Slightly bolder value */
+}
+
+.detailsSummaryText {
+  margin-top: 16px;
+  font-size: 0.9rem; /* Approx 14px */
+  line-height: 1.5;
+  border-top: 1px dashed #4A4A4A; /* Optional separator */
+  padding-top: 16px; /* Spacing above summary if separator used */
+}
+
+/* Action Button */
+.submitButton {
+  background-color: #4A90E2; /* Bright blue */
+  color: #FFFFFF;
+  font-size: 1rem; /* Approx 16px */
+  font-weight: bold;
+  border: none;
+  border-radius: 25px; /* Pill-shaped */
+  padding: 14px 20px;
+  width: 100%;
+  cursor: pointer;
+  text-align: center;
+  margin-top: 10px; /* Margin from the last card */
+  transition: background-color 0.2s ease-in-out;
+}
+
+.submitButton:hover {
+  background-color: #357ABD; /* Darker blue on hover */
+} 
