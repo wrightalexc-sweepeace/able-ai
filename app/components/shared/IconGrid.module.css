@@ -14,8 +14,8 @@
 } */
 
 .card {
-  background: #1e1e1e; /* Dark card background */
-  border-radius: 0.75rem; /* 12px */
+  background: #2b2b2b; /* Dark card background */
+  border-radius: 1.5rem; /* 24px */
   padding: 1.25rem 1rem;
   text-align: center;
   color: #fff;
@@ -37,17 +37,14 @@
 
 .iconWrapper {
   font-size: 1.8rem; /* Size of the icon/emoji */
-  /* If using Lucide icons, you might apply size directly to the icon component */
-  /* Example for emoji or text icon:
-  width: 48px;
-  height: 48px;
+  width: 80px;
+  height: 80px;
   background-color: var(--primary-color);
-  border-radius: 50%;
+  border-radius: 1.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
-  */
+  color: #0f0f0f;
 }
 
 .label {
