@@ -18,13 +18,13 @@ const ReferralBanner: React.FC<ReferralBannerProps> = ({ title, description, but
       </div>
       <div className={styles.textWrapper}>
         <h4 className={styles.title}>{title || "Refer a Business"}</h4>
-        <p className={styles.description}>{description || "And earn £20 when they make their first hire!"}</p>
+        {/* <p className={styles.description}>{description || "And earn £20 when they make their first hire!"}</p> */}
       </div>
-      {onButtonClick && buttonText && (
+      {/* {onButtonClick && buttonText && (
         <button onClick={onButtonClick} className={styles.button}>
           {buttonText}
         </button>
-      )}
+      )} */}
     </div>
   );
 };
