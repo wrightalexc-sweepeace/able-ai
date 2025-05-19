@@ -127,7 +127,7 @@ export default function WorkerDashboardPage() { // Renamed for clarity
 
 
       <ReferralBanner
-        title="Refer a Worker & Earn £10!"
+        title="Refer a Worker & Earn £5!"
         description="Know someone skilled? Invite them to Able AI and earn when they complete their first gig."
         buttonText="Share My Invite Link"
         onButtonClick={handleReferralClick}

@@ -127,7 +127,7 @@ export default function BuyerDashboardPage() { // Renamed for clarity
 
 
       <ReferralBanner
-        title="Refer a Business & Earn £20!"
+        title="Refer a Business & Earn £5!"
         description="Help another business find great talent on Able AI and get rewarded."
         buttonText="Get My Referral Link"
         onButtonClick={handleReferralClick}

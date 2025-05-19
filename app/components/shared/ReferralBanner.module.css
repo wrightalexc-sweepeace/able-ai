@@ -8,7 +8,7 @@
   margin-top: 1.5rem;
   display: flex;
   align-items: center;
-  justify-content: end;
+  justify-content: center;
   gap: 1rem;
   height: 48px;
   gap: 9px;
@@ -22,7 +22,7 @@
 }
 
 .textWrapper {
-  flex-grow: 1;
+  /* flex-grow: 1; */
 }
 
 .title {
