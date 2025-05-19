@@ -16,6 +16,7 @@ import SettingsButton from '@/app/components/shared/SettingsButton';
 import { Users, CalendarDays, CreditCard, LayoutDashboard, Bell } from 'lucide-react';
 
 import styles from './HomePage.module.css'; // Create this CSS Module
+import Image from 'next/image';
 
 // Define this interface if you add the optional summary section
 // interface UpcomingGigSummary {
@@ -77,17 +78,24 @@ export default function BuyerDashboardPage() { // Renamed for clarity
   return (
     <div className={styles.container}>
       <header className={styles.pageHeader}>
-        <h1>Buyer</h1>
+        {/* <h1>Buyer</h1>
         {userPublicProfile?.displayName && (
             <p className={styles.welcomeMessage}>
                 Welcome back, {userPublicProfile.displayName}!
             </p>
-        )}
+        )} */}
+        <Image
+          src="/images/ableai2.jpeg"
+          alt="App Logo"
+          width={73}
+          height={74}
+          className={styles.logo}
+        />
          {/* Notification Icon */}
         {userPublicProfile?.uid && (
           <Link href={`/user/${userPublicProfile.uid}/notifications`} passHref>
             <button className={styles.notificationButton} aria-label="Notifications">
-              <Bell size={24} />
+              <Bell size={45} />
             </button>
           </Link>
         )}
