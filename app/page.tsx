@@ -8,7 +8,7 @@ import Link from "next/link";
 
 export default function Home() {
   const [user, setUser] = useState<User | null>(null);
-  const [isProjectInfoOpen, setIsProjectInfoOpen] = useState(true);
+  const [isProjectInfoOpen, setIsProjectInfoOpen] = useState(false);
   const [isViewQA, setIsViewQAState] = useState<boolean>(false); // State to track isViewQA
 
   useEffect(() => {
@@ -27,8 +27,7 @@ export default function Home() {
     } catch (error) {
       console.error('Error reading isViewQA from localStorage:', error);
     }
-  }, []); // Empty dependency array means this runs once on mount
-
+  }, []); 
 
   const handleSignOut = async () => {
     try {
@@ -211,6 +210,15 @@ const toggleIsViewQA = () => {
             {/* Worker Calendar (mock user) link moved here */}
             <div className={styles.pageItem}>
               <Link href="/user/mock-worker/worker/calendar" className={styles.pageName}>/user/mock-worker/worker/calendar</Link>
+              <span className={styles.badge} data-status="in-progress">In Progress</span>
+            </div>
+            {/* Add links for new Worker Profile pages */}
+            <div className={styles.pageItem}>
+              <Link href="/worker/test-worker-id/profile" className={styles.pageName}>/worker/[workerId]/profile (Public)</Link>
+              <span className={styles.badge} data-status="in-progress">In Progress</span>
+            </div>
+            <div className={styles.pageItem}>
+              <Link href="/user/test-user-id/worker/profile" className={styles.pageName}>/user/[userId]/worker/profile (Owned)</Link>
               <span className={styles.badge} data-status="in-progress">In Progress</span>
             </div>
           </div>

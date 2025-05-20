@@ -1,0 +1,38 @@
+/* app/components/profile/SkillsDisplayTable.module.css */
+.skillsCard {
+  background-color: #007AFF;
+  border-radius: 16px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  color: #ffffff;
+}
+
+.skillsTitle {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.skillsTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.skillsTable th,
+.skillsTable td {
+  text-align: left;
+  padding: 0.6rem 0.4rem;
+  vertical-align: middle;
+}
+
+.skillsTable th {
+  font-weight: 500;
+  color: #d1e7ff;
+  font-size: 0.85rem;
+  text-transform: capitalize;
+}
+
+.skillNameHeader {
+  min-width: 120px;
+} 

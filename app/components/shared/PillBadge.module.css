@@ -1,0 +1,25 @@
+/* app/components/shared/PillBadge.module.css */
+.badge {
+  display: inline-block;
+  padding: 0.35rem 0.85rem;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.dark {
+  background-color: #1a1a1a;
+  color: #ffffff;
+}
+
+.neutral {
+  background-color: #333333;
+  color: #e0e0e0;
+}
+
+.light {
+  background-color: transparent;
+  color: #1a1a1a;
+} 

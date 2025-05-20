@@ -1,0 +1,23 @@
+.avatarContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%; /* Circular shape */
+  overflow: hidden; /* Clip content outside the circle */
+  position: relative;
+}
+
+.avatarImage {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.fallback {
+  background-color: #333; /* Dark background for fallback */
+  color: #ccc; /* Light color for icon */
+}
+
+.fallbackIcon {
+  /* Icon size handled by component prop calculation */
+} 
