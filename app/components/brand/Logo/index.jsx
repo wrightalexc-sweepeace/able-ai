@@ -5,7 +5,7 @@ import styles from './Logo.module.css';
 const Logo = () => {
   return (
     <Image
-      src="/images/ableai2.jpeg"
+      src="/images/ableai.png"
       alt="App Logo"
       width={250}
       height={260}

@@ -113,7 +113,7 @@ export default function SignInPage() {
                 <span>Please register to get started</span>
               </>
             ) : (
-              "Welcome Back!"
+              "Welcome back!"
             )}
           </h1>
         </div>

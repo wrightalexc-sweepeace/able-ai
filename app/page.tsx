@@ -53,7 +53,7 @@ const toggleIsViewQA = () => {
       <main className={styles.main}>
         <Image
           className={styles.logo}
-          src="/images/ableai.jpeg"
+          src="/images/ableai.png"
           alt="Next JS Logo"
           width={180}
           height={180}
