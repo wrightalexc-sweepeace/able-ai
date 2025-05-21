@@ -1,9 +1,13 @@
 /* app/components/shared/IconGrid.module.css */
 .grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr); /* 2 columns by default */
+  /* display: grid;
+  grid-template-columns: repeat(2, 1fr); 2 columns by default */
+  display: flex;
+  flex-wrap: wrap; /* Allow wrapping to the next line */
   gap: 1rem; /* Space between cards */
   margin-bottom: 1.5rem;
+  justify-content: center;
+  max-width: 400px;
 }
 
 /* Optional: For larger screens, you might want 4 columns */
@@ -16,7 +20,9 @@
 .card {
   background: #2b2b2b; /* Dark card background */
   border-radius: 1.5rem; /* 24px */
-  padding: 1.25rem 1rem;
+  /* padding: 1.25rem 1rem; */
+  width: 139px;
+  height: 139px;
   text-align: center;
   color: #fff;
   display: flex;
