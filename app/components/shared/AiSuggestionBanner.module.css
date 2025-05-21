@@ -1,35 +1,42 @@
 /* app/components/shared/AiSuggestionBanner.module.css */
 .suggestionBanner {
+  /* width: 75%; */
+  position:absolute;
+  top: 7%;
+  right: 18%;
+  left: 20%;
   background-color: #2a2a2a; /* Dark background for the banner */
   color: #e0e0e0;      /* Light text */
-  padding: 1rem 1.25rem;
-  border-radius: 0.75rem; /* 12px */
-  margin-bottom: 1.5rem;
+  padding: 0.5rem;
+  margin: auto; /* Center the banner */
+  border-radius: 1.5rem; /* 12px */
+  /* margin-bottom: 1.5rem; */
   display: flex;
   align-items: flex-start; /* Align icon with the start of the text */
-  border-left: 4px solid var(--primary-color); /* Accent border */
+  /* border-left: 4px solid var(--primary-color); Accent border */
 }
 
-.suggestionIcon {
-  color: var(--primary-color); /* Icon color */
+/* .suggestionIcon {
+  color: var(--primary-color); 
   margin-right: 0.75rem;
   flex-shrink: 0;
-  margin-top: 0.125rem; /* Fine-tune vertical alignment */
-}
+  margin-top: 0.125rem;
+} */
 
 .suggestionContent {
-  flex: 1;
+  flex: 1; 
 }
 
-.suggestionTitle {
+/* .suggestionTitle {
   font-weight: 600;
   margin: 0 0 0.25rem 0;
-  color: #ffffff; /* Brighter title */
+  color: #ffffff;
   font-size: 0.95rem;
-}
+} */
 
 .suggestionText {
   font-size: 0.875rem;
-  margin: 0;
-  line-height: 1.5;
+  /* line-height: 1.5; */
+  font-style: italic;
+  font-family: 'Roboto', sans-serif;
 }
