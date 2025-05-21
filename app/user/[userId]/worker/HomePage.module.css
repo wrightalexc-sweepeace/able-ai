@@ -1,18 +1,19 @@
 .container {
-  min-height: calc(100vh - 60px); /* Adjust if you have a global header component */
+  min-height: 100vh;
   background-color: #161616;
   color: #e0e0e0;
-  padding: 0.75rem 1.5rem;
+  padding: 0.75rem 0.75rem 0;
   font-family: var(--font-family);
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
 .pageHeader {
   display: flex;
-  align-items: center;
+  /* align-items: center; */
   justify-content: space-between;
-  margin-bottom: 1.5rem;
+  margin-bottom: 4rem;
 }
 
 .pageHeader h1 {
@@ -42,7 +43,6 @@
 }
 
 .notificationButton svg {
-  color: #ffffff;
   fill: #ffffff;
   transition: 0.2s ease;
 }
@@ -101,12 +101,11 @@
 
 
 .pageFooter {
-  margin-top: auto; /* Pushes footer to the bottom */
-  padding-top: 1.5rem;
+  margin-top: 0.5rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-top: 1px solid #2b2b2b;
+  /* border-top: 1px solid #2b2b2b; */
 }
 
 .loadingContainer {

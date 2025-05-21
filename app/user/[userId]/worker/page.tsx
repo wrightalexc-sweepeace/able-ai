@@ -13,7 +13,8 @@ import RoleToggle from '@/app/components/shared/RoleToggle';
 import SettingsButton from '@/app/components/shared/SettingsButton';
 
 // Import Lucide icons as needed for the specific dashboard
-import { UserCircle, Briefcase, CalendarCheck2, DollarSign, Bell } from 'lucide-react';
+import { UserCircle, Briefcase, CalendarCheck2, DollarSign } from 'lucide-react';
+import NotifIcon from '@mui/icons-material/NotificationsSharp';
 
 import styles from './HomePage.module.css'; // Create this CSS Module
 import Image from 'next/image';
@@ -87,26 +88,26 @@ export default function WorkerDashboardPage() { // Renamed for clarity
        <Image
           src="/images/ableai2.jpeg"
           alt="App Logo"
-          width={73}
-          height={74}
+          width={60}
+          height={60}
           className={styles.logo}
         />
          {/* Notification Icon */}
         {userPublicProfile?.uid && (
           <Link href={`/user/${userPublicProfile.uid}/notifications`} passHref>
             <button className={styles.notificationButton} aria-label="Notifications">
-              <Bell size={45} />
+              <NotifIcon fontSize='large'/>
             </button>
           </Link>
         )}
       </header>
 
       <AiSuggestionBanner
-        title="Gig Opportunity Alert 💡"
-        message="Hi! If you can be available next Tuesday, you are 75% likely to get a shift based on current demand."
+        // title="Gig Opportunity Alert 💡"
+        message="Hi! If you can be available next Tuesday, you are 75% likely to get a shift."
       />
 
-      <h2 className={styles.sectionTitle}>Manage Your Activity</h2>
+      {/* <h2 className={styles.sectionTitle}>Manage Your Activity</h2> */}
       <IconGrid items={actionItems} />
 
       {/* Optional Summary Section - Example Structure
