@@ -13,7 +13,8 @@ import RoleToggle from '@/app/components/shared/RoleToggle';
 import SettingsButton from '@/app/components/shared/SettingsButton';
 
 // Import Lucide icons as needed for the specific dashboard
-import { Users, CalendarDays, CreditCard, LayoutDashboard, Bell } from 'lucide-react';
+import { Users, CalendarDays, CreditCard, LayoutDashboard } from 'lucide-react';
+import NotifIcon from '@mui/icons-material/NotificationsSharp';
 
 import styles from './HomePage.module.css'; // Create this CSS Module
 import Image from 'next/image';
@@ -87,26 +88,26 @@ export default function BuyerDashboardPage() { // Renamed for clarity
         <Image
           src="/images/ableai2.jpeg"
           alt="App Logo"
-          width={73}
-          height={74}
+          width={60}
+          height={60}
           className={styles.logo}
         />
          {/* Notification Icon */}
         {userPublicProfile?.uid && (
           <Link href={`/user/${userPublicProfile.uid}/notifications`} passHref>
             <button className={styles.notificationButton} aria-label="Notifications">
-              <Bell size={45} />
+             <NotifIcon fontSize='large' />
             </button>
           </Link>
         )}
       </header>
 
       <AiSuggestionBanner
-        title="Smart Hiring Tip ✨"
+        // title="Smart Hiring Tip ✨"
         message="We have 10 new bartenders who joined within 5 miles of you - would you like to see their profiles?"
       />
 
-      <h2 className={styles.sectionTitle}>Manage Your Activity</h2>
+      {/* <h2 className={styles.sectionTitle}>Manage Your Activity</h2> */}
       <IconGrid items={actionItems} />
 
       {/* Optional Summary Section - Example Structure
