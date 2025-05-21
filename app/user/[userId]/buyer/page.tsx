@@ -78,66 +78,68 @@ export default function BuyerDashboardPage() { // Renamed for clarity
 
   return (
     <div className={styles.container}>
-      <header className={styles.pageHeader}>
-        {/* <h1>Buyer</h1>
-        {userPublicProfile?.displayName && (
-            <p className={styles.welcomeMessage}>
-                Welcome back, {userPublicProfile.displayName}!
-            </p>
-        )} */}
-        <Image
-          src="/images/ableai2.jpeg"
-          alt="App Logo"
-          width={60}
-          height={60}
-          className={styles.logo}
+      <div className={styles.card}>
+        <header className={styles.pageHeader}>
+          {/* <h1>Buyer</h1>
+          {userPublicProfile?.displayName && (
+              <p className={styles.welcomeMessage}>
+                  Welcome back, {userPublicProfile.displayName}!
+              </p>
+          )} */}
+          <Image
+            src="/images/ableai2.jpeg"
+            alt="App Logo"
+            width={60}
+            height={60}
+            className={styles.logo}
+          />
+          {/* Notification Icon */}
+          {userPublicProfile?.uid && (
+            <Link href={`/user/${userPublicProfile.uid}/notifications`} passHref>
+              <button className={styles.notificationButton} aria-label="Notifications">
+              <NotifIcon fontSize='large' />
+              </button>
+            </Link>
+          )}
+        </header>
+
+        <AiSuggestionBanner
+          // title="Smart Hiring Tip ✨"
+          message="We have 10 new bartenders who joined within 5 miles of you - would you like to see their profiles?"
         />
-         {/* Notification Icon */}
-        {userPublicProfile?.uid && (
-          <Link href={`/user/${userPublicProfile.uid}/notifications`} passHref>
-            <button className={styles.notificationButton} aria-label="Notifications">
-             <NotifIcon fontSize='large' />
-            </button>
-          </Link>
+
+        {/* <h2 className={styles.sectionTitle}>Manage Your Activity</h2> */}
+        <IconGrid items={actionItems} />
+
+        {/* Optional Summary Section - Example Structure
+        {summaryData.length > 0 && (
+          <section className={styles.summarySection}>
+            <h2 className={styles.sectionTitle}>
+              Upcoming Gigs
+            </h2>
+            <ul className={styles.summaryList}>
+              {summaryData.slice(0,3).map(item => ( // Show first 3
+                  <li key={item.id}><Link href={item.link}>{item.title} with {item.partnerName} on {item.dateTime}</Link></li>
+              ))}
+            </ul>
+            {summaryData.length > 3 && <Link href='/buyer/calendar' className={styles.viewAllLink}>View All</Link>}
+          </section>
         )}
-      </header>
-
-      <AiSuggestionBanner
-        // title="Smart Hiring Tip ✨"
-        message="We have 10 new bartenders who joined within 5 miles of you - would you like to see their profiles?"
-      />
-
-      {/* <h2 className={styles.sectionTitle}>Manage Your Activity</h2> */}
-      <IconGrid items={actionItems} />
-
-      {/* Optional Summary Section - Example Structure
-      {summaryData.length > 0 && (
-        <section className={styles.summarySection}>
-          <h2 className={styles.sectionTitle}>
-            Upcoming Gigs
-          </h2>
-          <ul className={styles.summaryList}>
-            {summaryData.slice(0,3).map(item => ( // Show first 3
-                <li key={item.id}><Link href={item.link}>{item.title} with {item.partnerName} on {item.dateTime}</Link></li>
-            ))}
-          </ul>
-          {summaryData.length > 3 && <Link href='/buyer/calendar' className={styles.viewAllLink}>View All</Link>}
-        </section>
-      )}
-      */}
+        */}
 
 
-      <ReferralBanner
-        title="Refer a Business & Earn £5!"
-        description="Help another business find great talent on Able AI and get rewarded."
-        buttonText="Get My Referral Link"
-        onButtonClick={handleReferralClick}
-      />
+        <ReferralBanner
+          title="Refer a Business & Earn £5!"
+          description="Help another business find great talent on Able AI and get rewarded."
+          buttonText="Get My Referral Link"
+          onButtonClick={handleReferralClick}
+        />
 
-      <footer className={styles.pageFooter}>
-        <RoleToggle lastViewVisited="home" />
-        <SettingsButton />
-      </footer>
+        <footer className={styles.pageFooter}>
+          <RoleToggle lastViewVisited="home" />
+          <SettingsButton />
+        </footer>
+      </div>
     </div>
   );
 }

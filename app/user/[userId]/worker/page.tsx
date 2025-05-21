@@ -78,66 +78,68 @@ export default function WorkerDashboardPage() { // Renamed for clarity
 
   return (
     <div className={styles.container}>
-      <header className={styles.pageHeader}>
-        {/* <h1>Worker</h1>
-        {userPublicProfile?.displayName && (
-            <p className={styles.welcomeMessage}>
-                Welcome back, {userPublicProfile.displayName}!
-            </p>
-        )} */}
-       <Image
-          src="/images/ableai2.jpeg"
-          alt="App Logo"
-          width={60}
-          height={60}
-          className={styles.logo}
+      <div className={styles.card}>
+        <header className={styles.pageHeader}>
+          {/* <h1>Worker</h1>
+          {userPublicProfile?.displayName && (
+              <p className={styles.welcomeMessage}>
+                  Welcome back, {userPublicProfile.displayName}!
+              </p>
+          )} */}
+        <Image
+            src="/images/ableai2.jpeg"
+            alt="App Logo"
+            width={60}
+            height={60}
+            className={styles.logo}
+          />
+          {/* Notification Icon */}
+          {userPublicProfile?.uid && (
+            <Link href={`/user/${userPublicProfile.uid}/notifications`} passHref>
+              <button className={styles.notificationButton} aria-label="Notifications">
+                <NotifIcon fontSize='large'/>
+              </button>
+            </Link>
+          )}
+        </header>
+
+        <AiSuggestionBanner
+          // title="Gig Opportunity Alert 💡"
+          message="Hi! If you can be available next Tuesday, you are 75% likely to get a shift."
         />
-         {/* Notification Icon */}
-        {userPublicProfile?.uid && (
-          <Link href={`/user/${userPublicProfile.uid}/notifications`} passHref>
-            <button className={styles.notificationButton} aria-label="Notifications">
-              <NotifIcon fontSize='large'/>
-            </button>
-          </Link>
+
+        {/* <h2 className={styles.sectionTitle}>Manage Your Activity</h2> */}
+        <IconGrid items={actionItems} />
+
+        {/* Optional Summary Section - Example Structure
+        {summaryData.length > 0 && (
+          <section className={styles.summarySection}>
+            <h2 className={styles.sectionTitle}>
+              Your Next Gig
+            </h2>
+            <ul className={styles.summaryList}>
+              {summaryData.slice(0,3).map(item => ( // Show first 3
+                  <li key={item.id}><Link href={item.link}>{item.title} with {item.partnerName} on {item.dateTime}</Link></li>
+              ))}
+            </ul>
+            {summaryData.length > 3 && <Link href='/worker/calendar' className={styles.viewAllLink}>View All</Link>>}
+          </section>
         )}
-      </header>
-
-      <AiSuggestionBanner
-        // title="Gig Opportunity Alert 💡"
-        message="Hi! If you can be available next Tuesday, you are 75% likely to get a shift."
-      />
-
-      {/* <h2 className={styles.sectionTitle}>Manage Your Activity</h2> */}
-      <IconGrid items={actionItems} />
-
-      {/* Optional Summary Section - Example Structure
-      {summaryData.length > 0 && (
-        <section className={styles.summarySection}>
-          <h2 className={styles.sectionTitle}>
-            Your Next Gig
-          </h2>
-          <ul className={styles.summaryList}>
-            {summaryData.slice(0,3).map(item => ( // Show first 3
-                <li key={item.id}><Link href={item.link}>{item.title} with {item.partnerName} on {item.dateTime}</Link></li>
-            ))}
-          </ul>
-          {summaryData.length > 3 && <Link href='/worker/calendar' className={styles.viewAllLink}>View All</Link>>}
-        </section>
-      )}
-      */}
+        */}
 
 
-      <ReferralBanner
-        title="Refer a Worker & Earn £5!"
-        description="Know someone skilled? Invite them to Able AI and earn when they complete their first gig."
-        buttonText="Share My Invite Link"
-        onButtonClick={handleReferralClick}
-      />
+        <ReferralBanner
+          title="Refer a Worker & Earn £5!"
+          description="Know someone skilled? Invite them to Able AI and earn when they complete their first gig."
+          buttonText="Share My Invite Link"
+          onButtonClick={handleReferralClick}
+        />
 
-      <footer className={styles.pageFooter}>
-        <RoleToggle lastViewVisited="home"/>
-        <SettingsButton />
-      </footer>
+        <footer className={styles.pageFooter}>
+          <RoleToggle lastViewVisited="home"/>
+          <SettingsButton />
+        </footer>
+      </div>
     </div>
   );
 }
