@@ -225,6 +225,12 @@ const toggleIsViewQA = () => {
               <Link href="/gigs/test-gig-id/chat" className={styles.pageName}>/gigs/[gigId]/chat</Link>
               <span className={styles.badge} data-status="in-progress">In Progress</span>
             </div>
+            <div className={styles.pageItem}>
+              <Link href="/docs/report-issue-backend-integration.md" className={styles.pageName} target="_blank" rel="noopener noreferrer">
+                Report Issue Backend Integration Doc
+              </Link>
+              <span className={styles.badge} data-status="in-progress">In Progress</span>
+            </div>
           </div>
         </section>
 

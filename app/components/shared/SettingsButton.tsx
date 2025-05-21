@@ -3,8 +3,8 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './SettingsButton.module.css';
-// import { Settings } from 'lucide-react';
-import Settings from '@mui/icons-material/Settings';
+import { Settings } from 'lucide-react';
+// import Settings from '@mui/icons-material/Settings';
 
 const SettingsButton: React.FC = () => {
   const router = useRouter();
@@ -18,7 +18,7 @@ const SettingsButton: React.FC = () => {
       className={styles.settingsButton}
       aria-label="Settings"
     >
-      <Settings sx={{color: "#fff"}} fontSize='large'/>
+      <Settings style={{color: "#fff"}} fontSize='large'/>
     </button>
   );
 };
