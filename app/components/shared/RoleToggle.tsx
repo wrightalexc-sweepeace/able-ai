@@ -42,7 +42,7 @@ const RoleToggle: React.FC<{ lastViewVisited?: string }> = ({ lastViewVisited })
 
     return (
         <div className={styles.toggleContainer}>
-            <button
+            {/* <button
                 onClick={() => handleToggle('BUYER')}
                 className={`${styles.toggleButton} ${currentActiveRole === 'BUYER' ? styles.active : styles.inactive}`}
                 aria-pressed={currentActiveRole === 'BUYER'}
@@ -57,7 +57,24 @@ const RoleToggle: React.FC<{ lastViewVisited?: string }> = ({ lastViewVisited })
             >
                 <Briefcase size={16} />
                 <span>Worker</span>
-            </button>
+            </button> */}
+            {/* <button
+                onClick={() => handleToggle(currentActiveRole === 'BUYER' ? 'GIG_WORKER' : 'BUYER')}
+            >
+               Switch to {isWorkerMode ? 'GIG_WORKER' : 'BUYER'}
+            </button> */}
+            <label className={styles.switchLabel}>
+            <span>Switch to {currentActiveRole === 'BUYER' ? 'Worker' : 'Buyer'}</span>
+            <input
+                type="checkbox"
+                onChange={() =>
+                handleToggle(currentActiveRole === 'BUYER' ? 'GIG_WORKER' : 'BUYER')
+                }
+                className={styles.switchInput}
+            />
+            <span className={styles.switchSlider}></span>
+            </label>
+            
         </div>
     );
 };
