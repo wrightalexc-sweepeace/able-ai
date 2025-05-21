@@ -18,7 +18,7 @@ const SettingsButton: React.FC = () => {
       className={styles.settingsButton}
       aria-label="Settings"
     >
-      <Settings sx={{color: "#fff"}} fontSize='medium'/>
+      <Settings sx={{color: "#fff"}} fontSize='large'/>
     </button>
   );
 };
