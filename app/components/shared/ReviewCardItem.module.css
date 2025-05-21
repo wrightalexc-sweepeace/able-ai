@@ -1,0 +1,30 @@
+/* app/components/shared/ReviewCardItem.module.css */
+.reviewCard {
+  background-color: var(--surface-dark);
+  border-radius: var(--border-radius);
+  padding: 15px;
+  margin-bottom: 15px; /* Space between reviews */
+  color: var(--text-primary);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+  font-size: 0.9rem;
+}
+
+.reviewerName {
+  font-weight: 600;
+}
+
+.date {
+  color: var(--text-neutral);
+}
+
+.comment {
+  font-size: 0.9rem;
+  color: var(--text-neutral);
+  line-height: 1.4;
+  margin: 0;
+} 

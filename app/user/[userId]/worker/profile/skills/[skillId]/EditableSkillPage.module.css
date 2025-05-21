@@ -1,0 +1,87 @@
+/* app/user/[userId]/worker/profile/skills/[skillId]/EditableSkillPage.module.css */
+
+/* Container similar to public view but perhaps wider or different padding */
+.editableSkillPageContainer {
+  max-width: 900px; /* Adjust as needed for form layout */
+  margin: 0 auto;
+  padding: 20px;
+  color: var(--text-primary);
+  background-color: var(--background);
+}
+
+.pageLoadingContainer,
+.pageWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+  color: var(--text-neutral);
+}
+
+.errorMessage,
+.emptyState {
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+.pageTitle {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-top: 0;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+/* Basic form field styling for textarea */
+.formField {
+    margin-bottom: 20px;
+}
+
+.formLabel {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+.textareaField {
+  width: 100%;
+  padding: 12px;
+  background-color: var(--surface-dark);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  color: var(--text-primary);
+  font-size: 1rem;
+  resize: vertical; /* Allow vertical resizing */
+}
+
+.textareaField:focus {
+    outline: none;
+    border-color: var(--accent-color);
+}
+
+/* Styling for placeholder list items in EditableList */
+.editableListItem {
+    background-color: var(--surface-dark);
+    border-radius: var(--border-radius-small);
+    padding: 10px 15px;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    color: var(--text-neutral);
+    display: flex;
+    align-items: center;
+    gap: 10px; /* Space between elements in the item */
+    border: 1px solid var(--border-color);
+}
+
+.editableListItem img {
+    border-radius: var(--border-radius-small);
+}
+
+/* Save Button Container */
+.saveButtonContainer {
+  margin-top: 30px;
+  text-align: center;
+} 

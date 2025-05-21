@@ -3,7 +3,7 @@ import styles from './PillBadge.module.css';
 
 interface PillBadgeProps {
   text: string;
-  variant?: 'dark' | 'neutral' | 'light';
+  variant?: 'dark' | 'neutral' | 'light' | 'blue';
   className?: string;
 }
 

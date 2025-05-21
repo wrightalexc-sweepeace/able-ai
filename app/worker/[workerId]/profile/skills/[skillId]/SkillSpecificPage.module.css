@@ -1,0 +1,99 @@
+/* app/worker/[workerId]/profile/skills/[skillId]/SkillSpecificPage.module.css */
+
+/* Similar to main profile page container */
+.skillPageContainer {
+  max-width: 800px; /* Adjust as needed */
+  margin: 0 auto;
+  padding: 20px;
+  color: var(--text-primary);
+  background-color: var(--background);
+}
+
+.pageLoadingContainer,
+.pageWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+  color: var(--text-neutral);
+}
+
+.errorMessage,
+.emptyState {
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+/* Basic section styling */
+.section {
+    margin-bottom: 20px;
+}
+
+.sectionTitle {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 15px;
+}
+
+.badgesContainer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px; /* Space between badges */
+}
+
+/* Basic list style for qualifications */
+.listSimple {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.listSimple li {
+  background-color: var(--surface-dark);
+  border-radius: var(--border-radius-small);
+  padding: 10px 15px;
+  margin-bottom: 8px; /* Space between list items */
+  font-size: 0.9rem;
+  color: var(--text-neutral);
+}
+
+.listSimple li:last-child {
+    margin-bottom: 0;
+}
+
+.reviewSummaryText {
+  font-style: italic;
+  color: var(--text-neutral);
+  margin-bottom: 20px;
+}
+
+/* Footer Action Bar (Fixed at bottom - needs further implementation for fixed positioning) */
+.footerActionBar {
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 15px 20px;
+  background-color: var(--background);
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  justify-content: center;
+  box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+}
+
+.primaryActionButton {
+  background-color: var(--white);
+  color: var(--background);
+  border: none;
+  border-radius: 9999px; /* Pill shape */
+  padding: 12px 25px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
+}
+
+.primaryActionButton:hover {
+  background-color: #e0e0e0; /* Slightly darker white on hover */
+} 

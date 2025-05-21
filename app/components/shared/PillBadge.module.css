@@ -22,4 +22,9 @@
 .light {
   background-color: transparent;
   color: #1a1a1a;
+}
+
+.blue {
+  background-color: var(--primary-blue);
+  color: var(--white);
 } 
