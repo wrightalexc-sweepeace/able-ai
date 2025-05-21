@@ -9,22 +9,29 @@
 
 .pageWrapper {
   max-width: 700px; /* Max width for settings content */
-  margin: 2rem auto; /* Center content with some top margin */
+  /* margin: 2rem auto; Center content with some top margin */
   display: flex;
   flex-direction: column;
-  gap: 2rem; /* Space between sections */
+  gap: 0.75rem; /* Space between sections */
 }
 
 .pageHeader {
-  text-align: center;
   margin-bottom: 1rem;
 }
 
 .pageHeader h1 {
-  font-size: 1.75rem;
-  font-weight: 600;
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.5rem;
   color: #ffffff;
   margin: 0;
+}
+
+.pageHeader p {
+  font-size: 0.9rem;
+  color: #c2c2c2;
+  line-height: 1rem;
+  margin-top: 0.3rem;
 }
 
 .section {

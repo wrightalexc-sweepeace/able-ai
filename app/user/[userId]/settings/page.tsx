@@ -340,7 +340,7 @@ export default function SettingsPage() {
     <div className={styles.container}>
       <div className={styles.pageWrapper}>
         <header className={styles.pageHeader}>
-          <h1>Account Settings</h1>
+          <h1>Settings</h1>
           <p>Manage your account preferences and settings</p> {/* Added descriptive text */}
         </header>
 
@@ -353,8 +353,8 @@ export default function SettingsPage() {
             <CheckCircle size={20} /> Stripe account connected and active.
           </div>
         )}
-        {userSettings && (!userSettings.stripeAccountId || !userSettings.canReceivePayouts) && ( // Logic for Gig Worker role
-          <div className={`${styles.section} ${styles.stripePromptInline}`}> {/* Example: .stripePrompt from user CSS */}
+        {/* {userSettings && (!userSettings.stripeAccountId || !userSettings.canReceivePayouts) && ( 
+          <div className={`${styles.section} ${styles.stripePromptInline}`}> 
             <div className={styles.stripeIconWrapper}><AlertTriangle size={28} color="#ffc107"/></div>
             <div>
               <h3>Connect Stripe to Get Paid!</h3>
@@ -367,7 +367,7 @@ export default function SettingsPage() {
               </button>
             </div>
           </div>
-        )}
+        )} */}
 
 
         {/* Profile Information Section */}
