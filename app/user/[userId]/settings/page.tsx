@@ -338,261 +338,263 @@ export default function SettingsPage() {
 
   return (
     <div className={styles.container}>
-      <div className={styles.pageWrapper}>
-        <header className={styles.pageHeader}>
-          <h1>Settings</h1>
-          <p>Manage your account preferences and settings</p> {/* Added descriptive text */}
-        </header>
+      <div className={styles.card}>
+        <div className={styles.pageWrapper}>
+          <header className={styles.pageHeader}>
+            <h1>Settings</h1>
+            <p>Manage your account preferences and settings</p> {/* Added descriptive text */}
+          </header>
 
-        {error && <p className={styles.errorMessage}>{error}</p>}
-        {successMessage && <p className={styles.successMessage}>{successMessage}</p>}
+          {error && <p className={styles.errorMessage}>{error}</p>}
+          {successMessage && <p className={styles.successMessage}>{successMessage}</p>}
 
-        {/* Inline Stripe Prompt / Status Indicator (Alternative to Modal) */}
-        {userSettings && userSettings.stripeAccountId && userSettings.stripeAccountStatus === 'connected' && userSettings.canReceivePayouts && (
-          <div className={`${styles.section} ${styles.stripeStatusBannerConnected}`}>
-            <CheckCircle size={20} /> Stripe account connected and active.
-          </div>
-        )}
-        {userSettings && (!userSettings.stripeAccountId || !userSettings.canReceivePayouts) && ( 
-          <div className={`${styles.section} ${styles.stripePromptInline}`}>  
-            <div className={styles.stripePromptHeader}>
-              <div className={styles.stripeIconWrapper}>
-                <AlertTriangle size={28} color="#ffc107"/>
-              </div>  
-              <h3>Get Paid with Stripe!</h3>
+          {/* Inline Stripe Prompt / Status Indicator (Alternative to Modal) */}
+          {userSettings && userSettings.stripeAccountId && userSettings.stripeAccountStatus === 'connected' && userSettings.canReceivePayouts && (
+            <div className={`${styles.section} ${styles.stripeStatusBannerConnected}`}>
+              <CheckCircle size={20} /> Stripe account connected and active.
             </div>
-            <p>To receive payments for your gigs, you must connect your bnak account through our payment provider, Stripe. This is secure, free, and only takes a minute.</p>
-            <button onClick={handleStripeConnect} className={styles.stripeButton} disabled={isConnectingStripe}>
-              {isConnectingStripe ? 'Connecting...' : 'Connect My Bank Account'}
-            </button>
-            <div className={styles.stripeStatus}>
-              <AlertTriangle size={20} color="#ffc107"/>
-              <span>{userSettings.stripeAccountStatus ? userSettings.stripeAccountStatus.replace('_', ' ') : 'Not Connected'}</span>
-            </div>
-            
-          </div>
-        )}
-
-
-        {/* Profile Information Section */}
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}><User size={20} style={{ marginRight: '0.5rem' }} /> Personal Information</h2>
-          {/* ... (DisplayName, Email - as before) ... */}
-          <form onSubmit={handleProfileUpdate} className={styles.form}>
-            <div className={styles.formGroup}>
-              <label htmlFor="displayName" className={styles.label}>Display Name</label>
-              <InputField
-                id="displayName"
-                name="displayName"
-                type="text"
-                value={displayName}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDisplayName(e.target.value)}
-                placeholder="Your display name"
-              />
-            </div>
-            <div className={styles.formGroup}>
-              <label htmlFor="email" className={styles.label}>Email Address</label>
-              <input // Display only, not editable directly here typically
-                id="email"
-                type="email"
-                value={userSettings.email}
-                readOnly
-                disabled
-                className={styles.inputField} // Or use InputField component with disabled prop
-              />
-            </div>
-             <div className={styles.formGroup}> {/* Added phone field */}
-              <label htmlFor="phone" className={styles.label}>Phone Number</label>
-              <InputField
-                id="phone"
-                name="phone"
-                type="tel" // Use type="tel" for phone numbers
-                value={phone}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPhone(e.target.value)}
-                placeholder="Your phone number"
-              />
-            </div>
-            <div className={styles.actionButtons}>
-              <button type="submit" className={styles.button} disabled={isSavingProfile}>
-                <Save size={16} /> {isSavingProfile ? 'Saving...' : 'Save Profile'}
-              </button>
-            </div>
-          </form>
-        </section>
-
-        {/* Payment Settings Section */}
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}><CreditCard size={20} style={{ marginRight: '0.5rem' }} /> Payment Settings</h2>
-          {userSettings?.stripeAccountId && userSettings.canReceivePayouts ? (
-            <div className={styles.settingItem}>
-              <span className={styles.settingLabel}>Manage your payouts and bank details.</span>
-              <button onClick={handleManageStripeAccount} className={`${styles.button} ${styles.secondary}`}>
-                Open Stripe Portal
-              </button>
-            </div>
-          ) : (
-            <p className={styles.settingLabel}>Connect your Stripe account to manage payment settings.</p>
           )}
-        </section>
+          {userSettings && (!userSettings.stripeAccountId || !userSettings.canReceivePayouts) && ( 
+            <div className={`${styles.section} ${styles.stripePromptInline}`}>  
+              <div className={styles.stripePromptHeader}>
+                <div className={styles.stripeIconWrapper}>
+                  <AlertTriangle size={28} color="#ffc107"/>
+                </div>  
+                <h3>Get Paid with Stripe!</h3>
+              </div>
+              <p>To receive payments for your gigs, you must connect your bnak account through our payment provider, Stripe. This is secure, free, and only takes a minute.</p>
+              <button onClick={handleStripeConnect} className={styles.stripeButton} disabled={isConnectingStripe}>
+                {isConnectingStripe ? 'Connecting...' : 'Connect My Bank Account'}
+              </button>
+              <div className={styles.stripeStatus}>
+                <AlertTriangle size={20} color="#ffc107"/>
+                <span>{userSettings.stripeAccountStatus ? userSettings.stripeAccountStatus.replace('_', ' ') : 'Not Connected'}</span>
+              </div>
+              
+            </div>
+          )}
 
-        {/* Notification Preferences Section
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}><Bell size={20} style={{ marginRight: '0.5rem' }} /> Notification Preferences</h2>
-          <form onSubmit={handleNotificationPreferencesUpdate}>
-            <SwitchControl
-              id="emailGigUpdates"
-              label="Email: Gig Updates & Offers"
-              checked={emailGigUpdates}
-              onCheckedChange={setEmailGigUpdates}
-            />
-            <SwitchControl
-              id="emailPlatformAnnouncements"
-              label="Email: Platform News & Announcements"
-              checked={emailPlatformAnnouncements}
-              onCheckedChange={setEmailPlatformAnnouncements}
-            />
-            SMS Notification Option (Commented Out)
-            
-            <SwitchControl
-              id="smsGigAlerts"
-              label="SMS: Urgent Gig Alerts (if phone provided)"
-              checked={smsGigAlerts}
-              onCheckedChange={setSmsGigAlerts}
-            />
-           
-             <div className={styles.actionButtons}>
-                <button type="submit" className={styles.button} disabled={isSavingNotifications}>
-                    <Save size={16} /> {isSavingNotifications ? 'Saving...' : 'Save Preferences'}
-                </button>
-            </div>
-          </form>
-        </section> */}
 
-        {/* Account Security Section */}
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}><Shield size={20} style={{ marginRight: '0.5rem' }} /> Account Security</h2>
-          <form onSubmit={handleChangePassword} className={styles.passwordChangeSection}>
-             {/* <div className={styles.formGroup}>
-              <label htmlFor="currentPassword" className={styles.label}>Current Password</label>
-              <InputField
-                id="currentPassword"
-                name="currentPassword"
-                type="password"
-                value={currentPassword}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCurrentPassword(e.target.value)}
-                placeholder="Your current password"
-                required
-              />
-            </div> */}
-            <div className={styles.formGroup}>
-              <label htmlFor="newPassword" className={styles.label}>New Password</label>
-              <InputField
-                id="newPassword"
-                name="newPassword"
-                type="password"
-                value={newPassword}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewPassword(e.target.value)}
-                placeholder="Enter new password (min. 10 characters)"
-                required
-              />
-            </div>
-             <div className={styles.formGroup}>
-              <label htmlFor="confirmNewPassword" className={styles.label}>Confirm New Password</label>
-              <InputField
-                id="confirmNewPassword"
-                name="confirmNewPassword"
-                type="password"
-                value={confirmNewPassword}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfirmNewPassword(e.target.value)}
-                placeholder="Confirm new password"
-                required
-              />
-            </div>
-            <div className={styles.actionButtons}>
+          {/* Profile Information Section */}
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}><User size={20} style={{ marginRight: '0.5rem' }} /> Personal Information</h2>
+            {/* ... (DisplayName, Email - as before) ... */}
+            <form onSubmit={handleProfileUpdate} className={styles.form}>
+              <div className={styles.formGroup}>
+                <label htmlFor="displayName" className={styles.label}>Display Name</label>
+                <InputField
+                  id="displayName"
+                  name="displayName"
+                  type="text"
+                  value={displayName}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setDisplayName(e.target.value)}
+                  placeholder="Your display name"
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label htmlFor="email" className={styles.label}>Email Address</label>
+                <input // Display only, not editable directly here typically
+                  id="email"
+                  type="email"
+                  value={userSettings.email}
+                  readOnly
+                  disabled
+                  className={styles.inputField} // Or use InputField component with disabled prop
+                />
+              </div>
+              <div className={styles.formGroup}> {/* Added phone field */}
+                <label htmlFor="phone" className={styles.label}>Phone Number</label>
+                <InputField
+                  id="phone"
+                  name="phone"
+                  type="tel" // Use type="tel" for phone numbers
+                  value={phone}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPhone(e.target.value)}
+                  placeholder="Your phone number"
+                />
+              </div>
+              <div className={styles.actionButtons}>
                 <button type="submit" className={styles.button} disabled={isSavingProfile}>
-                    {isSavingProfile ? 'Changing...' : 'Change Password'}
+                  <Save size={16} /> {isSavingProfile ? 'Saving...' : 'Save Profile'}
                 </button>
-            </div>
-          </form>
-          <div style={{marginTop: '1rem', textAlign: 'right'}}>
-            <button onClick={handleForgotPassword} className={`${styles.button} ${styles.secondary}`}>
-              Forgot Password? Send Reset Link
-            </button>
-          </div>
-        </section>
+              </div>
+            </form>
+          </section>
 
-        {/* Privacy Settings Section (NEW)
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}><EyeOff size={20} style={{ marginRight: '0.5rem' }} /> Privacy Settings</h2>
-          <SwitchControl
-            id="profileVisibility"
-            label="Profile Visibility (Public/Private for search)"
-            checked={profileVisibility} // Connect to state
-            onCheckedChange={handleProfileVisibilityChange} // Connect to handler
-          />
-          Add more privacy toggles as needed
-        </section> */}
+          {/* Payment Settings Section */}
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}><CreditCard size={20} style={{ marginRight: '0.5rem' }} /> Payment Settings</h2>
+            {userSettings?.stripeAccountId && userSettings.canReceivePayouts ? (
+              <div className={styles.settingItem}>
+                <span className={styles.settingLabel}>Manage your payouts and bank details.</span>
+                <button onClick={handleManageStripeAccount} className={`${styles.button} ${styles.secondary}`}>
+                  Open Stripe Portal
+                </button>
+              </div>
+            ) : (
+              <p className={styles.settingLabel}>Connect your Stripe account to manage payment settings.</p>
+            )}
+          </section>
 
-        {/* Community & Legal Section (Combined & NEW)
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}><Info size={20} style={{ marginRight: '0.5rem' }} /> Community & Legal</h2>
-          <ul className={styles.linkList}>
-            <li><a href="YOUR_DISCORD_LINK" target="_blank" rel="noopener noreferrer">Join our Community Discord</a></li>
-            <li><a href="/user-policy" target="_blank" rel="noopener noreferrer">User Policy</a></li>
-            <li><a href="/terms-of-service" target="_blank" rel="noopener noreferrer">Terms of Service</a></li>
-            <li><a href="/privacy-policy" target="_blank" rel="noopener noreferrer">Privacy Policy</a></li>
-          </ul>
-        </section> */}
+          {/* Notification Preferences Section
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}><Bell size={20} style={{ marginRight: '0.5rem' }} /> Notification Preferences</h2>
+            <form onSubmit={handleNotificationPreferencesUpdate}>
+              <SwitchControl
+                id="emailGigUpdates"
+                label="Email: Gig Updates & Offers"
+                checked={emailGigUpdates}
+                onCheckedChange={setEmailGigUpdates}
+              />
+              <SwitchControl
+                id="emailPlatformAnnouncements"
+                label="Email: Platform News & Announcements"
+                checked={emailPlatformAnnouncements}
+                onCheckedChange={setEmailPlatformAnnouncements}
+              />
+              SMS Notification Option (Commented Out)
+              
+              <SwitchControl
+                id="smsGigAlerts"
+                label="SMS: Urgent Gig Alerts (if phone provided)"
+                checked={smsGigAlerts}
+                onCheckedChange={setSmsGigAlerts}
+              />
+            
+              <div className={styles.actionButtons}>
+                  <button type="submit" className={styles.button} disabled={isSavingNotifications}>
+                      <Save size={16} /> {isSavingNotifications ? 'Saving...' : 'Save Preferences'}
+                  </button>
+              </div>
+            </form>
+          </section> */}
 
-        {/* Actions Section (Bottom Nav from user prompt) */}
-        <section className={styles.bottomNavSection}>
-          <div className={styles.bottomNav}> {/* Using user's class name idea */}
-            {/* <button onClick={() => alert('Contact support: support@ableai.com')} className={styles.bottomNavLink}>
-              <MessageSquare size={18} /> Contact Able AI Agent
-            </button> */}
-            <button onClick={handleLogout} className={styles.bottomNavLink}>
-              <LogOut size={18} /> Logout
-            </button>
-            <button onClick={() => setShowDeleteAccountModal(true)} className={`${styles.bottomNavLink} ${styles.dangerLink}`}>
-              <CircleMinus size={18} /> Delete Account
-            </button>
-          </div>
-        </section>
-      </div>
-
-      {/* Stripe Connect Prompt Modal (Optional, if not inline) */}
-      {/* {showStripePromptModal && (
-        <Modal title="Connect Stripe to Get Paid" onClose={() => setShowStripePromptModal(false)}>
-          // Content of the prompt
-          <button onClick={handleStripeConnect} disabled={isConnectingStripe}>...</button>
-        </Modal>
-      )} */}
-
-      {/* Delete Account Confirmation Modal */}
-      {showDeleteAccountModal && (
-        <div className={styles.modalOverlay} onClick={() => setShowDeleteAccountModal(false)}>
-          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-            <h3 className={styles.modalTitle}>Confirm Account Deletion</h3>
-            <p>Are you absolutely sure you want to delete your account? This action is permanent and cannot be undone. All your data, gigs, and profile information will be removed.</p>
-            <div className={styles.modalActions}>
-              <button
-                onClick={() => setShowDeleteAccountModal(false)}
-                className={`${styles.button} ${styles.secondary}`}
-                disabled={isDeletingAccount}
-              >
-                Cancel
+          {/* Account Security Section */}
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}><Shield size={20} style={{ marginRight: '0.5rem' }} /> Account Security</h2>
+            <form onSubmit={handleChangePassword} className={styles.passwordChangeSection}>
+              {/* <div className={styles.formGroup}>
+                <label htmlFor="currentPassword" className={styles.label}>Current Password</label>
+                <InputField
+                  id="currentPassword"
+                  name="currentPassword"
+                  type="password"
+                  value={currentPassword}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCurrentPassword(e.target.value)}
+                  placeholder="Your current password"
+                  required
+                />
+              </div> */}
+              <div className={styles.formGroup}>
+                <label htmlFor="newPassword" className={styles.label}>New Password</label>
+                <InputField
+                  id="newPassword"
+                  name="newPassword"
+                  type="password"
+                  value={newPassword}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewPassword(e.target.value)}
+                  placeholder="Enter new password (min. 10 characters)"
+                  required
+                />
+              </div>
+              <div className={styles.formGroup}>
+                <label htmlFor="confirmNewPassword" className={styles.label}>Confirm New Password</label>
+                <InputField
+                  id="confirmNewPassword"
+                  name="confirmNewPassword"
+                  type="password"
+                  value={confirmNewPassword}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfirmNewPassword(e.target.value)}
+                  placeholder="Confirm new password"
+                  required
+                />
+              </div>
+              <div className={styles.actionButtons}>
+                  <button type="submit" className={styles.button} disabled={isSavingProfile}>
+                      {isSavingProfile ? 'Changing...' : 'Change Password'}
+                  </button>
+              </div>
+            </form>
+            <div style={{marginTop: '1rem', textAlign: 'right'}}>
+              <button onClick={handleForgotPassword} className={`${styles.button} ${styles.secondary}`}>
+                Forgot Password? Send Reset Link
               </button>
-              <button
-                onClick={handleDeleteAccountConfirmed}
-                className={`${styles.button} ${styles.danger}`}
-                disabled={isDeletingAccount}
-              >
-                {isDeletingAccount ? 'Deleting...' : 'Yes, Delete My Account'}
+            </div>
+          </section>
+
+          {/* Privacy Settings Section (NEW)
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}><EyeOff size={20} style={{ marginRight: '0.5rem' }} /> Privacy Settings</h2>
+            <SwitchControl
+              id="profileVisibility"
+              label="Profile Visibility (Public/Private for search)"
+              checked={profileVisibility} // Connect to state
+              onCheckedChange={handleProfileVisibilityChange} // Connect to handler
+            />
+            Add more privacy toggles as needed
+          </section> */}
+
+          {/* Community & Legal Section (Combined & NEW)
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}><Info size={20} style={{ marginRight: '0.5rem' }} /> Community & Legal</h2>
+            <ul className={styles.linkList}>
+              <li><a href="YOUR_DISCORD_LINK" target="_blank" rel="noopener noreferrer">Join our Community Discord</a></li>
+              <li><a href="/user-policy" target="_blank" rel="noopener noreferrer">User Policy</a></li>
+              <li><a href="/terms-of-service" target="_blank" rel="noopener noreferrer">Terms of Service</a></li>
+              <li><a href="/privacy-policy" target="_blank" rel="noopener noreferrer">Privacy Policy</a></li>
+            </ul>
+          </section> */}
+
+          {/* Actions Section (Bottom Nav from user prompt) */}
+          <section className={styles.bottomNavSection}>
+            <div className={styles.bottomNav}> {/* Using user's class name idea */}
+              {/* <button onClick={() => alert('Contact support: support@ableai.com')} className={styles.bottomNavLink}>
+                <MessageSquare size={18} /> Contact Able AI Agent
+              </button> */}
+              <button onClick={handleLogout} className={styles.bottomNavLink}>
+                <LogOut size={18} /> Logout
+              </button>
+              <button onClick={() => setShowDeleteAccountModal(true)} className={`${styles.bottomNavLink} ${styles.dangerLink}`}>
+                <CircleMinus size={18} /> Delete Account
               </button>
             </div>
-          </div>
+          </section>
         </div>
-      )}
+
+        {/* Stripe Connect Prompt Modal (Optional, if not inline) */}
+        {/* {showStripePromptModal && (
+          <Modal title="Connect Stripe to Get Paid" onClose={() => setShowStripePromptModal(false)}>
+            // Content of the prompt
+            <button onClick={handleStripeConnect} disabled={isConnectingStripe}>...</button>
+          </Modal>
+        )} */}
+
+        {/* Delete Account Confirmation Modal */}
+        {showDeleteAccountModal && (
+          <div className={styles.modalOverlay} onClick={() => setShowDeleteAccountModal(false)}>
+            <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+              <h3 className={styles.modalTitle}>Confirm Account Deletion</h3>
+              <p>Are you absolutely sure you want to delete your account? This action is permanent and cannot be undone. All your data, gigs, and profile information will be removed.</p>
+              <div className={styles.modalActions}>
+                <button
+                  onClick={() => setShowDeleteAccountModal(false)}
+                  className={`${styles.button} ${styles.secondary}`}
+                  disabled={isDeletingAccount}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDeleteAccountConfirmed}
+                  className={`${styles.button} ${styles.danger}`}
+                  disabled={isDeletingAccount}
+                >
+                  {isDeletingAccount ? 'Deleting...' : 'Yes, Delete My Account'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

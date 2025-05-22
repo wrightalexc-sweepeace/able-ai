@@ -4,9 +4,10 @@ import React, { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useAppContext } from '@/app/hooks/useAppContext';
 import Link from 'next/link'; // For Home button
+import Image from 'next/image'; // For notification icons
 
 // Using Lucide Icons
-import { Bell, AlertTriangle, Home, ChevronRight, ArrowLeft, Info, Loader2 } from 'lucide-react';
+import { AlertTriangle, Home, ChevronRight, ArrowLeft, Info, Loader2, ChevronLeft } from 'lucide-react';
 
 import styles from './NotificationsPage.module.css';
 
@@ -46,7 +47,13 @@ const getNotificationIcon = (type: Notification['type']) => {
     case 'gigUpdate':
     case 'badge':
     case 'referral':
-      return <Bell size={20} className={styles.notificationIcon} />;
+      return <Image
+              src="/images/notifications.svg"
+              width={20}
+              height={20}
+              className={styles.notificationIcon}
+              alt="notification icon"
+            />;
     case 'payment':
       return <Info size={20} className={styles.notificationIcon} />; // Or a currency icon
     case 'actionRequired':
@@ -143,51 +150,60 @@ export default function NotificationsPage() {
 
   return (
     <div className={styles.container}>
-      <div className={styles.pageWrapper}>
-        <header className={styles.header}>
-          <button onClick={handleGoBack} className={styles.backButton} aria-label="Go back">
-            <ArrowLeft size={24} />
-          </button>
-          <h1 className={styles.pageTitle}>Notifications</h1>
-        </header>
-
-        {isLoadingNotifications ? (
-          <div className={styles.loadingContainer}><Loader2 className="animate-spin" size={28}/> Loading notifications...</div>
-        ) : error ? (
-          <div className={styles.emptyState}>{error}</div>
-        ) : notifications.length === 0 ? (
-          <div className={styles.emptyState}>You have no new notifications.</div>
-        ) : (
-          <div className={styles.notificationList}>
-            {notifications.map(notification => (
-              <div
-                key={notification.id}
-                className={`${styles.notificationItem} ${!notification.isRead ? styles.unread : ''}`}
-                onClick={() => handleNotificationClick(notification)}
-                role="button"
-                tabIndex={0}
-                onKeyPress={(e) => e.key === 'Enter' && handleNotificationClick(notification)}
-              >
-                <div className={styles.notificationContent}>
-                  {notification.icon || getNotificationIcon(notification.type)}
-                  <div>
-                     <span className={styles.notificationMessage}>{notification.message}</span>
-                     <div className={styles.notificationTimestamp}>{formatTimestamp(notification.timestamp)}</div>
-                  </div>
-                </div>
-                <ChevronRight size={20} className={styles.chevron} />
-              </div>
-            ))}
-          </div>
-        )}
-
-        <footer className={styles.footer}>
-          <Link href={currentActiveRole === 'BUYER' ? `/user/${authUserId}/buyer` : `/user/${authUserId}/worker`} passHref>
-            <button className={styles.homeButton} aria-label="Go to Home">
-                <Home size={24} />
+      <div className={styles.card}>
+        <div className={styles.pageWrapper}>
+          <header className={styles.header}>
+            <button onClick={handleGoBack} className={styles.backButton} aria-label="Go back">
+              <ChevronLeft size={24} color='#fff' />
             </button>
-          </Link>
-        </footer>
+            <h1 className={styles.pageTitle}>Notifications</h1>
+          </header>
+
+          {isLoadingNotifications ? (
+            <div className={styles.loadingContainer}><Loader2 className="animate-spin" size={28}/> Loading notifications...</div>
+          ) : error ? (
+            <div className={styles.emptyState}>{error}</div>
+          ) : notifications.length === 0 ? (
+            <div className={styles.emptyState}>You have no new notifications.</div>
+          ) : (
+            <div className={styles.notificationList}>
+              {notifications.map(notification => (
+                <div
+                  key={notification.id}
+                  className={`${styles.notificationItem} ${!notification.isRead ? styles.unread : ''}`}
+                  onClick={() => handleNotificationClick(notification)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyPress={(e) => e.key === 'Enter' && handleNotificationClick(notification)}
+                >
+                  <div className={styles.notificationContent}>
+                    {notification.icon || getNotificationIcon(notification.type)}
+                    <div>
+                      <span className={styles.notificationMessage}>{notification.message}</span>
+                      <div className={styles.notificationTimestamp}>{formatTimestamp(notification.timestamp)}</div>
+                    </div>
+                  </div>
+                  <ChevronRight size={20} className={styles.chevron} />
+                </div>
+              ))}
+            </div>
+          )}
+
+          <footer className={styles.footer}>
+            <Link href={currentActiveRole === 'BUYER' ? `/user/${authUserId}/buyer` : `/user/${authUserId}/worker`} passHref>
+              <button className={styles.homeButton} aria-label="Go to Home">
+                  {/* <Home size={24} /> */}
+                  <Image
+                    src="/images/home.svg"
+                    width={24}
+                    height={24}
+                    className={styles.homeIcon}
+                    alt="Home icon"
+                  />
+              </button>
+            </Link>
+          </footer>
+        </div>
       </div>
     </div>
   );
