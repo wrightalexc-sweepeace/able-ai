@@ -13,7 +13,7 @@ import SwitchControl from '@/app/components/shared/SwitchControl';
 // import Logo from '@/app/components/brand/Logo'; // Corrected path, if needed
 
 import styles from './SettingsPage.module.css';
-import { User, Shield, Bell, FileText, LogOut, MessageSquare, Save, CreditCard, EyeOff, Info, Trash2, AlertTriangle, CheckCircle } from 'lucide-react'; // Added new icons
+import { User, Shield, Bell, FileText, LogOut, MessageSquare, Save, CreditCard, EyeOff, Info, CircleMinus, AlertTriangle, CheckCircle } from 'lucide-react'; // Added new icons
 
 // Define a type for user settings fetched from backend
 interface UserSettingsData {
@@ -374,7 +374,7 @@ export default function SettingsPage() {
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}><User size={20} style={{ marginRight: '0.5rem' }} /> Personal Information</h2>
           {/* ... (DisplayName, Email - as before) ... */}
-          <form onSubmit={handleProfileUpdate}>
+          <form onSubmit={handleProfileUpdate} className={styles.form}>
             <div className={styles.formGroup}>
               <label htmlFor="displayName" className={styles.label}>Display Name</label>
               <InputField
@@ -431,7 +431,7 @@ export default function SettingsPage() {
           )}
         </section>
 
-        {/* Notification Preferences Section */}
+        {/* Notification Preferences Section
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}><Bell size={20} style={{ marginRight: '0.5rem' }} /> Notification Preferences</h2>
           <form onSubmit={handleNotificationPreferencesUpdate}>
@@ -447,22 +447,22 @@ export default function SettingsPage() {
               checked={emailPlatformAnnouncements}
               onCheckedChange={setEmailPlatformAnnouncements}
             />
-            {/* SMS Notification Option (Commented Out) */}
-            {/*
+            SMS Notification Option (Commented Out)
+            
             <SwitchControl
               id="smsGigAlerts"
               label="SMS: Urgent Gig Alerts (if phone provided)"
               checked={smsGigAlerts}
               onCheckedChange={setSmsGigAlerts}
             />
-            */}
+           
              <div className={styles.actionButtons}>
                 <button type="submit" className={styles.button} disabled={isSavingNotifications}>
                     <Save size={16} /> {isSavingNotifications ? 'Saving...' : 'Save Preferences'}
                 </button>
             </div>
           </form>
-        </section>
+        </section> */}
 
         {/* Account Security Section */}
         <section className={styles.section}>
@@ -488,7 +488,7 @@ export default function SettingsPage() {
                 type="password"
                 value={newPassword}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setNewPassword(e.target.value)}
-                placeholder="Enter new password (min. 6 characters)"
+                placeholder="Enter new password (min. 10 characters)"
                 required
               />
             </div>
@@ -517,7 +517,7 @@ export default function SettingsPage() {
           </div>
         </section>
 
-        {/* Privacy Settings Section (NEW) */}
+        {/* Privacy Settings Section (NEW)
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}><EyeOff size={20} style={{ marginRight: '0.5rem' }} /> Privacy Settings</h2>
           <SwitchControl
@@ -526,10 +526,10 @@ export default function SettingsPage() {
             checked={profileVisibility} // Connect to state
             onCheckedChange={handleProfileVisibilityChange} // Connect to handler
           />
-          {/* Add more privacy toggles as needed */}
-        </section>
+          Add more privacy toggles as needed
+        </section> */}
 
-        {/* Community & Legal Section (Combined & NEW) */}
+        {/* Community & Legal Section (Combined & NEW)
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}><Info size={20} style={{ marginRight: '0.5rem' }} /> Community & Legal</h2>
           <ul className={styles.linkList}>
@@ -538,19 +538,19 @@ export default function SettingsPage() {
             <li><a href="/terms-of-service" target="_blank" rel="noopener noreferrer">Terms of Service</a></li>
             <li><a href="/privacy-policy" target="_blank" rel="noopener noreferrer">Privacy Policy</a></li>
           </ul>
-        </section>
+        </section> */}
 
         {/* Actions Section (Bottom Nav from user prompt) */}
-        <section className={`${styles.section} ${styles.bottomNavSection}`}>
+        <section className={styles.bottomNavSection}>
           <div className={styles.bottomNav}> {/* Using user's class name idea */}
-            <button onClick={() => alert('Contact support: support@ableai.com')} className={styles.bottomNavLink}>
+            {/* <button onClick={() => alert('Contact support: support@ableai.com')} className={styles.bottomNavLink}>
               <MessageSquare size={18} /> Contact Able AI Agent
-            </button>
+            </button> */}
             <button onClick={handleLogout} className={styles.bottomNavLink}>
               <LogOut size={18} /> Logout
             </button>
             <button onClick={() => setShowDeleteAccountModal(true)} className={`${styles.bottomNavLink} ${styles.dangerLink}`}>
-              <Trash2 size={18} /> Delete Account
+              <CircleMinus size={18} /> Delete Account
             </button>
           </div>
         </section>

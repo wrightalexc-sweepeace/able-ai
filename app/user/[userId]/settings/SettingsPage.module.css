@@ -51,8 +51,10 @@
   border-bottom: 1px solid #2b2b2b;
 }
 
-.formGroup {
-  margin-bottom: 1.25rem;
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 .formGroup:last-child {
   margin-bottom: 0;
@@ -139,7 +141,7 @@
   display: flex;
   justify-content: flex-end;
   gap: 0.75rem;
-  margin-top: 1.5rem;
+  /* margin-top: 1.5rem; */
 }
 
 .linkList {
@@ -287,15 +289,12 @@
 
 /* Bottom Navigation Section */
 .bottomNavSection {
-    padding-top: 0.5rem; /* Less padding if actions are distinct */
-    padding-bottom: 0.5rem;
+  padding-top: 0.5rem;
 }
 
 .bottomNav { /* From user example */
   display: flex;
-  flex-direction: column; /* Stack on mobile */
-  gap: 0.75rem;
-  /* padding-top: 1.25rem; /* User's 20px */
+  justify-content: space-between;
 }
 
 @media (min-width: 768px) { /* For wider screens, make it horizontal */
@@ -311,7 +310,7 @@
   color: #c2c2c2; /* Lighter grey for links */
   text-decoration: none;
   font-size: 0.875rem; /* User's 14px */
-  padding: 0.5rem 0.75rem;
+  font-weight: 700;
   cursor: pointer;
   transition: color 0.2s ease;
   display: flex;
