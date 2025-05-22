@@ -48,7 +48,8 @@
   align-items: center;
   gap: 5px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 16px;
+  font-weight: 700;
   color: white;
 }
 
@@ -61,9 +62,9 @@
 .switchSlider {
   position: relative;
   display: inline-block;
-  width: 30px;
-  height: 14px;
-  background-color: #ccc;
+  width: 35px;
+  height: 18px;
+  background-color: #fff;
   border-radius: 20px;
   transition: background-color 0.3s;
 }
@@ -71,10 +72,10 @@
 .switchSlider::before {
   content: '';
   position: absolute;
-  height: 10px;    /* Reduced from 16px */
-  width: 10px;     /* Reduced from 16px */
+  height: 12px;    /* Reduced from 16px */
+  width: 12px;     /* Reduced from 16px */
   left: 2px;
-  bottom: 2px;
+  bottom: 3px;
   background-color: black;
   border-radius: 50%;
   transition: transform 0.3s;
@@ -82,5 +83,5 @@
 
 
 .switchInput:checked + .switchSlider::before {
-  transform: translateX(15px);
+  transform: translateX(18px);
 }
