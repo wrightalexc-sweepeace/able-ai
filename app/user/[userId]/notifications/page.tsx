@@ -10,6 +10,7 @@ import Image from 'next/image'; // For notification icons
 import { AlertTriangle, Home, ChevronRight, ArrowLeft, Info, Loader2, ChevronLeft } from 'lucide-react';
 
 import styles from './NotificationsPage.module.css';
+import Loader from '@/app/components/shared/Loader'; // Assuming you have a Loader component
 
 // Define an interface for notification data
 interface Notification {
@@ -145,7 +146,7 @@ export default function NotificationsPage() {
   };
 
   if (loadingAuth || (!isAuthenticated && !loadingAuth) || (authUserId && authUserId !== pageUserId)) {
-    return <div className={styles.loadingContainer}><Loader2 className="animate-spin" size={32} /> Loading...</div>;
+    return <Loader />; // Show loader while checking auth
   }
 
   return (
@@ -160,7 +161,7 @@ export default function NotificationsPage() {
           </header>
 
           {isLoadingNotifications ? (
-            <div className={styles.loadingContainer}><Loader2 className="animate-spin" size={28}/> Loading notifications...</div>
+            <Loader />
           ) : error ? (
             <div className={styles.emptyState}>{error}</div>
           ) : notifications.length === 0 ? (

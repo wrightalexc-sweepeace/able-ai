@@ -115,12 +115,3 @@
   align-items: center;
   /* border-top: 1px solid #2b2b2b; */
 }
-
-.loadingContainer {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 80vh; /* Or full viewport height */
-  color: white;
-  font-size: 1.2rem;
-}

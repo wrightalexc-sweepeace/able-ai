@@ -14,6 +14,7 @@ import SwitchControl from '@/app/components/shared/SwitchControl';
 
 import styles from './SettingsPage.module.css';
 import { User, Shield, Bell, FileText, LogOut, MessageSquare, Save, CreditCard, EyeOff, Info, CircleMinus, AlertTriangle, CheckCircle } from 'lucide-react'; // Added new icons
+import Loader from '@/app/components/shared/Loader';
 
 // Define a type for user settings fetched from backend
 interface UserSettingsData {
@@ -327,7 +328,7 @@ export default function SettingsPage() {
   };
 
   if (isLoading || isLoadingSettings) { // Use isLoading
-    return <div className={styles.loadingContainer}>Loading settings...</div>;
+    return <Loader />;
   }
 
   if (!isAuthenticated || !userSettings) {

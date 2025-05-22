@@ -8,6 +8,7 @@ import { useFirebaseAuth } from "@/app/hooks/useFirebaseAuth";
 import Logo from "@/app/components/brand/Logo"; // Reusing Logo
 import ActionButton from "./ActionButton";
 import styles from "./SelectRolePage.module.css";
+import Loader from "@/app/components/shared/Loader"; // Assuming you have a Loader component
 
 export default function SelectRolePage() {
   const router = useRouter();
@@ -59,9 +60,7 @@ export default function SelectRolePage() {
   if (!isViewQA && (loadingAuth || (!loadingAuth && !user))) {
     // Show a loading spinner or skeleton screen while auth is checked
     return (
-      <div className={styles.container}>
-        <p className={styles.loadingText}>Loading...</p>
-      </div>
+      <Loader />
     );
   }
 

@@ -17,6 +17,7 @@ import { UserCircle, Briefcase, CalendarCheck2, DollarSign } from 'lucide-react'
 
 import styles from './HomePage.module.css'; // Create this CSS Module
 import Image from 'next/image';
+import Loader from '@/app/components/shared/Loader';
 
 // Define this interface if you add the optional summary section
 // interface UpcomingGigSummary {
@@ -72,7 +73,7 @@ export default function WorkerDashboardPage() { // Renamed for clarity
   // }, [isAuthenticated, currentActiveRole, THIS_HOME_ROLE]);
 
   if (loadingAuth || !isAuthenticated || currentActiveRole !== THIS_HOME_ROLE) {
-    return <div className={styles.loadingContainer}>Loading Dashboard...</div>;
+    return <Loader />
   }
 
   return (
