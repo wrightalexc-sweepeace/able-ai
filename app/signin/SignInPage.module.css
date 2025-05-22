@@ -137,6 +137,7 @@
 .errorCloseBtn {
   color: var(--error-color);
   font-size: 1rem;
+  cursor: pointer;
 }
 
 .errorLink {

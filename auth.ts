@@ -47,7 +47,6 @@ export const authOptions = {
         const idToken = credentials?.idToken;
         const roleFromClient = credentials?.role;
         const phone = credentials?.phone;
-        console.log("Credentials received:", credentials);
 
         if (idToken) {
           try {
@@ -169,12 +168,12 @@ export const authOptions = {
     },
   },
 
-  events: {
-    async signIn({ user, isNewUser = false }) {
-      console.log(`User signed in: ${user.id}, New User: ${JSON.stringify(user)} ${isNewUser}`);
-      // Potentially trigger other actions here, like updating last login in PG
-    },
-  },
+  // events: {
+  //   async signIn({ user, isNewUser = false }) {
+  //     console.log(`User signed in: ${user.id}, New User: ${JSON.stringify(user)} ${isNewUser}`);
+  //     // Potentially trigger other actions here, like updating last login in PG
+  //   },
+  // },
   debug: process.env.NODE_ENV !== "production",
   adapter: FirestoreAdapter(firestore),
 } satisfies NextAuthOptions;

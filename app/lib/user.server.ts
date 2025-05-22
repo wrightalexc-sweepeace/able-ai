@@ -52,10 +52,10 @@ export async function findOrCreatePgUserAndUpdateRole(
       // User exists, potentially update fullName if it's different from Firebase displayName
       // and ensure role flags are set if they were previously false and an initialRoleContext is now provided.
       const updates: Partial<typeof UsersTable.$inferInsert> = { updatedAt: new Date() };
-      if (pgUser.fullName !== displayName) {
+      if (displayName && pgUser.fullName !== displayName) {
         updates.fullName = displayName;
       }
-      if (pgUser.phone !== phone) {
+      if (!!phone && pgUser.phone !== phone) {
         updates.phone = phone;
       }
       if (initialRoleContext === 'BUYER' && !pgUser.isBuyer) {
