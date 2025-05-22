@@ -14,7 +14,6 @@ import SettingsButton from '@/app/components/shared/SettingsButton';
 
 // Import Lucide icons as needed for the specific dashboard
 import { UserCircle, Briefcase, CalendarCheck2, DollarSign } from 'lucide-react';
-// import NotifIcon from '@mui/icons-material/NotificationsSharp';
 
 import styles from './HomePage.module.css'; // Create this CSS Module
 import Image from 'next/image';
@@ -97,7 +96,12 @@ export default function WorkerDashboardPage() { // Renamed for clarity
           {userPublicProfile?.uid && (
             <Link href={`/user/${userPublicProfile.uid}/notifications`} passHref>
               <button className={styles.notificationButton} aria-label="Notifications">
-                {/* <NotifIcon fontSize='large'/> */}
+                <Image 
+                  src="/images/notifications.svg"
+                  alt="Notifications"
+                  width={45}
+                  height={45}
+                />
               </button>
             </Link>
           )}
