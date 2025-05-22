@@ -4,7 +4,7 @@
   position:absolute;
   top: 8%;
   right: 18%;
-  left: 23%;
+  left: 21%;
   background-color: #2a2a2a; /* Dark background for the banner */
   color: #e0e0e0;      /* Light text */
   padding: 0.5rem;
@@ -15,13 +15,6 @@
   align-items: flex-start; /* Align icon with the start of the text */
   /* border-left: 4px solid var(--primary-color); Accent border */
 }
-
-/* .suggestionIcon {
-  color: var(--primary-color); 
-  margin-right: 0.75rem;
-  flex-shrink: 0;
-  margin-top: 0.125rem;
-} */
 
 .suggestionContent {
   flex: 1; 

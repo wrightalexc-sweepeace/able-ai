@@ -31,10 +31,6 @@
   margin: 0;
 } */
 
-.logo {
-  object-fit: cover;
-}
-
 .welcomeMessage {
     font-size: 1rem;
     color: #a0a0a0;

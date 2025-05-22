@@ -18,6 +18,7 @@ import { Users, CalendarDays, CreditCard, LayoutDashboard } from 'lucide-react';
 import styles from './HomePage.module.css'; // Create this CSS Module
 import Image from 'next/image';
 import Loader from '@/app/components/shared/Loader';
+import Logo from '@/app/components/brand/Logo'; // Assuming you have a Logo component
 
 // Define this interface if you add the optional summary section
 // interface UpcomingGigSummary {
@@ -86,13 +87,14 @@ export default function BuyerDashboardPage() { // Renamed for clarity
                   Welcome back, {userPublicProfile.displayName}!
               </p>
           )} */}
-          <Image
+          {/* <Image
             src="/images/ableai2.jpeg"
             alt="App Logo"
             width={60}
             height={60}
             className={styles.logo}
-          />
+          /> */}
+          <Logo width={60} height={60} />
           {/* Notification Icon */}
           {userPublicProfile?.uid && (
             <Link href={`/user/${userPublicProfile.uid}/notifications`} passHref>

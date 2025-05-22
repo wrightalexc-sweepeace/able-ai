@@ -1,7 +1,5 @@
 /* app/components/shared/IconGrid.module.css */
 .grid {
-  /* display: grid;
-  grid-template-columns: repeat(2, 1fr); 2 columns by default */
   display: flex;
   flex-wrap: wrap; /* Allow wrapping to the next line */
   gap: 1rem; /* Space between cards */
@@ -9,13 +7,6 @@
   justify-content: center;
   max-width: 400px;
 }
-
-/* Optional: For larger screens, you might want 4 columns */
-/* @media (min-width: 768px) {
-  .grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-} */
 
 .card {
   background: #2b2b2b; /* Dark card background */
