@@ -3,7 +3,8 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './SettingsButton.module.css';
-import { Settings } from 'lucide-react';
+import Image from 'next/image';
+// import { Settings } from 'lucide-react';
 // import Settings from '@mui/icons-material/Settings';
 
 const SettingsButton: React.FC = () => {
@@ -18,7 +19,13 @@ const SettingsButton: React.FC = () => {
       className={styles.settingsButton}
       aria-label="Settings"
     >
-      <Settings style={{color: "#fff"}} fontSize='large'/>
+      {/* <Settings style={{color: "#fff"}} fontSize='large'/> */}
+      <Image
+        src="/images/settings.svg"
+        alt="Settings"
+        width={35}
+        height={35}
+      />
     </button>
   );
 };
