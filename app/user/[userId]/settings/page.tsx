@@ -353,21 +353,25 @@ export default function SettingsPage() {
             <CheckCircle size={20} /> Stripe account connected and active.
           </div>
         )}
-        {/* {userSettings && (!userSettings.stripeAccountId || !userSettings.canReceivePayouts) && ( 
-          <div className={`${styles.section} ${styles.stripePromptInline}`}> 
-            <div className={styles.stripeIconWrapper}><AlertTriangle size={28} color="#ffc107"/></div>
-            <div>
-              <h3>Connect Stripe to Get Paid!</h3>
-              <p>To receive payments for your gigs, you need to connect a Stripe account. It's secure, free, and quick.</p>
-              <p className={styles.stripeStatus}>
-                Current Status: {userSettings.stripeAccountStatus ? userSettings.stripeAccountStatus.replace('_', ' ') : 'Not Connected'}
-              </p>
-              <button onClick={handleStripeConnect} className={styles.stripeButton} disabled={isConnectingStripe}>
-                {isConnectingStripe ? 'Connecting...' : 'Connect My Bank Account'}
-              </button>
+        {userSettings && (!userSettings.stripeAccountId || !userSettings.canReceivePayouts) && ( 
+          <div className={`${styles.section} ${styles.stripePromptInline}`}>  
+            <div className={styles.stripePromptHeader}>
+              <div className={styles.stripeIconWrapper}>
+                <AlertTriangle size={28} color="#ffc107"/>
+              </div>  
+              <h3>Get Paid with Stripe!</h3>
             </div>
+            <p>To receive payments for your gigs, you must connect your bnak account through our payment provider, Stripe. This is secure, free, and only takes a minute.</p>
+            <button onClick={handleStripeConnect} className={styles.stripeButton} disabled={isConnectingStripe}>
+              {isConnectingStripe ? 'Connecting...' : 'Connect My Bank Account'}
+            </button>
+            <div className={styles.stripeStatus}>
+              <AlertTriangle size={20} color="#ffc107"/>
+              <span>{userSettings.stripeAccountStatus ? userSettings.stripeAccountStatus.replace('_', ' ') : 'Not Connected'}</span>
+            </div>
+            
           </div>
-        )} */}
+        )}
 
 
         {/* Profile Information Section */}

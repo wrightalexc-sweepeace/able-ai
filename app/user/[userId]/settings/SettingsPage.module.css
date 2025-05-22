@@ -197,10 +197,16 @@
 .stripePromptInline {
   background-color: #2c2c2e; /* Slightly different dark shade for emphasis */
   border: 1px solid #ffc107; /* Gold border */
-  /* padding: 1.5rem; Already in .section */
   text-align: left; /* Align text left for more content */
   display: flex; /* For icon and text alignment */
-  gap: 1rem;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.stripePromptHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem; /* Space between icon and text */
 }
 
 .stripeIconWrapper {
@@ -210,7 +216,6 @@
 .stripePromptInline h3 {
   color: #ffc107; /* Gold color for the heading */
   margin-top: 0;
-  margin-bottom: 0.75rem;
   font-size: 1.1rem;
 }
 .stripePromptInline p {
@@ -221,15 +226,14 @@
 }
 
 .stripeButton { /* From user example */
-  background-color: #2196f3; /* Blue button */
+  background-color: var(--primary-color);
   color: #fff;
   border: none;
   padding: 0.75rem 1.25rem; /* Adjusted padding */
-  border-radius: 0.5rem; /* 8px */
+  border-radius: 1.5rem; /* 8px */
   cursor: pointer;
   font-size: 0.9rem; /* Adjusted font size */
   font-weight: 500;
-  margin-top: 1rem;
   transition: background-color 0.2s ease;
 }
 .stripeButton:hover:not(:disabled) {
@@ -241,10 +245,15 @@
 
 
 .stripeStatus { /* From user example */
-  color: #f44336; /* Red color for "Not connected" */
-  margin-top: 0.5rem;
+  color: #fff; /* Red color for "Not connected" */
+  margin-top: 1.5rem;
   font-size: 0.85rem;
   font-weight: 500;
+  display: flex;
+  align-items: center; 
+  gap: 0.5rem; /* Space between icon and text */
+  justify-content: center;
+
 }
 .stripeStatusBannerConnected { /* Custom style for positive status */
     display: flex;
