@@ -22,9 +22,6 @@
   border-radius: 50%; */
 }
 
-.textWrapper {
-  /* flex-grow: 1; */
-}
 
 .title {
   font-weight: 600;
@@ -41,7 +38,6 @@
 
 .button {
   background: #ffffff;
-  color: var(--primary-color);
   border: none;
   padding: 0.6rem 1rem;
   border-radius: 0.5rem; /* 8px */
@@ -50,8 +46,24 @@
   cursor: pointer;
   transition: background-color 0.2s ease;
   flex-shrink: 0;
+  position: relative;
 }
 
-.button:hover {
-  background-color: #f0f0f0;
+.tooltip {
+  opacity: 0;
+  position: absolute;
+  bottom: 120%;
+  left: 40%;
+  color: #ffffff;
+  background-color: #333;
+  padding: 0.5rem;
+  border-radius: 0.5rem; /* 8px */
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: opacity 0.2s ease;
+  white-space: nowrap;
+}
+
+.button:hover .tooltip {
+  opacity: 1;
 }
