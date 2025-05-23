@@ -9,7 +9,7 @@ interface Item {
   icon: React.ReactNode;
   to: string;
 }
-const IconGrid = ({ items = [], color="#41a1e8" }: { items: Item[]; color: string }) => {
+const IconGrid = ({ items = [], color = "#41a1e8" }: { items: Item[]; color?: string }) => {
   return (
     <div className={styles.grid}>
       {items.map((item) => (
