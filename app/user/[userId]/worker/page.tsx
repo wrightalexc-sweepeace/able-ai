@@ -53,9 +53,9 @@ export default function WorkerDashboardPage() { // Renamed for clarity
   const uid = userPublicProfile?.uid;
   // Define actionItems specific to the role (Worker)
   const actionItems = [
-    { label: "My Gigfolio", icon: <UserCircle size={28} />, to: `/user/${uid}/worker/profile` },
-    { label: "Gig Offers", icon: <Briefcase size={28} />, to: `/user/${uid}/worker/offers` },
-    { label: "My Calendar & Gigs", icon: <CalendarCheck2 size={28} />, to: `/user/${uid}/worker/calendar` },
+    { label: "Gigfolio", icon: <UserCircle size={28} />, to: `/user/${uid}/worker/profile` },
+    { label: "Offers", icon: <Briefcase size={28} />, to: `/user/${uid}/worker/offers` },
+    { label: "Calendar & Gigs", icon: <CalendarCheck2 size={28} />, to: `/user/${uid}/worker/calendar` },
     { label: "Earnings & History", icon: <DollarSign size={28} />, to: `/user/${uid}/worker/earnings` },
   ];
 

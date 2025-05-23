@@ -55,10 +55,10 @@ export default function BuyerDashboardPage() { // Renamed for clarity
   const uid = userPublicProfile?.uid;
 
   const actionItems = [
-    { label: "Hire Talent", icon: <Users size={28} />, to: "/onboard-buyer" },
-    { label: "My Gigs & Bookings", icon: <CalendarDays size={28} />, to: `/user/${uid}/buyer/calendar` },
+    { label: "Dashboard", icon: <LayoutDashboard size={28} />, to: `/user/${uid}/buyer/analytics` },
+    { label: "Hire", icon: <Users size={28} />, to: "/onboard-buyer" },
+    { label: "Calendar & Gigs", icon: <CalendarDays size={28} />, to: `/user/${uid}/buyer/calendar` },
     { label: "Payments & History", icon: <CreditCard size={28} />, to: `/user/${uid}/buyer/payments` },
-    { label: "Workforce Analytics", icon: <LayoutDashboard size={28} />, to: `/user/${uid}/buyer/analytics` },
   ];
 
   // Optional: Fetch summary data for upcoming gigs/offers
