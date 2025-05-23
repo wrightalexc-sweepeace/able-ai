@@ -112,7 +112,7 @@ export default function BuyerDashboardPage() { // Renamed for clarity
         />
 
         {/* <h2 className={styles.sectionTitle}>Manage Your Activity</h2> */}
-        <IconGrid items={actionItems} />
+        <IconGrid items={actionItems} color={"#7eeef9"}/>
 
         {/* Optional Summary Section - Example Structure
         {summaryData.length > 0 && (
