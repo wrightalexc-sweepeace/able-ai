@@ -50,20 +50,15 @@ export default function WorkerDashboardPage() { // Renamed for clarity
     }
   }, [isAuthenticated, loadingAuth, currentActiveRole, userPublicProfile, router, THIS_HOME_ROLE]);
 
-
+  const uid = userPublicProfile?.uid;
   // Define actionItems specific to the role (Worker)
   const actionItems = [
-    { label: "My Gigfolio", icon: <UserCircle size={28} />, to: "/worker/profile" },
-    { label: "Gig Offers", icon: <Briefcase size={28} />, to: "/worker/offers" },
-    { label: "My Calendar & Gigs", icon: <CalendarCheck2 size={28} />, to: "/worker/calendar" },
-    { label: "Earnings & History", icon: <DollarSign size={28} />, to: "/worker/earnings" },
+    { label: "My Gigfolio", icon: <UserCircle size={28} />, to: `/user/${uid}/worker/profile` },
+    { label: "Gig Offers", icon: <Briefcase size={28} />, to: `/user/${uid}/worker/offers` },
+    { label: "My Calendar & Gigs", icon: <CalendarCheck2 size={28} />, to: `/user/${uid}/worker/calendar` },
+    { label: "Earnings & History", icon: <DollarSign size={28} />, to: `/user/${uid}/worker/earnings` },
   ];
 
-  const handleReferralClick = () => {
-    console.log(`${THIS_HOME_ROLE} referral button clicked`);
-    // Implement referral logic or navigation
-    // router.push('referrals');
-  };
 
   // Optional: Fetch summary data for upcoming gigs/offers
   // const [summaryData, setSummaryData] = useState<UpcomingGigSummary[]>([]);
@@ -130,9 +125,6 @@ export default function WorkerDashboardPage() { // Renamed for clarity
 
         <ReferralBanner
           title="Refer a Worker & Earn £5!"
-          description="Know someone skilled? Invite them to Able AI and earn when they complete their first gig."
-          buttonText="Share My Invite Link"
-          onButtonClick={handleReferralClick}
         />
 
         <footer className={styles.pageFooter}>

@@ -52,18 +52,14 @@ export default function BuyerDashboardPage() { // Renamed for clarity
 
 
   // Define actionItems specific to the role (Buyer)
-  const actionItems = [
-    { label: "Hire Talent", icon: <Users size={28} />, to: "/buyer/hire" },
-    { label: "My Gigs & Bookings", icon: <CalendarDays size={28} />, to: "/buyer/calendar" },
-    { label: "Payments & History", icon: <CreditCard size={28} />, to: "/buyer/payments" },
-    { label: "Workforce Analytics", icon: <LayoutDashboard size={28} />, to: "/buyer/analytics" }, // Placeholder
-  ];
+  const uid = userPublicProfile?.uid;
 
-  const handleReferralClick = () => {
-    console.log(`${THIS_HOME_ROLE} referral button clicked`);
-    // Implement referral logic or navigation
-    // router.push('referrals');
-  };
+  const actionItems = [
+    { label: "Hire Talent", icon: <Users size={28} />, to: "/onboard-buyer" },
+    { label: "My Gigs & Bookings", icon: <CalendarDays size={28} />, to: `/user/${uid}/buyer/calendar` },
+    { label: "Payments & History", icon: <CreditCard size={28} />, to: `/user/${uid}/buyer/payments` },
+    { label: "Workforce Analytics", icon: <LayoutDashboard size={28} />, to: `/user/${uid}/buyer/analytics` },
+  ];
 
   // Optional: Fetch summary data for upcoming gigs/offers
   // const [summaryData, setSummaryData] = useState<UpcomingGigSummary[]>([]);
@@ -137,9 +133,6 @@ export default function BuyerDashboardPage() { // Renamed for clarity
 
         <ReferralBanner
           title="Refer a Business & Earn £5!"
-          description="Help another business find great talent on Able AI and get rewarded."
-          buttonText="Get My Referral Link"
-          onButtonClick={handleReferralClick}
         />
 
         <footer className={styles.pageFooter}>
