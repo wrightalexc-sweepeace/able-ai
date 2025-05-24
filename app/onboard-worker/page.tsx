@@ -17,6 +17,9 @@ const BOT_AVATAR_SRC = "/images/logo-placeholder.svg";
 
 import baseInitialSteps from './initialSteps';
 import { OnboardingStep } from './OnboardingSteps';
+import StripeLinkBubble from '../components/onboarding/StripeLinkBubble';
+import CalendarPickerBubble from '../components/onboarding/CalendarPickerBubble';
+
 
 export default function OnboardWorkerPage() {
   const router = useRouter();
@@ -273,21 +276,33 @@ export default function OnboardWorkerPage() {
     return interactiveSteps.every(step => step.isComplete);
   }, [onboardingSteps, isViewQA]);
 
+  const handleCalendarChange = (date: Date | null) => {
+    console.log("Selected date:", date);
+  }
+
   if (loadingAuth) {
     return <div className={pageStyles.loadingContainer}><p>Loading authentication...</p></div>;
   }
 
   return (
     <ChatBotLayout ref={chatContainerRef} onScroll={(e: React.UIEvent<HTMLDivElement>) => {}} tag='Looking for an experienced bartender'>
-      {isViewQA && (
+      {/* {isViewQA && (
         <div style={{ background: 'rgba(255,220,220,0.8)', borderBottom: '1px solid rgba(200,0,0,0.3)', color: '#8B0000', textAlign: 'center', padding: '8px 5px', fontSize: '0.85em', fontWeight: '500' }}>
           QA Mode: Full Chat Preview
         </div>
-      )}
+      )} */}
       {chatMessages.map((step) => {
         const key = `step-${step.id}-${step.senderType || step.type}-${step.inputName || Math.random()}`;
 
         if (step.type === 'botMessage') {
+          if (step.value) {
+            return (
+              <>
+                <MessageBubble key={key} text={step.content as string} senderType="bot" avatarSrc={BOT_AVATAR_SRC} />
+                <StripeLinkBubble key={key} label='LINK TO STRIPE' stripeLink={step.value as string} />
+              </>
+            );
+          }
           return <MessageBubble key={key} text={step.content as string} senderType="bot" avatarSrc={BOT_AVATAR_SRC} />;
         }
         if (step.type === 'userResponseDisplay' && step.senderType === 'user') {
@@ -300,36 +315,42 @@ export default function OnboardWorkerPage() {
             return <WorkerCard key={key} worker={step.workerData} onBook={handleBookWorker} />;
         }
 
-        if (!isViewQA && (step.type === 'userInput' || step.type === 'fileUpload' || step.type === 'datePicker') && !step.isComplete) {
-          const commonProps = {
-            id: step.inputName,
-            name: step.inputName,
-            label: step.inputLabel,
-            value: formData[step.inputName!] || '',
-            disabled: isSubmitting,
-            onFocus: () => setCurrentFocusedInputName(step.inputName || null),
-            onBlur: () => {
-                if(formData[step.inputName!] || step.inputType === 'date' || step.inputType === 'file'){
-                    handleInputSubmit(step.id, step.inputName!);
-                }
-            },
-            onKeyPress: (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-              if (e.key === 'Enter' && (step.inputType === 'text' || step.inputType === 'email' || step.inputType === 'number')) {
-                e.preventDefault();
-                handleInputSubmit(step.id, step.inputName!);
-              }
-            }
-          };
-
-          if (step.inputType === 'textarea') {
-            return <TextAreaBubble key={key} {...commonProps} placeholder={step.inputPlaceholder} rows={3} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleInputChange(step.inputName!, e.target.value)} ref={(el: HTMLTextAreaElement | null) => { if (el && currentFocusedInputName === step.inputName) el.focus(); }}/>;
-          }
-          // FileUploadBubble rendering was removed in user's provided code, add back if needed
-          // if (step.inputType === 'file') { ... }
-          if (step.inputType === 'text' || step.inputType === 'email' || step.inputType === 'number' || step.inputType === 'date') {
-            return <InputBubble key={key} {...commonProps} type={step.inputType} placeholder={step.inputPlaceholder} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange(step.inputName!, e.target.value)} ref={(el: HTMLInputElement | null) => { if (el && currentFocusedInputName === step.inputName) el.focus(); }}/>;
-          }
+        if (step.type === 'datePicker') {
+          return (
+           <CalendarPickerBubble onChange={handleCalendarChange} key={key} />
+          );
         }
+
+        // if (!isViewQA && (step.type === 'userInput' || step.type === 'fileUpload' || step.type === 'datePicker') && !step.isComplete) {
+        //   const commonProps = {
+        //     id: step.inputName,
+        //     name: step.inputName,
+        //     label: step.inputLabel,
+        //     value: formData[step.inputName!] || '',
+        //     disabled: isSubmitting,
+        //     onFocus: () => setCurrentFocusedInputName(step.inputName || null),
+        //     onBlur: () => {
+        //         if(formData[step.inputName!] || step.inputType === 'date' || step.inputType === 'file'){
+        //             handleInputSubmit(step.id, step.inputName!);
+        //         }
+        //     },
+        //     onKeyPress: (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        //       if (e.key === 'Enter' && (step.inputType === 'text' || step.inputType === 'email' || step.inputType === 'number')) {
+        //         e.preventDefault();
+        //         handleInputSubmit(step.id, step.inputName!);
+        //       }
+        //     }
+        //   };
+
+        //   if (step.inputType === 'textarea') {
+        //     return <TextAreaBubble key={key} {...commonProps} placeholder={step.inputPlaceholder} rows={3} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleInputChange(step.inputName!, e.target.value)} ref={(el: HTMLTextAreaElement | null) => { if (el && currentFocusedInputName === step.inputName) el.focus(); }}/>;
+        //   }
+        //   // FileUploadBubble rendering was removed in user's provided code, add back if needed
+        //   // if (step.inputType === 'file') { ... }
+        //   if (step.inputType === 'text' || step.inputType === 'email' || step.inputType === 'number' || step.inputType === 'date') {
+        //     return <InputBubble key={key} {...commonProps} type={step.inputType} placeholder={step.inputPlaceholder} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange(step.inputName!, e.target.value)} ref={(el: HTMLInputElement | null) => { if (el && currentFocusedInputName === step.inputName) el.focus(); }}/>;
+        //   }
+        // }
         return null;
       })}
 
@@ -339,7 +360,7 @@ export default function OnboardWorkerPage() {
        {isSubmitting && !isViewQA && (
          <MessageBubble key="submitting-msg" text="Processing..." senderType="bot" avatarSrc={BOT_AVATAR_SRC} />
       )}
-       <input
+       {/* <input
         type="text"
         placeholder="Type your message..."
         onKeyPress={(e) => {
@@ -361,7 +382,7 @@ export default function OnboardWorkerPage() {
           borderRadius: '5px',
           marginTop: '10px',
         }}
-      />
+      /> */}
     </ChatBotLayout>
   );
 }

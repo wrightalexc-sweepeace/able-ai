@@ -1,5 +1,6 @@
 import React from 'react';
 import styles from './StripeLinkBubble.module.css';
+import Link from 'next/link';
 
 interface StripeLinkBubbleProps {
     id?: string;
@@ -13,13 +14,18 @@ const StripeLinkBubble: React.FC<StripeLinkBubbleProps> = ({ id, name, label, st
     // This is a mock implementation. Replace with a real Stripe onboarding link later.
     return (
         <div className={styles.stripeLinkBubbleWrapper}>
-            {label && <label htmlFor={id || name} className={styles.label}>{label}</label>}
+            {/* {label && <label htmlFor={id || name} className={styles.label}>{label}</label>} */}
             <div className={styles.stripeLinkPlaceholder}>
-                <p>[Stripe Onboarding Link Placeholder]</p>
+                {/* <p>[Stripe Onboarding Link Placeholder]</p> */}
                 {stripeLink ? (
-                    <a href={stripeLink} target="_blank" rel="noopener noreferrer" className={disabled ? styles.disabledLink : ""}>
-                        Connect to Stripe
-                    </a>
+                    <Link
+                        href={stripeLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={disabled ? styles.disabledLink : ""}
+                    >
+                        {label}
+                    </Link>
                 ) : (
                     <p>No Stripe link available.</p>
                 )}

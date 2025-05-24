@@ -17,65 +17,30 @@ export interface OnboardingStep {
   }
 
 const baseInitialSteps: OnboardingStep[] = [
-    { id: 1, type: 'botMessage', content: "Hi! Tell me about yourself and what gig or gigs you need filling - we can assemble a team if you need one!" },
-    { id: 2, type: 'botMessage', content: "We have some great bartenders available. Do you need any special skills or do you have instructions for your hire?", dependsOn: 1 },
-    {
-      id: 3, type: 'userInput', inputType: 'textarea', inputName: 'additionalInstructions',
-      inputPlaceholder: 'e.g., Cocktail making experience would be ideal', inputLabel: 'Additional Instructions:', dependsOn: 2
+    { id: 1, type: 'botMessage', content: "Tell me about yourself and your work experience" },
+    { id: 2, type: 'userResponseDisplay', senderType: 'user', content: "I have been a bartender for three years, and I love creating new cocktails and meeting new people."},
+    { id: 3, type: 'botMessage', content: "Very cool! Do you have any special skills like mixology or expertise in wine?", dependsOn: 2 },
+    { id: 4, type: 'userResponseDisplay', senderType: 'user', content: "I have a bar managers license and trained as a cocktail maker at Claridge\'s bar for two years", dependsOn: 3},
+    { id: 5, type: 'botMessage', content: "How much you would like to be paid per hour, we  make sure you are paid above minimum wage", dependsOn: 4 },
+    { id: 6, type: 'userResponseDisplay', senderType: 'user', content: "£15 per hour", dependsOn: 5},
+    { id: 7, type: 'botMessage', content: "Where are you located and how far are you willing to travel?", dependsOn: 6 },
+    { id: 8, type: 'userResponseDisplay', senderType: 'user', content: "Bonville road, SW16 RT7, I can travel 30 miles", dependsOn: 7},
+    { id: 9, type: 'botMessage', content: "Let me know when you are available for work on your calendar" },
+    { id: 10, type: 'datePicker',  isComplete: false, dependsOn: 9 },
+    { 
+      id: 11, 
+      type: 'botMessage', 
+      content: "Follow this link to connect to Stripe so you can be paid at the end of your shift", 
+      value: 'https://connect.stripe.com/oauth/authorize?response_type=code&client_id=ca_C9b1d8c4f2e3a4b5a6c7d8e9f0g1h2i3j4k5l6m7n8o9p0q1r2s3t4u5v6w7x8y9z0&scope=read_write', 
+      dependsOn: 10 
     },
-    { id: 4, type: 'botMessage', content: "How much you would like to pay per hour? We suggest £15 plus tips to keep a motivated and happy team!", dependsOn: 3 },
+    {id: 12, type: 'botMessage', content: "Lastly, let\'s record a 30-second intro for your gigfolio. Here is a sample script:"},
     {
-      id: 5, type: 'userInput', inputType: 'number', inputName: 'hourlyRate',
-      inputPlaceholder: '£15', inputLabel: 'Hourly Rate:', dependsOn: 4
+      id: 13, 
+      type: "botMessage", 
+      content: '"Hi my name is Benji I am a bartender and waiter. I love making cocktails and bring a sense of fun to every shift. I trained at Claridges and my favourite cocktail is an espresso martini. I am great with crowds and a busy bar - i hope we can work togther"', 
+      dependsOn: 12 
     },
-    { id: 6, type: 'botMessage', content: "Where is the gig? What time and day do you need someone and for how long?", dependsOn: 5 },
-    {
-      id: 7, type: 'userInput', inputType: 'text', inputName: 'gigLocation',
-      inputPlaceholder: 'e.g., The Green Tavern, Rye Lane, Peckham, SE15 5AR', inputLabel: 'Gig Location:', dependsOn: 6
-    },
-    {
-      id: 8, type: 'userInput', inputType: 'date', inputName: 'gigDate',
-      inputLabel: 'Date of Gig:', dependsOn: 7
-    },
-    { id: 9, type: 'discountCode', content: "I have a discount code 2FREEABLE", dependsOn: 8}, // This will be rendered as a MessageBubble
-    { id: 10, type: 'botMessage', content: "Thankyou! We will apply your discount code", dependsOn: 9 },
-    { id: 11, type: 'botMessage', content: "Here are our incredible available gig workers ready to accept your gig. Click on their profile for an indepth look at their gigfolio or simply book now", dependsOn: 10 },
-    {
-          id: 12,
-          type: 'workerCard',
-          dependsOn: 11,
-          workerData: {
-              name: 'Benji Asamoah',
-              title: 'Bartender',
-              gigs: 15,
-              experience: '3 years experience',
-              keywords: 'lively, professional and hardworking',
-              hourlyRate: 15,
-              totalHours: 6,
-              totalPrice: 98.68,
-              ableFees: '6.5% +VAT',
-              stripeFees: '1.5% + 20p',
-              imageSrc: '/images/benji.jpeg', // Replace with actual image URL
-          }
-      },
-      {
-          id: 13,
-          type: 'workerCard',
-          dependsOn: 11, // Should depend on the previous message, not the previous card for parallel display
-          workerData: {
-              name: 'Jessica Hersey',
-              title: 'Bartender',
-              gigs: 11,
-              experience: '2 years experience',
-              keywords: 'charming, peaceful and kind',
-              hourlyRate: 15,
-              totalHours: 6,
-              totalPrice: 85.55,
-              ableFees: '6.5% +VAT',
-              stripeFees: '1.5% + 20p',
-              imageSrc: '/images/jessica.jpeg', // Replace with actual image URL
-          }
-      },
   ];
 
   export default baseInitialSteps;

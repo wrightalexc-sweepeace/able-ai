@@ -1,5 +1,5 @@
 import React, { FocusEvent, ReactNode } from 'react';
-import DatePicker, { ReactDatePickerProps } from 'react-datepicker';
+import DatePicker, { DatePickerProps } from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import styles from './CalendarPickerBubble.module.css';
 import { CalendarDays } from 'lucide-react';
@@ -32,7 +32,7 @@ interface CalendarPickerBubbleProps {
   dateFormat?: string | string[];
   onBlur?: (event: FocusEvent<HTMLInputElement>) => void; // Datepicker input is an HTMLInputElement
   onFocus?: (event: FocusEvent<HTMLInputElement>) => void;
-  popperPlacement?: ReactDatePickerProps['popperPlacement'];
+  popperPlacement?: DatePickerProps['popperPlacement'];
 }
 
 const CalendarPickerBubble = React.forwardRef<DatePicker, CalendarPickerBubbleProps>( // Ref type is DatePicker
