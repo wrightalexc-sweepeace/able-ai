@@ -115,7 +115,7 @@ export default function SettingsPage() {
           const data: UserSettingsData = {
             displayName: user?.displayName || 'User', // Access displayName from user object
             email: user?.email || '', // Access email from user object
-            phone: '123-456-7890', // Added mock phone data
+            phone: user?.phoneNumber || '', // Added mock phone data
             // Added mock Stripe data
             stripeAccountId: null, // Or a mock ID like 'acct_123abc'
             stripeAccountStatus: null, // Or 'connected', 'pending_verification', etc.
@@ -409,7 +409,7 @@ export default function SettingsPage() {
                   id="phone"
                   name="phone"
                   type="tel" // Use type="tel" for phone numbers
-                  value={phone}
+                  value={userSettings.phone || phone}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPhone(e.target.value)}
                   placeholder="Your phone number"
                 />
