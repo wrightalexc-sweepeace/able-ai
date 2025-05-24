@@ -27,25 +27,36 @@ const WorkerCard: React.FC<WorkerCardProps> = ({ worker, onBook }) => {
     return (
         <div className={pageStyles.workerCard}>
             {/* Use Next/Image for optimized images */}
-            <Image 
-              src={worker.imageSrc} 
-              alt={worker.name} 
-              width={100} // Provide appropriate width
-              height={100} // Provide appropriate height
-              className={`${pageStyles.workerImage} ${chatStyles.avatarWithBorder}`} // Apply global style
-              onError={(e) => { (e.target as HTMLImageElement).src = "/images/default-avatar.png"; }} // Fallback
-            />
             <div className={pageStyles.workerInfo}>
-                <h3>{worker.name}</h3>
-                <p>{worker.title}, {worker.gigs} Able gigs, {worker.experience}</p>
-                <p>Client review keywords: {worker.keywords}</p>
-                <p>{worker.totalHours} hours @£{worker.hourlyRate.toFixed(2)}/hr, total £{worker.totalPrice.toFixed(2)}</p>
-                <p>fees: Able {worker.ableFees}</p>
-                <p>Stripe {worker.stripeFees}</p>
-                <button onClick={() => onBook(worker.name, worker.totalPrice)} className={`${pageStyles.bookButton} ${chatStyles.tealButton}`}>
+                <Image 
+                    src={worker.imageSrc} 
+                    alt={worker.name} 
+                    width={70} // Provide appropriate width
+                    height={70} // Provide appropriate height
+                    className={`${pageStyles.workerImage} ${chatStyles.avatarWithBorder}`} // Apply global style
+                    onError={(e) => { (e.target as HTMLImageElement).src = "/images/default-avatar.png"; }} // Fallback
+                />
+                <div className={pageStyles.workerDetails}>
+                    <h3>{worker.name}</h3>
+                    <p>{worker.title}, {worker.gigs} Able gigs, <span className={pageStyles.workerExp}>{worker.experience}</span></p>    
+                </div>
+            </div>
+            <p className={pageStyles.workerKeyword}>Client review keywords: {worker.keywords}</p>
+              
+            <div className={pageStyles.workerSummarySection}>
+                <div className={pageStyles.workerHistory}>   
+                    <p>{worker.totalHours} hours @£{worker.hourlyRate.toFixed(2)}/hr, total £{worker.totalPrice.toFixed(2)}</p>
+                    <p>fees: Able {worker.ableFees}</p>
+                    <p>Stripe {worker.stripeFees}</p>
+                </div>
+                <button
+                    onClick={() => onBook(worker.name, worker.totalPrice)}
+                    className={`${pageStyles.bookButton} ${chatStyles.tealButton}`}
+                >
                     Yes! Book £{worker.totalPrice.toFixed(2)}
                 </button>
             </div>
+
         </div>
     );
 };
