@@ -11,7 +11,8 @@ import TextAreaBubble from '@/app/components/onboarding/TextAreaBubble'; // Corr
 // import FileUploadBubble from '@/app/components/onboarding/FileUploadBubble'; // Corrected path - Uncomment if used
 import WorkerCard, { WorkerData } from '@/app/components/onboarding/WorkerCard'; // Import shared WorkerCard and WorkerData
 
-import pageStyles from './OnboardBuyerPage.module.css';
+// import styles from './OnboardBuyerPage.module.css';
+import Loader from '@/app/components/shared/Loader';
 
 const BOT_AVATAR_SRC = "/images/logo-placeholder.svg";
 
@@ -36,32 +37,33 @@ interface OnboardingStep {
 
 const baseInitialSteps: OnboardingStep[] = [
   { id: 1, type: 'botMessage', content: "Hi! Tell me about yourself and what gig or gigs you need filling - we can assemble a team if you need one!" },
-  { id: 2, type: 'botMessage', content: "We have some great bartenders available. Do you need any special skills or do you have instructions for your hire?", dependsOn: 1 },
+  {id: 2, type: 'userInput', inputType: 'text', inputName: 'gigDescription', inputPlaceholder: 'e.g., Bartender for a wedding reception', inputLabel: 'Gig Description:'},
+  { id: 3, type: 'botMessage', content: "We have some great bartenders available. Do you need any special skills or do you have instructions for your hire?", dependsOn: 1 },
   {
-    id: 3, type: 'userInput', inputType: 'textarea', inputName: 'additionalInstructions',
+    id: 4, type: 'userInput', inputType: 'textarea', inputName: 'additionalInstructions',
     inputPlaceholder: 'e.g., Cocktail making experience would be ideal', inputLabel: 'Additional Instructions:', dependsOn: 2
   },
-  { id: 4, type: 'botMessage', content: "How much you would like to pay per hour? We suggest £15 plus tips to keep a motivated and happy team!", dependsOn: 3 },
+  { id: 5, type: 'botMessage', content: "How much you would like to pay per hour? We suggest £15 plus tips to keep a motivated and happy team!", dependsOn: 3 },
   {
-    id: 5, type: 'userInput', inputType: 'number', inputName: 'hourlyRate',
+    id: 6, type: 'userInput', inputType: 'number', inputName: 'hourlyRate',
     inputPlaceholder: '£15', inputLabel: 'Hourly Rate:', dependsOn: 4
   },
-  { id: 6, type: 'botMessage', content: "Where is the gig? What time and day do you need someone and for how long?", dependsOn: 5 },
+  { id: 7, type: 'botMessage', content: "Where is the gig? What time and day do you need someone and for how long?", dependsOn: 5 },
   {
-    id: 7, type: 'userInput', inputType: 'text', inputName: 'gigLocation',
+    id: 8, type: 'userInput', inputType: 'text', inputName: 'gigLocation',
     inputPlaceholder: 'e.g., The Green Tavern, Rye Lane, Peckham, SE15 5AR', inputLabel: 'Gig Location:', dependsOn: 6
   },
   {
-    id: 8, type: 'userInput', inputType: 'date', inputName: 'gigDate',
-    inputLabel: 'Date of Gig:', dependsOn: 7
+    id: 9, type: 'userInput', inputType: 'date', inputName: 'gigDate',
+    inputLabel: 'Date of Gig:', dependsOn: 8
   },
-  { id: 9, type: 'discountCode', content: "I have a discount code 2FREEABLE", dependsOn: 8}, // This will be rendered as a MessageBubble
-  { id: 10, type: 'botMessage', content: "Thankyou! We will apply your discount code", dependsOn: 9 },
-  { id: 11, type: 'botMessage', content: "Here are our incredible available gig workers ready to accept your gig. Click on their profile for an indepth look at their gigfolio or simply book now", dependsOn: 10 },
+  { id: 10, type: 'discountCode', content: "I have a discount code 2FREEABLE", dependsOn: 9}, // This will be rendered as a MessageBubble
+  { id: 11, type: 'botMessage', content: "Thankyou! We will apply your discount code", dependsOn: 10 },
+  { id: 12, type: 'botMessage', content: "Here are our incredible available gig workers ready to accept your gig. Click on their profile for an indepth look at their gigfolio or simply book now", dependsOn: 10 },
   {
-        id: 12,
+        id: 13,
         type: 'workerCard',
-        dependsOn: 11,
+        dependsOn: 12,
         workerData: {
             name: 'Benji Asamoah',
             title: 'Bartender',
@@ -77,9 +79,9 @@ const baseInitialSteps: OnboardingStep[] = [
         }
     },
     {
-        id: 13,
+        id: 14,
         type: 'workerCard',
-        dependsOn: 11, // Should depend on the previous message, not the previous card for parallel display
+        dependsOn: 12, // Should depend on the previous message, not the previous card for parallel display
         workerData: {
             name: 'Jessica Hersey',
             title: 'Bartender',
@@ -353,16 +355,16 @@ export default function OnboardBuyerPage() {
   }, [onboardingSteps, isViewQA]);
 
   if (loadingAuth) {
-    return <div className={pageStyles.loadingContainer}><p>Loading authentication...</p></div>;
+    return <Loader />;
   }
 
-  return (
-    <ChatBotLayout ref={chatContainerRef} onScroll={(e: React.UIEvent<HTMLDivElement>) => {}} tag='Looking for an experienced bartender'>
-      {isViewQA && (
+  return ( 
+    <ChatBotLayout ref={chatContainerRef} onScroll={(e: React.UIEvent<HTMLDivElement>) => {}}>
+      {/* {isViewQA && (
         <div style={{ background: 'rgba(255,220,220,0.8)', borderBottom: '1px solid rgba(200,0,0,0.3)', color: '#8B0000', textAlign: 'center', padding: '8px 5px', fontSize: '0.85em', fontWeight: '500' }}>
           QA Mode: Full Chat Preview
         </div>
-      )}
+      )} */}
       {chatMessages.map((step) => {
         const key = `step-${step.id}-${step.senderType || step.type}-${step.inputName || Math.random()}`;
 
@@ -370,7 +372,7 @@ export default function OnboardBuyerPage() {
           return <MessageBubble key={key} text={step.content as string} senderType="bot" avatarSrc={BOT_AVATAR_SRC} />;
         }
         if (step.type === 'userResponseDisplay' && step.senderType === 'user') {
-             return <MessageBubble key={key} text={step.content as string} senderType="user" showAvatar={false} />;
+            return <MessageBubble key={key} text={step.content as string} senderType="user" showAvatar={false} />;
         }
         if (step.type === 'discountCode') { // Render discount code as a specific message bubble or styled text
             return <MessageBubble key={key} text={step.content as string} senderType="user" showAvatar={false} />; // Example: user "says" their discount code
@@ -415,10 +417,10 @@ export default function OnboardBuyerPage() {
       {/* Removed the generic "Confirm & Proceed" button as booking is per card now */}
       {/* {allInteractiveStepsComplete && !isSubmitting && !isViewQA && onboardingSteps[onboardingSteps.length-1]?.type !== 'botMessage' && ( ... )} */}
       
-       {isSubmitting && !isViewQA && (
-         <MessageBubble key="submitting-msg" text="Processing..." senderType="bot" avatarSrc={BOT_AVATAR_SRC} />
+      {isSubmitting && !isViewQA && (
+        <MessageBubble key="submitting-msg" text="Processing..." senderType="bot" avatarSrc={BOT_AVATAR_SRC} />
       )}
-       <input
+      {/* <input
         type="text"
         placeholder="Type your message..."
         onKeyPress={(e) => {
@@ -440,7 +442,7 @@ export default function OnboardBuyerPage() {
           borderRadius: '5px',
           marginTop: '10px',
         }}
-      />
+      /> */}
     </ChatBotLayout>
   );
 }

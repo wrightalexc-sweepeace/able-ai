@@ -20,11 +20,11 @@
 }
 
 .inputField {
-    background-color: #333; /* Dark gray input */
-    color: #eee; /* Light gray text */
-    border: 1px solid #555;
+    background-color: #ffffff; /* Dark gray input */
+    color: #000000; /* Light gray text */
+    border: 2px solid #0d0d0d0d;
     padding: 8px;
-    border-radius: 4px;
+    border-radius: 1rem;
     width: 100%;
 }
 
