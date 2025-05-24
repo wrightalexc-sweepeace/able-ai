@@ -15,11 +15,7 @@
   border: 1px solid #2b2b2b;
 }
 
-@media (min-width: 400px) { /* Adjust breakpoint as needed */
-  .workerCard {
-    flex-direction: row; /* Image beside info on larger screens */
-  }
-}
+
 
 .workerImage {
   border-radius: 8px; /* Slightly rounded corners for image */
@@ -28,11 +24,6 @@
   align-self: center; /* Center image if stacked vertically */
 }
 
-@media (min-width: 400px) {
-  .workerImage {
-    align-self: flex-start; /* Align to top when horizontal */
-  }
-}
 
 .workerInfo {
   display: flex;
