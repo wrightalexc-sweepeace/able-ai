@@ -1,35 +1,35 @@
 /* app/components/onboarding/ChatBotLayout.module.css */
 .chatContainerWrapper { /* New: Full page dark background */
   min-height: 100vh;
-  background-color: #161616;
-  padding: 1rem 0; /* Padding top and bottom */
   display: flex;
   justify-content: center;
-  flex-direction: column; /* Allow tag to sit above container */
-  align-items: center; /* Center the chat container and tag horizontally */
+  background-color: #161616;
+  /* flex-direction: column; */
+  /* align-items: center; Center the chat container and tag horizontally */
 }
 
-.chatTag {
-  background-color: var(--primary-color, #5D5FEF); /* Or a specific tag color */
+/* .chatTag {
+  background-color: var(--primary-color, #5D5FEF);
   color: white;
   padding: 0.3rem 0.8rem;
-  border-radius: 1rem; /* Pill shape */
+  border-radius: 1rem;
   font-size: 0.8rem;
   font-weight: 500;
-  margin-bottom: 0.75rem; /* Space between tag and chat container */
-  max-width: 480px; /* Match chat container max-width */
+  margin-bottom: 0.75rem;
+  max-width: 480px;
   text-align: center;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
+} */
 
 .chatContainer {
   width: 100%;
+  position: relative;
   max-width: 480px; /* Max width for chat content, can be adjusted */
-  height: calc(100vh - 2rem); /* Adjust based on padding of wrapper */
+  height: 100vh; /* Adjust based on padding of wrapper */
   overflow-y: auto;
   display: flex;
-  flex-direction: column-reverse; /* New messages appear at the bottom and scroll up */
-  padding: 0 1rem; /* Padding inside the scrollable area */
+  flex-direction: column;
+  padding: 0 1rem; 
 }
 
 .chatContent {
@@ -37,5 +37,27 @@
   display: flex;
   flex-direction: column;
   gap: 1rem; /* Space between bubbles */
-  padding-top: 1rem; /* Space at the very top when scrolled up */
+  margin-top: 1rem;
+  overflow-y: auto;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4rem;
+  width: 100%;
+  padding-right: 0.5rem;
+  background-color: #161616;
+}
+
+.headerText {
+  color: #ffffff;
+  font-size: 18px;
+  font-family: "Source Sans Pro";
+  font-weight: 500;
 }
