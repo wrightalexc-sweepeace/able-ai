@@ -61,19 +61,19 @@ export async function findOrCreatePgUserAndUpdateRole(
       if (initialRoleContext === 'BUYER' && !pgUser.isBuyer) {
         updates.isBuyer = true;
         if (!pgUser.lastRoleUsed) updates.lastRoleUsed = 'BUYER'; // Set initial context
-         // Create BuyerProfile if it doesn't exist
-        const buyerProfile = await db.query.BuyerProfilesTable.findFirst({where: eq(BuyerProfilesTable.userId, pgUser.id)});
-        if(!buyerProfile) {
-            await db.insert(BuyerProfilesTable).values({ userId: pgUser.id, fullCompanyName: `${displayName}'s Company` /* Default or from further onboarding */ });
+        // Create BuyerProfile if it doesn't exist
+        const buyerProfile = await db.query.BuyerProfilesTable.findFirst({ where: eq(BuyerProfilesTable.userId, pgUser.id) });
+        if (!buyerProfile) {
+          await db.insert(BuyerProfilesTable).values({ userId: pgUser.id, fullCompanyName: `${displayName}'s Company` /* Default or from further onboarding */ });
         }
       }
       if (initialRoleContext === 'GIG_WORKER' && !pgUser.isGigWorker) {
         updates.isGigWorker = true;
         if (!pgUser.lastRoleUsed) updates.lastRoleUsed = 'GIG_WORKER'; // Set initial context
         // Create GigWorkerProfile if it doesn't exist
-        const workerProfile = await db.query.GigWorkerProfilesTable.findFirst({where: eq(GigWorkerProfilesTable.userId, pgUser.id)});
-        if(!workerProfile){
-            await db.insert(GigWorkerProfilesTable).values({ userId: pgUser.id });
+        const workerProfile = await db.query.GigWorkerProfilesTable.findFirst({ where: eq(GigWorkerProfilesTable.userId, pgUser.id) });
+        if (!workerProfile) {
+          await db.insert(GigWorkerProfilesTable).values({ userId: pgUser.id });
         }
       }
 
@@ -106,7 +106,7 @@ export async function findOrCreatePgUserAndUpdateRole(
           // Other fields will use DB defaults
         })
         .returning();
-      
+
       pgUser = newPgUsers[0];
 
       if (pgUser) {
@@ -130,152 +130,152 @@ export async function findOrCreatePgUserAndUpdateRole(
 // --- UTILITY FUNCTIONS BASED ON PG USER OBJECT ---
 
 export function getPgUserLastRoleUsed(pgUser: PgUserSelect | null): typeof activeRoleContextEnum.enumValues[number] | null {
-    return pgUser?.lastRoleUsed || null;
+  return pgUser?.lastRoleUsed || null;
 }
 
 export function getPgUserLastViewVisited(pgUser: PgUserSelect | null, currentRoleContext: typeof activeRoleContextEnum.enumValues[number] | null): string | null {
-    if (!pgUser || !currentRoleContext) return null;
-    return currentRoleContext === 'BUYER' ? pgUser.lastViewVisitedBuyer : pgUser.lastViewVisitedWorker;
+  if (!pgUser || !currentRoleContext) return null;
+  return currentRoleContext === 'BUYER' ? pgUser.lastViewVisitedBuyer : pgUser.lastViewVisitedWorker;
 }
 
 export function isPgUserAdmin(pgUser: PgUserSelect | null): boolean {
-    return pgUser?.appRole === 'ADMIN';
+  return pgUser?.appRole === 'ADMIN';
 }
 
 export function isPgUserSuperAdmin(pgUser: PgUserSelect | null): boolean {
-    return pgUser?.appRole === 'SUPER_ADMIN';
+  return pgUser?.appRole === 'SUPER_ADMIN';
 }
 
 export function isPgUserQA(pgUser: PgUserSelect | null): boolean {
-    return pgUser?.appRole === 'QA';
+  return pgUser?.appRole === 'QA';
 }
 
 export function isPgUserActualBuyer(pgUser: PgUserSelect | null): boolean {
-    return !!pgUser?.isBuyer;
+  return !!pgUser?.isBuyer;
 }
 
 export function isPgUserActualGigWorker(pgUser: PgUserSelect | null): boolean {
-    return !!pgUser?.isGigWorker;
+  return !!pgUser?.isGigWorker;
 }
 
 // --- UTILITY FUNCTIONS BASED ON APP USER ---
 
 export function getUserLastRoleUsed(user: AppUser | null): typeof activeRoleContextEnum.enumValues[number] | null {
-    return user?.lastRoleUsed || null;
+  return user?.lastRoleUsed || null;
 }
 
 export function getUserLastViewVisited(user: AppUser | null, currentRoleContext?: typeof activeRoleContextEnum.enumValues[number] | null): string | null {
-    if (!user) return null;
-    const roleToUse = currentRoleContext || user.lastRoleUsed;
-    if (!roleToUse) return null;
-    return roleToUse === 'BUYER' ? user.lastViewVisitedBuyer : user.lastViewVisitedWorker;
+  if (!user) return null;
+  const roleToUse = currentRoleContext || user.lastRoleUsed;
+  if (!roleToUse) return null;
+  return roleToUse === 'BUYER' ? user.lastViewVisitedBuyer : user.lastViewVisitedWorker;
 }
 
 export function isUserAdmin(user: AppUser | null): boolean {
-    return user?.appRole === 'ADMIN';
+  return user?.appRole === 'ADMIN';
 }
 
 export function isUserSuperAdmin(user: AppUser | null): boolean {
-    return user?.appRole === 'SUPER_ADMIN';
+  return user?.appRole === 'SUPER_ADMIN';
 }
 
 export function isUserQA(user: AppUser | null): boolean {
-    return user?.appRole === 'QA';
+  return user?.appRole === 'QA';
 }
 
 export function isUserBuyer(user: AppUser | null): boolean {
-    return !!user?.isBuyer;
+  return !!user?.isBuyer;
 }
 
 export function isUserGigWorker(user: AppUser | null): boolean {
-    return !!user?.isGigWorker;
+  return !!user?.isGigWorker;
 }
 
 // --- FUNCTION TO UPDATE USER CONTEXT IN POSTGRESQL (lastRoleUsed, lastViewVisited) ---
 export async function updateUserAppContext(
-    firebaseUid: string,
-    updates: {
-        lastRoleUsed?: typeof activeRoleContextEnum.enumValues[number];
-        lastViewVisited?: string; // This will be the specific view for the role being set/updated
-    }
+  firebaseUid: string,
+  updates: {
+    lastRoleUsed?: typeof activeRoleContextEnum.enumValues[number];
+    lastViewVisited?: string; // This will be the specific view for the role being set/updated
+  }
 ): Promise<PgUserSelect | null> {
-    if (!firebaseUid || Object.keys(updates).length === 0) return null;
+  if (!firebaseUid || Object.keys(updates).length === 0) return null;
 
-    const updateData: Partial<typeof UsersTable.$inferInsert> = { updatedAt: new Date() };
+  const updateData: Partial<typeof UsersTable.$inferInsert> = { updatedAt: new Date() };
 
-    if (updates.lastRoleUsed) {
-        updateData.lastRoleUsed = updates.lastRoleUsed;
-        // When lastRoleUsed is updated, also update the specific lastViewVisited for that role
-        if (updates.lastViewVisited) {
-            if (updates.lastRoleUsed === 'BUYER') {
-                updateData.lastViewVisitedWorker = updates.lastViewVisited;
-            } else if (updates.lastRoleUsed === 'GIG_WORKER') {
-                updateData.lastViewVisitedBuyer = updates.lastViewVisited;
-            }
-        }
-    } else if (updates.lastViewVisited) {
-        // If only lastViewVisited is provided, we need to know for which role context
-        // This scenario implies the role context is already known and not changing.
-        // It's better if updateUserAppContext is always called with the current role context
-        // if lastViewVisited is being updated.
-        // For simplicity, this function should ideally be called when a role IS active.
-        // Let's assume the caller knows the current role if only updating view.
-        // Or, fetch the current lastRoleUsed from DB first if not provided.
-        // To avoid complexity, the `updates` object should ideally contain `lastRoleUsed` if `lastViewVisited` for that role is changing.
-        // For now, if lastRoleUsed is not in updates, we won't update specific lastViewVisited.
-        console.warn("Updating lastViewVisited without lastRoleUsed might lead to ambiguity. Please provide lastRoleUsed.");
+  if (updates.lastRoleUsed) {
+    updateData.lastRoleUsed = updates.lastRoleUsed;
+    // When lastRoleUsed is updated, also update the specific lastViewVisited for that role
+    if (updates.lastViewVisited) {
+      if (updates.lastRoleUsed === 'BUYER') {
+        updateData.lastViewVisitedWorker = updates.lastViewVisited;
+      } else if (updates.lastRoleUsed === 'GIG_WORKER') {
+        updateData.lastViewVisitedBuyer = updates.lastViewVisited;
+      }
     }
+  } else if (updates.lastViewVisited) {
+    // If only lastViewVisited is provided, we need to know for which role context
+    // This scenario implies the role context is already known and not changing.
+    // It's better if updateUserAppContext is always called with the current role context
+    // if lastViewVisited is being updated.
+    // For simplicity, this function should ideally be called when a role IS active.
+    // Let's assume the caller knows the current role if only updating view.
+    // Or, fetch the current lastRoleUsed from DB first if not provided.
+    // To avoid complexity, the `updates` object should ideally contain `lastRoleUsed` if `lastViewVisited` for that role is changing.
+    // For now, if lastRoleUsed is not in updates, we won't update specific lastViewVisited.
+    console.warn("Updating lastViewVisited without lastRoleUsed might lead to ambiguity. Please provide lastRoleUsed.");
+  }
 
-    console.log("Updating user app context in PG:", { firebaseUid, updateData });
-    try {
-        const updatedUsers = await db
-            .update(UsersTable)
-            .set(updateData)
-            .where(eq(UsersTable.firebaseUid, firebaseUid))
-            .returning();
+  console.log("Updating user app context in PG:", { firebaseUid, updateData });
+  try {
+    const updatedUsers = await db
+      .update(UsersTable)
+      .set(updateData)
+      .where(eq(UsersTable.firebaseUid, firebaseUid))
+      .returning();
 
-        return updatedUsers[0] || null;
-    } catch (error) {
-        console.error("Error updating user app context in PG:", error);
-        return null;
-    }
+    return updatedUsers[0] || null;
+  } catch (error) {
+    console.error("Error updating user app context in PG:", error);
+    return null;
+  }
 }
 
 /**
  * Gets a hydrated AppUser object for a given Firebase UID by fetching data from PostgreSQL
  */
 export async function getHydratedAppUser(firebaseUid: string): Promise<AppUser | null> {
-    if (!firebaseUid) {
-        console.warn("getHydratedAppUser: No Firebase UID provided.");
-        return null;
+  if (!firebaseUid) {
+    console.warn("getHydratedAppUser: No Firebase UID provided.");
+    return null;
+  }
+
+  try {
+    const pgUser = await db.query.UsersTable.findFirst({
+      where: eq(UsersTable.firebaseUid, firebaseUid),
+    });
+
+    if (!pgUser) {
+      console.warn(`getHydratedAppUser: No PG User found for Firebase UID: ${firebaseUid}`);
+      return null;
     }
 
-    try {
-        const pgUser = await db.query.UsersTable.findFirst({
-            where: eq(UsersTable.firebaseUid, firebaseUid),
-        });
-
-        if (!pgUser) {
-            console.warn(`getHydratedAppUser: No PG User found for Firebase UID: ${firebaseUid}`);
-            return null;
-        }
-
-        // Return user data from PostgreSQL
-        return {
-            id: pgUser.id,
-            firebaseUid: pgUser.firebaseUid,
-            email: pgUser.email,
-            fullName: pgUser.fullName,
-            picture: undefined, // This will be set from Firebase user data when needed
-            appRole: pgUser.appRole,
-            isBuyer: pgUser.isBuyer,
-            isGigWorker: pgUser.isGigWorker,
-            lastRoleUsed: pgUser.lastRoleUsed,
-            lastViewVisitedBuyer: pgUser.lastViewVisitedBuyer,
-            lastViewVisitedWorker: pgUser.lastViewVisitedWorker,
-        };
-    } catch (error) {
-        console.error(`getHydratedAppUser: Error fetching PG User details:`, error);
-        return null;
-    }
+    // Return user data from PostgreSQL
+    return {
+      id: pgUser.id,
+      firebaseUid: pgUser.firebaseUid,
+      email: pgUser.email,
+      fullName: pgUser.fullName,
+      picture: undefined, // This will be set from Firebase user data when needed
+      appRole: pgUser.appRole,
+      isBuyer: pgUser.isBuyer,
+      isGigWorker: pgUser.isGigWorker,
+      lastRoleUsed: pgUser.lastRoleUsed,
+      lastViewVisitedBuyer: pgUser.lastViewVisitedBuyer,
+      lastViewVisitedWorker: pgUser.lastViewVisitedWorker,
+    };
+  } catch (error) {
+    console.error(`getHydratedAppUser: Error fetching PG User details:`, error);
+    return null;
+  }
 }

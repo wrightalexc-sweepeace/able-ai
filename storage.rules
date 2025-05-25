@@ -34,7 +34,7 @@ service firebase.storage {
     // - Limit file size and type.
     match /workers/{userId}/introVideo/{fileName} {
       allow read: if true; // Assuming intro videos are public for buyers to see
-      allow write: if isOwner(userId) // Add && request.auth.token.appRole == "WORKER" if using custom claims for role
+      allow write: if isOwner(userId) // Add && request.auth.token.appRole == "GIG_WORKER" if using custom claims for role
                     && request.resource.size < 50 * 1024 * 1024 // Max 50MB for a short video
                     && request.resource.contentType.matches('video/.*'); // Only videos
       allow delete: if isOwner(userId);

@@ -1,32 +1,29 @@
-// app/select-role/page.tsx
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation"; // App Router navigation
+import { useRouter } from "next/navigation";
 import { useAppContext } from "@/app/hooks/useAppContext";
-import { useFirebaseAuth } from "@/app/hooks/useFirebaseAuth";
-import Logo from "@/app/components/brand/Logo"; // Reusing Logo
+import Logo from "@/app/components/brand/Logo";
 import ActionButton from "./ActionButton";
 import styles from "./SelectRolePage.module.css";
-import Loader from "@/app/components/shared/Loader"; // Assuming you have a Loader component
+import Loader from "@/app/components/shared/Loader";
 
 export default function SelectRolePage() {
   const router = useRouter();
-  const { user, loading: loadingAuth, idToken } = useFirebaseAuth();
-  const { updateUserContext } = useAppContext();
+  const { updateUserContext, isLoading: loadingAuth, user } = useAppContext();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const isViewQA = React.useMemo(() => {
-    if (typeof window === "undefined") return false;
-    return localStorage.getItem("isViewQA") === "true";
-  }, []);
 
   // Redirect if not authenticated or auth state is still loading
   useEffect(() => {
-    if (!loadingAuth && !isViewQA && !user) {
-      router.push("/signin"); // Or your login page
+    if (!loadingAuth && !user?.isAuthenticated) {
+      console.log({ user})
+      // router.push("/signin");
     }
-  }, [user, loadingAuth, router, isViewQA]);
+    if (user?.isAuthenticated) {
+      console.log({ user })
+    }
+  }, [user?.isAuthenticated, loadingAuth, router]);
 
   const handleRoleSelection = async (role: "BUYER" | "GIG_WORKER") => {
     if (!updateUserContext) {
@@ -41,7 +38,9 @@ export default function SelectRolePage() {
     setError(null);
     try {
       // 1. Update in context (which should trigger backend update via API)
-      await updateUserContext({ lastRoleUsed: role }, idToken);
+      await updateUserContext({ lastRoleUsed: role });
+
+      // 2. Check if user have finished onboarding
 
       // 3. Navigate to the appropriate dashboard
       if (role === "BUYER") {
@@ -54,14 +53,10 @@ export default function SelectRolePage() {
       setError("Failed to set your role. Please try again.");
       setIsLoading(false);
     }
-    // setLoading(false) will be handled by navigation or if error occurs
   };
 
-  if (!isViewQA && (loadingAuth || (!loadingAuth && !user))) {
-    // Show a loading spinner or skeleton screen while auth is checked
-    return (
-      <Loader />
-    );
+  if (loadingAuth) {
+    return <Loader />;
   }
 
   return (

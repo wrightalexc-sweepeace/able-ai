@@ -4,13 +4,10 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppContext } from '@/app/hooks/useAppContext';
 import styles from './RoleToggle.module.css';
-import { Users, Briefcase } from 'lucide-react';
-import { useFirebaseAuth } from '@/app/hooks/useFirebaseAuth';
 
 const RoleToggle: React.FC<{ lastViewVisited?: string }> = ({ lastViewVisited }) => {
     const router = useRouter();
-    const { user, loading: loadingFirebaseAuth, idToken } = useFirebaseAuth();
-    const { updateUserContext, isLoading: loadingAuth, isBuyerMode, isWorkerMode, canBeBuyer, canBeGigWorker } = useAppContext();
+    const { updateUserContext, isBuyerMode, isWorkerMode } = useAppContext();
     const currentActiveRole = isBuyerMode ? 'BUYER' : isWorkerMode ? 'GIG_WORKER' : 'UNKNOWN';
 
     const handleToggle = async (newRole: 'BUYER' | 'GIG_WORKER') => {
@@ -18,7 +15,7 @@ const RoleToggle: React.FC<{ lastViewVisited?: string }> = ({ lastViewVisited })
 
         try {
             // Assuming setCurrentActiveRole updates the context and potentially the backend
-            await updateUserContext({ lastRoleUsed: newRole, lastViewVisited: lastViewVisited ?? 'home' }, idToken);
+            await updateUserContext({ lastRoleUsed: newRole, lastViewVisited: lastViewVisited ?? 'home' });
             // Save to localStorage for immediate client-side persistence
             if (typeof window !== 'undefined') {
                 localStorage.setItem('currentActiveRole', newRole);
@@ -35,36 +32,10 @@ const RoleToggle: React.FC<{ lastViewVisited?: string }> = ({ lastViewVisited })
         }
     };
 
-    //   // Only show toggle if user can be both
-    //   if (!canBeBuyer || !canBeGigWorker) {
-    //     return null;
-    //   }
-
     return (
         <div className={styles.toggleContainer}>
-            {/* <button
-                onClick={() => handleToggle('BUYER')}
-                className={`${styles.toggleButton} ${currentActiveRole === 'BUYER' ? styles.active : styles.inactive}`}
-                aria-pressed={currentActiveRole === 'BUYER'}
-            >
-                <Users size={16} />
-                <span>Buyer</span>
-            </button>
-            <button
-                onClick={() => handleToggle('GIG_WORKER')}
-                className={`${styles.toggleButton} ${currentActiveRole === 'GIG_WORKER' ? styles.active : styles.inactive}`}
-                aria-pressed={currentActiveRole === 'GIG_WORKER'}
-            >
-                <Briefcase size={16} />
-                <span>Worker</span>
-            </button> */}
-            {/* <button
-                onClick={() => handleToggle(currentActiveRole === 'BUYER' ? 'GIG_WORKER' : 'BUYER')}
-            >
-               Switch to {isWorkerMode ? 'GIG_WORKER' : 'BUYER'}
-            </button> */}
             <label className={styles.switchLabel}>
-            <span>Switch to {currentActiveRole === 'BUYER' ? 'Worker' : 'Buyer'}</span>
+            <span>Switch to {currentActiveRole === 'BUYER' ? 'seller' : 'buyer'}</span>
             <input
                 type="checkbox"
                 onChange={() =>

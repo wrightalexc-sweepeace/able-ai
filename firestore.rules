@@ -28,7 +28,7 @@ service cloud.firestore {
 
     function isInWorkerContext() {
         // Ensure request.auth is not null before using its uid
-        return isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.currentActiveRole == "WORKER";
+        return isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.currentActiveRole == "GIG_WORKER";
     }
     function isInBuyerContext() {
         return isAuthenticated() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.currentActiveRole == "BUYER";
@@ -221,7 +221,7 @@ service cloud.firestore {
     }
 
     match /{document=**} {
-      allow read, write: if false;
+      allow read, write: if request.time < timestamp.date(2025, 6, 24);
     }
   }
 }
