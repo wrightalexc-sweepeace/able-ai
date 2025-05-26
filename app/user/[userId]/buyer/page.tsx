@@ -37,16 +37,16 @@ export default function BuyerDashboardPage() { // Renamed for clarity
 
   useEffect(() => {
     if (!loadingAuth) {
-      if (!isAuthenticated) {
-        router.replace('/signin');
-      } else if (currentActiveRole !== THIS_HOME_ROLE) {
-        // Attempt to switch or redirect based on actual capabilities
-        if (userPublicProfile?.isGigWorker) { // Check if user *can* be a worker
-          router.push('worker'); // Redirect to worker home
-        } else {
-          router.replace('/select-role'); // Fallback if current role doesn't match expected and cannot be worker
-        }
-      }
+      // if (!isAuthenticated) {
+      //   router.replace('/signin');
+      // } else if (currentActiveRole !== THIS_HOME_ROLE) {
+      //   // Attempt to switch or redirect based on actual capabilities
+      //   if (userPublicProfile?.isGigWorker) { // Check if user *can* be a worker
+      //     router.push('worker'); // Redirect to worker home
+      //   } else {
+      //     router.replace('/select-role'); // Fallback if current role doesn't match expected and cannot be worker
+      //   }
+      // }
     }
   }, [isAuthenticated, loadingAuth, currentActiveRole, userPublicProfile, router, THIS_HOME_ROLE]);
 
@@ -69,9 +69,9 @@ export default function BuyerDashboardPage() { // Renamed for clarity
   //   }
   // }, [isAuthenticated, currentActiveRole, THIS_HOME_ROLE]);
 
-  if (loadingAuth || !isAuthenticated || currentActiveRole !== THIS_HOME_ROLE) {
-    return <Loader />
-  }
+  // if (loadingAuth || !isAuthenticated || currentActiveRole !== THIS_HOME_ROLE) {
+  //   return <Loader />
+  // }
 
   return (
     <div className={styles.container}>

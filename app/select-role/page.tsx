@@ -16,12 +16,11 @@ export default function SelectRolePage() {
 
   // Redirect if not authenticated or auth state is still loading
   useEffect(() => {
-    if (!loadingAuth && !user?.isAuthenticated) {
-      console.log({ user})
-      // router.push("/signin");
+    if (!loadingAuth && user?.isAuthenticated === false) {
+      router.push("/signin");
     }
-    if (user?.isAuthenticated) {
-      console.log({ user })
+    if (!loadingAuth && user?.isAuthenticated) {
+      console.log({ user, loadingAuth })
     }
   }, [user?.isAuthenticated, loadingAuth, router]);
 
@@ -42,11 +41,20 @@ export default function SelectRolePage() {
 
       // 2. Check if user have finished onboarding
 
+
       // 3. Navigate to the appropriate dashboard
       if (role === "BUYER") {
-        router.push(`user/${user?.uid || 'this_user'}/buyer`); // Or your buyer landing page
+        if (user?.canBeBuyer) {
+          router.push(`user/${user?.uid || 'this_user'}/buyer`); // Or your buyer landing page
+        } else {
+          router.push(`user/${user?.uid || 'this_user'}/buyer/onboarding`);
+        }
       } else if (role === "GIG_WORKER") {
-        router.push(`user/${user?.uid || 'this_user'}/worker`); // Or your worker landing page
+        if (user?.canBeGigWorker) {
+          router.push(`user/${user?.uid || 'this_user'}/worker`); // Or your worker landing page
+        } else {
+          router.push(`user/${user?.uid || 'this_user'}/worker/onboarding`);
+        }
       }
     } catch (err) {
       console.error("Error setting role:", err);

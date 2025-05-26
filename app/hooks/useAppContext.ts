@@ -33,15 +33,7 @@ interface AppContextValue {
 
 export function useAppContext(): AppContextValue {
     const { user: firebaseUser, idToken } = useFirebaseAuth();
-    const [user, setUser] = useState<ExtendedUser | null>({
-        isAuthenticated: false,
-        isAdmin: false,
-        isSuperAdmin: false,
-        isQA: false,
-        isBuyerMode: false,
-        isWorkerMode: false,
-        canBeBuyer: false,
-    } as ExtendedUser | null);
+    const [user, setUser] = useState<ExtendedUser | null>();
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
