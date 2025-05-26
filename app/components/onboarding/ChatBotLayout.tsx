@@ -3,6 +3,7 @@ import styles from './ChatBotLayout.module.css';
 import Logo from '../brand/Logo';
 // import InputBubble from './InputBubble';
 import TextAreaBubble from './TextAreaBubble';
+import Image from 'next/image';
 
 interface ChatBotLayoutProps {
   children: ReactNode;
@@ -23,7 +24,10 @@ const ChatBotLayout = React.forwardRef<HTMLDivElement, ChatBotLayoutProps>(
           </div>
           <div className={styles.chatContent}>{children}</div>
           {/* <InputBubble placeholder='Chat with Able here ...'/> */}
-          <TextAreaBubble placeholder='Chat with Able here ...'/>
+          <div className={styles.footer}>
+            <TextAreaBubble placeholder='Chat with Able here ...'/>
+            <Image src='/images/home.svg' width={40} height={40} alt='home' style={{margin: 'auto'}} />
+          </div>
         </div>
       </div>
     );
