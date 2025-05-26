@@ -7,25 +7,22 @@ import styles from './RoleToggle.module.css';
 
 const RoleToggle: React.FC<{ lastViewVisited?: string }> = ({ lastViewVisited }) => {
     const router = useRouter();
-    const { updateUserContext, isBuyerMode, isWorkerMode } = useAppContext();
-    const currentActiveRole = isBuyerMode ? 'BUYER' : isWorkerMode ? 'GIG_WORKER' : 'UNKNOWN';
+    const { updateUserContext, user } = useAppContext();
+    const currentActiveRole = user?.isBuyerMode ? 'BUYER' : user?.isWorkerMode ? 'GIG_WORKER' : 'QA';
 
     const handleToggle = async (newRole: 'BUYER' | 'GIG_WORKER') => {
-        if (newRole === currentActiveRole || !updateUserContext) return;
+        if (newRole === currentActiveRole && !lastViewVisited) return;
 
         try {
+            const newAppRole = newRole === 'BUYER' ? 'worker' : 'buyer';
             // Assuming setCurrentActiveRole updates the context and potentially the backend
-            await updateUserContext({ lastRoleUsed: newRole, lastViewVisited: lastViewVisited ?? 'home' });
+            await updateUserContext({ lastRoleUsed: newRole, lastViewVisited: lastViewVisited ?? newAppRole });
             // Save to localStorage for immediate client-side persistence
             if (typeof window !== 'undefined') {
                 localStorage.setItem('currentActiveRole', newRole);
             }
             // Redirect based on the new role
-            if (newRole === 'BUYER') {
-                router.push('buyer'); // Or just router.refresh() if already in /buyer
-            } else {
-                router.push('worker'); // Or just router.refresh() if already in /worker
-            }
+            router.push(newAppRole);
         } catch (error) {
             console.error("Failed to switch role:", error);
             // Optionally show an error to the user

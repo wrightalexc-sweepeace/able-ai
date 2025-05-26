@@ -20,13 +20,21 @@ export default function SelectRolePage() {
       router.push("/signin");
     }
     if (!loadingAuth && user?.isAuthenticated) {
-      if (user?.canBeBuyer) {
-        router.push(`user/${user?.uid || 'this_user'}/buyer`);
+      console.log({ user })
+      if (user?.canBeBuyer && user?.isBuyerMode) {
+        if (user?.lastViewVisitedBuyer) {
+          router.push(user?.lastViewVisitedBuyer);
+        } else {
+          router.push(`user/${user?.uid || 'this_user'}/buyer`);
+        }
       }
-      if (user?.canBeGigWorker) {
-        router.push(`user/${user?.uid || 'this_user'}/worker`);
+      if (user?.canBeGigWorker && user?.isWorkerMode) {
+        if (user?.lastViewVisitedWorker) {
+          router.push(user?.lastViewVisitedWorker);
+        } else {
+          router.push(`user/${user?.uid || 'this_user'}/worker`);
+        }
       }
-      console.log({ user, loadingAuth })
     }
   }, [user?.isAuthenticated, loadingAuth, router]);
 
@@ -42,22 +50,17 @@ export default function SelectRolePage() {
     setIsLoading(true);
     setError(null);
     try {
-      // 1. Update in context (which should trigger backend update via API)
       await updateUserContext({ lastRoleUsed: role });
 
-      // 2. Check if user have finished onboarding
-
-
-      // 3. Navigate to the appropriate dashboard
       if (role === "BUYER") {
         if (user?.canBeBuyer) {
-          router.push(`user/${user?.uid || 'this_user'}/buyer`); // Or your buyer landing page
+          router.push(`user/${user?.uid || 'this_user'}/buyer`);
         } else {
           router.push(`user/${user?.uid || 'this_user'}/buyer/onboarding`);
         }
       } else if (role === "GIG_WORKER") {
         if (user?.canBeGigWorker) {
-          router.push(`user/${user?.uid || 'this_user'}/worker`); // Or your worker landing page
+          router.push(`user/${user?.uid || 'this_user'}/worker`);
         } else {
           router.push(`user/${user?.uid || 'this_user'}/worker/onboarding`);
         }
