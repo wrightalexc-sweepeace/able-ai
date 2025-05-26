@@ -124,7 +124,7 @@ export default function WorkerDashboardPage() { // Renamed for clarity
 
 
         <ReferralBanner
-          title="Refer a Worker & Earn £5!"
+          title="Refer a worker and earn £5!"
         />
 
         <footer className={styles.pageFooter}>
