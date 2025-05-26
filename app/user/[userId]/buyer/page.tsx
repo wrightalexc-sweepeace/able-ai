@@ -106,10 +106,10 @@ export default function BuyerDashboardPage() { // Renamed for clarity
           )}
         </header>
 
-        <AiSuggestionBanner
+        {/* <AiSuggestionBanner
           // title="Smart Hiring Tip ✨"
           message="We have 10 new bartenders who joined within 5 miles of you - would you like to see their profiles?"
-        />
+        /> */}
 
         {/* <h2 className={styles.sectionTitle}>Manage Your Activity</h2> */}
         <IconGrid items={actionItems} color={"#7eeef9"}/>
