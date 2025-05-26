@@ -6,8 +6,39 @@
   width: 100%;
 }
 
-.alignUser {
+/* .alignUser {
   align-self: flex-end;
+} */
+
+
+.monitorPlay {
+  width: 70px;
+  height: 60px;
+}
+
+.toggleButton {
+  width: fit-content;
+  height: 22px;
+  padding: 0px 8px;
+  border: 0;
+  box-sizing: border-box;
+  border-radius: 24px;
+  background-color: #ffffff;
+  color: #0f0f0f;
+  font-size: 18px;
+  font-family: var(--font-family);
+  line-height: 23px;
+  outline: none;
+  margin-top: 1rem;
+}
+
+.changeLayout {
+  flex-direction: column;
+  margin: auto;
+}
+
+.makeCenter {
+  align-self: center;
 }
 
 .videoBubbleContent {

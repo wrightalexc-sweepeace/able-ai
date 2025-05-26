@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect, ChangeEvent } from 'react';
 import styles from './VideoRecorderBubble.module.css';
-import { Video, StopCircle, UploadCloud, AlertTriangle } from 'lucide-react';
+import { Video, StopCircle, UploadCloud, AlertTriangle, MonitorPlay } from 'lucide-react';
 
 interface VideoRecorderBubbleProps {
   id?: string;
@@ -30,6 +30,7 @@ const VideoRecorderBubble = React.forwardRef<HTMLInputElement, VideoRecorderBubb
     const [recordedChunks, setRecordedChunks] = useState<Blob[]>([]);
     const [error, setError] = useState<string | null>(null);
     const [stream, setStream] = useState<MediaStream | null>(null);
+    const [isVisible, setIsVisible] = useState(false);
 
     const startRecording = async () => {
       setError(null);
@@ -90,6 +91,11 @@ const VideoRecorderBubble = React.forwardRef<HTMLInputElement, VideoRecorderBubb
       }
     };
 
+    const toggleVideoRecord = () => {
+      setIsVisible(!isVisible);
+    }
+
+
     useEffect(() => {
       return () => {
         if (stream) {
@@ -102,8 +108,9 @@ const VideoRecorderBubble = React.forwardRef<HTMLInputElement, VideoRecorderBubb
     }, [stream, videoBlobUrl]);
 
     return (
-      <div className={`${styles.videoBubbleWrapper} ${styles.alignUser}`}>
-        <div className={styles.videoBubbleContent}>
+      <div className={`${styles.videoBubbleWrapper} ${styles.alignUser} ${isVisible ? styles.changeLayout : ''}`}>
+        { isVisible ? (
+          <div className={styles.videoBubbleContent}>
           {prompt && <p className={styles.label}>{prompt}</p>}
 
           {error && (
@@ -156,7 +163,13 @@ const VideoRecorderBubble = React.forwardRef<HTMLInputElement, VideoRecorderBubb
               />
             </div>
           )}
-        </div>
+          </div>
+        ) : (
+            <MonitorPlay color='#fff' className={styles.monitorPlay}/>
+        )}
+        <button type="button" onClick={toggleVideoRecord} className={`${styles.toggleButton} ${isVisible ? styles.makeCenter : ''}`}>
+          {!isVisible ? 'RECORD VIDEO' : 'CANCEL RECORDING'}
+        </button>
       </div>
     );
   }
