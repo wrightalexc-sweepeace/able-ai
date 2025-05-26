@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styles from './ShareLinkBubble.module.css';
-import { Link, Copy, CheckCircle } from 'lucide-react';
+import { Link, Copy, CheckCircle, Share2 } from 'lucide-react';
 
 interface ShareLinkBubbleProps {
   label?: string;
@@ -35,9 +35,9 @@ const ShareLinkBubble: React.FC<ShareLinkBubbleProps> = ({
   return (
     <div className={`${styles.shareLinkBubbleWrapper} ${styles.alignUser}`}>
       <div className={styles.shareLinkBubbleContent}>
-        {label && <p className={styles.label}>{label}</p>}
+        {/* {label && <p className={styles.label}>{label}</p>} */}
         <div className={styles.linkContainer}>
-          <Link size={16} className={styles.linkIcon} />
+          {/* <Link size={16} className={styles.linkIcon} /> */}
           {linkUrl && displayLinkText ? (
             <a
               href={linkUrl}
@@ -52,7 +52,7 @@ const ShareLinkBubble: React.FC<ShareLinkBubbleProps> = ({
           ) : (
             <span className={styles.noLinkText}>{linkUrl ? displayLinkText : "No link available"}</span>
           )}
-          {linkUrl && navigator.clipboard && (
+          {/* {linkUrl && navigator.clipboard && (
             <button
               type="button"
               onClick={handleCopy}
@@ -62,7 +62,8 @@ const ShareLinkBubble: React.FC<ShareLinkBubbleProps> = ({
             >
               {copied ? <CheckCircle size={16} className={styles.copiedIcon} /> : <Copy size={16} />}
             </button>
-          )}
+          )} */}
+          <Share2 color='#41a1e8' />
         </div>
       </div>
     </div>
