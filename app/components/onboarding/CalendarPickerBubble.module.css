@@ -3,19 +3,16 @@
   display: flex;
   gap: 0.5rem;
   max-width: 90%;
-  width: 100%;
+  width: fit-content;
 }
 
 .alignUser {
-  align-self: flex-end;
+  align-self: center;
 }
 
 .calendarBubbleContent {
   flex-grow: 1;
   background-color: #2b2b2b; /* Matches other input bubble backgrounds */
-  padding: 0.75rem 1rem;
-  border-radius: 1.25rem;
-  border-bottom-right-radius: 0.25rem; /* Tailed bubble */
   position: relative; /* For popper positioning context if needed */
 }
 
@@ -58,8 +55,8 @@
 }
 
 /* react-datepicker global overrides (place in global.css or ensure high specificity if needed) */
-/* For theming the calendar popup itself, you might need to override react-datepicker's default styles.
-   Example (you'll need to inspect react-datepicker elements to target them correctly):
+/* For theming the calendar popup itself, you might need to override react-datepicker's default styles. */
+   /* Example (you'll need to inspect react-datepicker elements to target them correctly): */
 .react-datepicker-popper {
   z-index: 10;
 }
@@ -87,10 +84,9 @@
   color: #fff;
 }
 .react-datepicker__day--keyboard-selected {
-  background-color: var(--primary-color-dark); // A darker shade for keyboard focus
+  background-color: var(--primary-color-dark);
   color: #fff;
 }
 .react-datepicker__navigation-icon::before {
   border-color: #fff;
 }
-*/

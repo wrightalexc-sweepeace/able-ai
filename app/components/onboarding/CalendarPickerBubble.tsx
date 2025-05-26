@@ -56,6 +56,7 @@ const CalendarPickerBubble = React.forwardRef<DatePicker, CalendarPickerBubblePr
         <div className={styles.calendarBubbleContent}>
           {label && <label htmlFor={inputId} className={styles.label}>{label}</label>}
           <DatePicker
+            inline
             id={inputId}
             name={name}
             selected={value}
