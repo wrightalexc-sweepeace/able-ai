@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, FormEvent, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAppContext } from '@/app/hooks/useAppContext'; // Corrected path
+import { useAppContext } from '@/app/hooks/useAppContext';
 
 import ChatBotLayout from '@/app/components/onboarding/ChatBotLayout'; // Corrected path
 import MessageBubble from '@/app/components/onboarding/MessageBubble'; // Corrected path
@@ -25,7 +25,7 @@ import ShareLinkBubble from '../components/onboarding/ShareLinkBubble';
 
 export default function OnboardWorkerPage() {
   const router = useRouter();
-  const { isAuthenticated, isLoading: loadingAuth } = useAppContext();
+  const { isLoading: loadingAuth } = useAppContext();
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
   const isViewQA = useMemo(() => {

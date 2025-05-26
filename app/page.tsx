@@ -1,5 +1,6 @@
 "use client";
 import Image from "next/image";
+import { Toaster } from 'sonner'
 import styles from "./page.module.css";
 import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import { useEffect, useState } from "react";
@@ -256,6 +257,7 @@ const toggleIsViewQA = () => {
           </button>
         </section>
       </main>
+      <Toaster />
     </div>
   );
 }

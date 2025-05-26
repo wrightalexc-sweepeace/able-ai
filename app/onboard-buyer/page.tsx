@@ -101,7 +101,7 @@ const baseInitialSteps: OnboardingStep[] = [
 
 export default function OnboardBuyerPage() {
   const router = useRouter();
-  const { isAuthenticated, isLoading: loadingAuth } = useAppContext();
+  const { isLoading: loadingAuth } = useAppContext();
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
   const isViewQA = useMemo(() => {

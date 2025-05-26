@@ -20,6 +20,12 @@ export default function SelectRolePage() {
       router.push("/signin");
     }
     if (!loadingAuth && user?.isAuthenticated) {
+      if (user?.canBeBuyer) {
+        router.push(`user/${user?.uid || 'this_user'}/buyer`);
+      }
+      if (user?.canBeGigWorker) {
+        router.push(`user/${user?.uid || 'this_user'}/worker`);
+      }
       console.log({ user, loadingAuth })
     }
   }, [user?.isAuthenticated, loadingAuth, router]);
