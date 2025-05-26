@@ -11,31 +11,30 @@
 
 .alignUser {
   align-self: flex-end;
-  flex-direction: row-reverse; /* Avatar on the right for user */
+  flex-direction: row-reverse;
 }
 
 .avatar {
   border-radius: 50%;
   flex-shrink: 0;
-  /* margin-top: auto; // Aligns avatar to bottom of bubble if bubble is tall */
 }
 
 .bubble {
   /* padding: 0.75rem 1rem; */
-  border-radius: 1.25rem; /* 20px */
+  border-radius: 1.25rem; 
   line-height: 1.5;
   font-family: var(--font-family);
-  font-size: 0.95rem; /* From your example */
-  white-space: pre-line; /* To respect \n in text */
+  font-size: 0.95rem; 
+  white-space: pre-line; 
 }
 
 .bubbleBot {
   /* border-bottom-right-radius: 0.25rem; "Tailed" bubble for user */
   color: #ffffff;
   font-size: 14px;
-  font-family: var(--font-family);
-  /* font-weight: 400; */
-  line-height: 23px; /* "Tailed" bubble for bot */
+  font-family: var(--font-family); 
+  font-weight: 40;
+  line-height: 23px;
 }
 
 .bubbleUser {

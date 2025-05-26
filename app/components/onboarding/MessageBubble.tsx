@@ -22,12 +22,12 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({
 
   return (
     <div className={`${styles.messageWrapper} ${alignmentClass}`}>
-      {isBot && showAvatar && avatarSrc && (
+      {/* {isBot && showAvatar && avatarSrc && (
         <Image src={avatarSrc} alt="Bot Avatar" width={32} height={32} className={`${styles.avatar} ${chatStyles.avatarWithBorder}`} />
       )}
       {!isBot && avatarSrc && showAvatar && ( // Optional: Allow user avatar if src is provided
          <Image src={avatarSrc} alt="User Avatar" width={32} height={32} className={`${styles.avatar} ${chatStyles.avatarWithBorder}`} />
-      )}
+      )} */}
       <div className={`${styles.bubble} ${bubbleClass}`}>
         {text}
       </div>
