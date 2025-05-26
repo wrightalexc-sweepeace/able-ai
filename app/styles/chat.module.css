@@ -23,7 +23,7 @@
     background-color: #ffffff; /* Dark gray input */
     color: #000000; /* Light gray text */
     border: 2px solid #0d0d0d0d;
-    padding: 8px;
+    padding: 0.75rem 1rem;
     border-radius: 1rem;
     width: 100%;
 }

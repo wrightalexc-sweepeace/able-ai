@@ -12,7 +12,6 @@
 
 .textAreaBubbleContent {
   flex-grow: 1;
-  padding: 0.75rem 1rem;
   border-radius: 1.25rem;
   border-bottom-right-radius: 0.25rem;
 }

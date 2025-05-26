@@ -19,6 +19,8 @@ import baseInitialSteps from './initialSteps';
 import { OnboardingStep } from './OnboardingSteps';
 import StripeLinkBubble from '../components/onboarding/StripeLinkBubble';
 import CalendarPickerBubble from '../components/onboarding/CalendarPickerBubble';
+import VideoRecorderBubble from '../components/onboarding/VideoRecorderBubble';
+import ShareLinkBubble from '../components/onboarding/ShareLinkBubble';
 
 
 export default function OnboardWorkerPage() {
@@ -297,10 +299,10 @@ export default function OnboardWorkerPage() {
         if (step.type === 'botMessage') {
           if (step.value) {
             return (
-              <>
-                <MessageBubble key={key} text={step.content as string} senderType="bot" avatarSrc={BOT_AVATAR_SRC} />
-                <StripeLinkBubble key={key} label='LINK TO STRIPE' stripeLink={step.value as string} />
-              </>
+              <div key={key} className={pageStyles.botMessageContainer}>
+                <MessageBubble text={step.content as string} senderType="bot" avatarSrc={BOT_AVATAR_SRC} />
+                <StripeLinkBubble label='LINK TO STRIPE' stripeLink={step.value as string} />
+              </div>
             );
           }
           return <MessageBubble key={key} text={step.content as string} senderType="bot" avatarSrc={BOT_AVATAR_SRC} />;
@@ -319,6 +321,14 @@ export default function OnboardWorkerPage() {
           return (
            <CalendarPickerBubble onChange={handleCalendarChange} key={key} />
           );
+        }
+
+        if (step.type === 'recordVideo') {
+          return <VideoRecorderBubble key={key} />;
+        }
+
+        if(step.type === 'shareLink') {
+          return <ShareLinkBubble key={key} linkText='Send this link to get your reference' linkUrl='https://'/>;
         }
 
         // if (!isViewQA && (step.type === 'userInput' || step.type === 'fileUpload' || step.type === 'datePicker') && !step.isComplete) {
@@ -383,6 +393,7 @@ export default function OnboardWorkerPage() {
           marginTop: '10px',
         }}
       /> */}
+      
     </ChatBotLayout>
   );
 }

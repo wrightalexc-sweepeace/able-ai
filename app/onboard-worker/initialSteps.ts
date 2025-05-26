@@ -1,7 +1,7 @@
 import { WorkerData } from '@/app/components/onboarding/WorkerCard';
 export interface OnboardingStep {
     id: number;
-    type: 'botMessage' | 'userInput' | 'userResponseDisplay' | 'workerCard' | 'terms' | 'fileUpload' | 'datePicker' | 'discountCode';
+    type: 'botMessage' | 'userInput' | 'userResponseDisplay' | 'workerCard' | 'terms' | 'fileUpload' | 'datePicker' | 'discountCode' | 'recordVideo' | 'shareLink';
     senderType?: 'bot' | 'user';
     content?: string | React.ReactNode;
     inputType?: 'text' | 'email' | 'number' | 'textarea' | 'file' | 'date';
@@ -41,6 +41,33 @@ const baseInitialSteps: OnboardingStep[] = [
       content: '"Hi my name is Benji I am a bartender and waiter. I love making cocktails and bring a sense of fun to every shift. I trained at Claridges and my favourite cocktail is an espresso martini. I am great with crowds and a busy bar - i hope we can work togther"', 
       dependsOn: 12 
     },
+    {
+      id: 14, type: 'recordVideo', 
+    },
+    {
+      id: 15, 
+      type: 'botMessage', 
+      content: "You need two references (at least one recommendation per skill) from previous managers, colleaagues or teachers. If you dont have experience you can get a reference from a friend or someone in your network",
+    },
+    {
+      id: 16,
+      type: 'shareLink',
+    },
+    {
+      id: 17,
+      type: 'botMessage',
+      content: "Please check out your gigfolio and share with your network - if your connections make a hire on Able you get £5!",
+    },
+    {
+      id: 18,
+      type: 'botMessage',
+      content: "Watch out for notifications of your first shift offer! If you dont accept within 90 minutes we will offer the gig to someone else",
+    },
+    {
+      id: 19,
+      type: 'botMessage',
+      content: "We might offer you gigs outside of your defined skill area, watch out for those opportunities too!",
+    }
   ];
 
   export default baseInitialSteps;

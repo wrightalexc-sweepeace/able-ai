@@ -3,7 +3,7 @@ import { WorkerData } from '@/app/components/onboarding/WorkerCard';
 
 export interface OnboardingStep {
   id: number;
-  type: 'botMessage' | 'userInput' | 'userResponseDisplay' | 'workerCard' | 'terms' | 'fileUpload' | 'datePicker' | 'discountCode';
+  type: 'botMessage' | 'userInput' | 'userResponseDisplay' | 'workerCard' | 'terms' | 'fileUpload' | 'datePicker' | 'discountCode' | 'recordVideo' | 'shareLink';
   senderType?: 'bot' | 'user';
   content?: string | React.ReactNode;
   inputType?: 'text' | 'email' | 'number' | 'textarea' | 'file' | 'date';
