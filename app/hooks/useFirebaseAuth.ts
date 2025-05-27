@@ -1,6 +1,6 @@
 "use client";
 
-import { getIdToken, onAuthStateChanged, User } from "firebase/auth";
+import { getIdToken, onAuthStateChanged, User, signOut } from "firebase/auth";
 import { useEffect, useState } from "react";
 import { auth } from "../lib/firebase/clientApp";
 
@@ -27,5 +27,5 @@ export function useFirebaseAuth() {
     return () => unsubscribe();
   }, []);
 
-  return { user, loading, idToken };
+  return { user, loading, idToken, signOut };
 }

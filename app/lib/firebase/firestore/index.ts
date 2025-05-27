@@ -11,7 +11,7 @@ import {
   where,
   addDoc,
   deleteDoc,
-
+  setDoc,
 } from "firebase/firestore";
 
 import { db } from "../clientApp";
@@ -23,7 +23,7 @@ export interface UserProfile {
   firebaseUid: string;
   displayName: string;
   profileImageUrl: string;
-  currentActiveRole: 'WORKER' | 'BUYER';
+  currentActiveRole: 'GIG_WORKER' | 'BUYER';
   canBeBuyer: boolean;
   canBeGigWorker: boolean;
   createdAt: FirestoreTimestamp;
@@ -109,24 +109,67 @@ export async function getUserData(userId: string): Promise<UserProfile> {
   const userDoc = doc(db, "users", userId);
   const userSnapshot = await getDoc(userDoc);
   if (userSnapshot.exists()) {
-    return userSnapshot.data() as UserProfile;
+    const userData = userSnapshot.data() as UserProfile;
+    return userData;
   } else {
     throw new Error("User not found");
   }
 }
 
-export async function createUserProfile(userId: string, userData: Omit<UserProfile, 'firebaseUid' | 'createdAt'>) {
-  const userDoc = doc(db, "users", userId);
-  await updateDoc(userDoc, {
-    ...userData,
-    firebaseUid: userId,
-    createdAt: Timestamp.now(),
-  });
+export async function getFirestoreUserByFirebaseUid(firebaseUid: string) {
+  const usersRef = collection(db, "users");
+  const q = query(usersRef, where("firebaseUid", "==", firebaseUid));
+  const userSnapshot = await getDocs(q);
+  if (!userSnapshot.empty) {
+    const userData = userSnapshot.docs[0].data() as UserProfile;
+    return userData;
+  } else {
+    throw new Error("User not found");
+  }
 }
 
-export async function updateUserProfile(userId: string, updates: Partial<Omit<UserProfile, 'firebaseUid' | 'createdAt' | 'canBeBuyer' | 'canBeGigWorker' | 'workerAverageRating' | 'workerTotalGigsCompleted' | 'workerResponseRatePercent'>>) {
+export async function createUserProfile(
+  userId: string,
+  userData: Omit<UserProfile, 'firebaseUid' | 'createdAt' | 'currentActiveRole' | 'canBeBuyer' | 'canBeGigWorker'> // Exclude fields managed by rules/later steps
+) {
   const userDoc = doc(db, "users", userId);
-  await updateDoc(userDoc, updates);
+  // Set minimal required data for initial creation based on rules
+  // NOTE: This might still fail if claims for canBeBuyer/canBeGigWorker are not set BEFORE this call.
+  // A cloud function triggered by auth.user().onCreate might be a more robust place to set claims and create the Firestore doc.
+  await setDoc(userDoc, {
+    firebaseUid: userId,
+    displayName: userData.displayName,
+    profileImageUrl: userData.profileImageUrl,
+    // Set initial values required by rules, potentially placeholders
+    currentActiveRole: 'BUYER', // Placeholder, will be updated during onboarding
+    canBeBuyer: false, // Placeholder, should match token claim
+    canBeGigWorker: false, // Placeholder, should match token claim
+    createdAt: Timestamp.now(),
+  }, { merge: true }); // Use merge: true to allow adding other fields later
+}
+
+export async function updateUserProfile(
+  userId: string,
+  updates: Partial<
+    Omit<
+      UserProfile,
+      | 'canBeBuyer'
+      | 'canBeGigWorker'
+      | 'workerAverageRating'
+      | 'workerTotalGigsCompleted'
+      | 'workerResponseRatePercent'
+    >
+  >
+) {
+  const userRef = collection(db, "users");
+  const q = query(userRef, where("firebaseUid", "==", userId));
+  const userSnapshot = await getDocs(q);
+  if (!userSnapshot.empty) {
+    const userDoc = userSnapshot.docs[0].ref;
+    await updateDoc(userDoc, updates);
+  } else {
+    throw new Error("User not found");
+  }
 }
 
 // User Notifications

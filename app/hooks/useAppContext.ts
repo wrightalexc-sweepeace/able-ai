@@ -3,18 +3,16 @@
 
 import { User } from "firebase/auth";
 import { useFirebaseAuth } from "./useFirebaseAuth";
+import { updateUserAppContext } from "@/app/actions/update-user-app-context";
+import { useEffect, useState } from "react";
+import { getFirestoreUserByFirebaseUid, updateUserProfile } from "../lib/firebase/firestore";
+import { getUserByFirebaseUid } from "../actions/userActions";
 
 interface ExtendedUser extends User {
-    appRole?: 'ADMIN' | 'SUPER_ADMIN' | 'QA';
+    appRole?: 'ADMIN' | 'SUPER_ADMIN' | 'QA' | 'USER';
     lastRoleUsed?: 'BUYER' | 'GIG_WORKER';
-    lastViewVisited?: string;
     isBuyer?: boolean;
     isGigWorker?: boolean;
-}
-
-interface AppContextValue {
-    user: ExtendedUser | null;
-    isLoading: boolean;
     isAuthenticated: boolean;
     isAdmin: boolean;
     isSuperAdmin: boolean;
@@ -23,64 +21,126 @@ interface AppContextValue {
     isWorkerMode: boolean;    // Based on lastRoleUsed
     canBeBuyer: boolean;      // User *can* be a buyer
     canBeGigWorker: boolean;  // User *can* be a worker
-    lastViewVisited: string | null;
-    updateUserContext: (updates: { lastRoleUsed?: 'BUYER' | 'GIG_WORKER'; lastViewVisited?: string }, idToken?: string | null) => Promise<void>;
+    lastViewVisitedBuyer: string | null;
+    lastViewVisitedWorker: string | null;
+}
+
+interface AppContextValue {
+    user: ExtendedUser | null;
+    isLoading: boolean;
+    updateUserContext: (updates: { lastRoleUsed?: 'BUYER' | 'GIG_WORKER'; lastViewVisited?: string }) => Promise<{ ok: boolean, error?: string | unknown }>;
 }
 
 export function useAppContext(): AppContextValue {
-    const { user: firebaseUser, loading } = useFirebaseAuth();
-    const user = firebaseUser as ExtendedUser | null;
-    const isAuthenticated = !!user;
+    const { user: firebaseUser, idToken } = useFirebaseAuth();
+    const [user, setUser] = useState<ExtendedUser | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    useEffect(() => {
+        const getFirestoreUser = async (firebaseUser: User) => {
+            const userData = await getFirestoreUserByFirebaseUid(firebaseUser?.uid);
+            return userData;
+        }
+        const fetchUser = async (firebaseUser: User, idToken: string) => {
+            const { value: userData, error } = await getUserByFirebaseUid(firebaseUser?.uid, idToken);
+            if (error) {
+                console.error("Error fetching user by firebaseUid:", error);
+                return { ok: false, error: error };
+            }
+            return { ok: true, value: userData };
+        }
+
+        if (firebaseUser?.uid && idToken) {
+            getFirestoreUser(firebaseUser).then(firestoreUser => {
+                fetchUser(firebaseUser, idToken).then(({ value: userData }) => {
+                    const lastRoleUsed = localStorage.getItem('lastRoleUsed') as 'BUYER' | 'GIG_WORKER' | null || firestoreUser?.currentActiveRole || userData?.appRole;
+                    const lastViewVisitedBuyer = localStorage.getItem('lastViewVisitedBuyer') as string | null || userData?.lastViewVisitedBuyer;
+                    const lastViewVisitedWorker = localStorage.getItem('lastViewVisitedWorker') as string | null || userData?.lastViewVisitedWorker;
+                    const isQA = localStorage.getItem('isViewQA') === 'true' || userData?.appRole === 'QA';
+                    const extendedUser = {
+                        uid: firebaseUser.uid,
+                        displayName: firebaseUser.displayName,
+                        email: firebaseUser.email,
+                        photoURL: firebaseUser.photoURL,
+                        isAuthenticated: true,
+                        isAdmin: userData?.appRole === 'ADMIN',
+                        isSuperAdmin: userData?.appRole === 'SUPER_ADMIN',
+                        isQA,
+                        isBuyerMode: lastRoleUsed === 'BUYER',
+                        isWorkerMode: lastRoleUsed === 'GIG_WORKER',
+                        canBeBuyer: userData?.isBuyer,
+                        canBeGigWorker: userData?.isGigWorker,
+                        lastViewVisitedBuyer,
+                        lastViewVisitedWorker,
+                    }
+                    setUser(extendedUser as ExtendedUser);
+                }).catch(error => {
+                    console.error("Error fetching user by firebaseUid:", error);
+                }).finally(() => {
+                    setIsLoading(false);
+                });
+            }).catch(error => {
+                console.error("Error fetching firestore user by firebaseUid:", error);
+            }).finally(() => {
+                setIsLoading(false);
+            });
+        }
+    }, [firebaseUser]);
 
     // Function to call API to update context in PG
-    const updateUserContext = async (updates: { lastRoleUsed?: 'BUYER' | 'GIG_WORKER'; lastViewVisited?: string }, idToken?: string | null) => {
-        const isViewQA = localStorage.getItem('isViewQA') === 'true';
-
-        if (isViewQA || !isAuthenticated || !user?.uid) return;
+    const updateUserContext = async (updates: { lastRoleUsed?: 'BUYER' | 'GIG_WORKER'; lastViewVisited?: string }) => {
+        if (!user?.isAuthenticated || !idToken) return { ok: false, error: 'Not authenticated' };
 
         try {
             // Call backend API to update PostgreSQL
-            const response = await fetch('/api/users/update-context', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ firebaseUid: user.uid, ...updates, idToken }),
-            });
-            if (!response.ok) {
-                throw new Error('Failed to update user context in backend');
-            }
+            const { value: updatedPgData, error } = await updateUserAppContext(updates, idToken);
 
-            const updatedPgData = await response.json();
+            await updateUserProfile(user?.uid, {
+                currentActiveRole: updates.lastRoleUsed,
+            });
+
+            if (error) {
+                console.error("Error updating user context:", error);
+                return { ok: false, error };
+            }
 
             // Update local storage for immediate client-side updates
-            if (updates.lastRoleUsed) {
-                localStorage.setItem('currentRole', updatedPgData.user.lastRoleUsed);
+            if (updatedPgData?.lastRoleUsed) {
+                localStorage.setItem('lastRoleUsed', updatedPgData.lastRoleUsed);
             }
-            if (updates.lastViewVisited) {
-                localStorage.setItem('lastViewVisitedBuyer', updatedPgData.user.lastViewVisitedBuyer);
-                localStorage.setItem('lastViewVisitedWorker', updatedPgData.user.lastViewVisitedWorker);
+            if (updatedPgData?.lastViewVisitedBuyer) {
+                localStorage.setItem('lastViewVisitedBuyer', updatedPgData.lastViewVisitedBuyer);
             }
-
-        } catch (error) {
+            if (updatedPgData?.lastViewVisitedWorker) {
+                localStorage.setItem('lastViewVisitedWorker', updatedPgData.lastViewVisitedWorker);
+            }
+            setUser((prev) => ({
+                ...prev,
+                appRole: updatedPgData?.appRole,
+                lastRoleUsed: updatedPgData?.lastRoleUsed,
+                isBuyer: updatedPgData?.isBuyer,
+                isGigWorker: updatedPgData?.isGigWorker,
+                lastViewVisitedBuyer: updatedPgData?.lastViewVisitedBuyer,
+                lastViewVisitedWorker: updatedPgData?.lastViewVisitedWorker
+            } as ExtendedUser | null));
+            return { ok: true, error: undefined };
+        } catch (error: unknown) {
             console.error("Error updating user context:", error);
+            let errorMessage = 'An unknown error occurred';
+            if (error instanceof Error) {
+                errorMessage = error.message;
+            } else if (typeof error === 'string') {
+                errorMessage = error;
+            } else {
+                errorMessage = String(error);
+            }
+            return { ok: false, error: errorMessage };
         }
     };
 
-    // Get role info from local storage for immediate updates
-    const currentRole = typeof window !== 'undefined' ? localStorage.getItem('currentRole') as 'BUYER' | 'GIG_WORKER' | null : null;
-    const lastViewVisitedFromStorage = typeof window !== 'undefined' ? localStorage.getItem('lastViewVisited') : null;
-
     return {
         user,
-        isLoading: loading,
-        isAuthenticated,
-        isAdmin: user?.appRole === 'ADMIN',
-        isSuperAdmin: user?.appRole === 'SUPER_ADMIN',
-        isQA: user?.appRole === 'QA',
-        isBuyerMode: isAuthenticated && (currentRole === 'BUYER' || user?.lastRoleUsed === 'BUYER'),
-        isWorkerMode: isAuthenticated && (currentRole === 'GIG_WORKER' || user?.lastRoleUsed === 'GIG_WORKER'),
-        canBeBuyer: !!user?.isBuyer,
-        canBeGigWorker: !!user?.isGigWorker,
-        lastViewVisited: lastViewVisitedFromStorage || user?.lastViewVisited || null,
+        isLoading,
         updateUserContext,
     };
 }

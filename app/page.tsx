@@ -1,23 +1,16 @@
 "use client";
 import Image from "next/image";
+import { Toaster } from 'sonner'
 import styles from "./page.module.css";
-import { onAuthStateChanged, signOut, User } from "firebase/auth";
 import { useEffect, useState } from "react";
 import { auth } from "./lib/firebase/clientApp";
 import Link from "next/link";
+import { useFirebaseAuth } from "./hooks/useFirebaseAuth";
 
 export default function Home() {
-  const [user, setUser] = useState<User | null>(null);
+  const { user, signOut } = useFirebaseAuth();
   const [isProjectInfoOpen, setIsProjectInfoOpen] = useState(false);
   const [isViewQA, setIsViewQAState] = useState<boolean>(false); // State to track isViewQA
-
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      setUser(user);
-    });
-
-    return () => unsubscribe();
-  }, []);
 
   // Effect to read initial isViewQA value from localStorage
   useEffect(() => {
@@ -112,11 +105,11 @@ const toggleIsViewQA = () => {
               <span className={styles.badge} data-status="complete">Complete</span>
             </div>
             <div className={styles.pageItem}>
-              <Link href="/onboard-buyer" className={styles.pageName}>/onboard-buyer</Link>
+              <Link href="/user/[userId]/test-user-id/onboarding" className={styles.pageName}>/user/[userId]/test-user-id/onboarding</Link>
               <span className={styles.badge} data-status="in-progress">In Progress</span>
             </div>
             <div className={styles.pageItem}>
-              <Link href="/onboard-worker" className={styles.pageName}>/onboard-worker</Link>
+              <Link href="/user/[userId]/test-user-id/onboarding" className={styles.pageName}>/user/[userId]/test-user-id/onboarding</Link>
               <span className={styles.badge} data-status="in-progress">In Progress</span>
             </div>
             <div className={styles.pageItem}>
@@ -256,6 +249,7 @@ const toggleIsViewQA = () => {
           </button>
         </section>
       </main>
+      <Toaster />
     </div>
   );
 }
