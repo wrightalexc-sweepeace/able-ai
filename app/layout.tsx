@@ -1,10 +1,15 @@
-import type { Metadata } from "next";
 import "./globals.css";
 
-export const metadata: Metadata = {
+export const metadata = {
   title: "AbleAI",
   description: "Connecting gig workers and buyers",
-  viewport: 'width=device-width, initial-scale=1',
+};
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1.0,
+  userScalable: 'no'
 };
 
 export default async function RootLayout({
