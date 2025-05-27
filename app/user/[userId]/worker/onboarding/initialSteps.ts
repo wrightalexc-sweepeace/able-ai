@@ -47,7 +47,7 @@ const baseInitialSteps: OnboardingStep[] = [
     {
       id: 15, 
       type: 'botMessage', 
-      content: "You need two references (at least one recommendation per skill) from previous managers, colleaagues or teachers. If you dont have experience you can get a reference from a friend or someone in your network",
+      content: "You need two references (at least one recommendation per skill) from previous managers, colleagues or teachers. If you don't have experience you can get a reference from a friend or someone in your network",
     },
     {
       id: 16,
