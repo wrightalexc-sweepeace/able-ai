@@ -38,7 +38,7 @@ const baseInitialSteps: OnboardingStep[] = [
     {
       id: 13, 
       type: "botMessage", 
-      content: '"Hi my name is Benji I am a bartender and waiter. I love making cocktails and bring a sense of fun to every shift. I trained at Claridges and my favourite cocktail is an espresso martini. I am great with crowds and a busy bar - i hope we can work togther"', 
+      content: '"Hi my name is Benji I am a bartender and waiter. I love making cocktails and bring a sense of fun to every shift. I trained at Claridges and my favourite cocktail is an espresso martini. I am great with crowds and a busy bar - I hope we can work together"', 
       dependsOn: 12 
     },
     {
