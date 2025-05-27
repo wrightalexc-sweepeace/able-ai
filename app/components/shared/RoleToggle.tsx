@@ -32,7 +32,7 @@ const RoleToggle: React.FC<{ lastViewVisited?: string }> = ({ lastViewVisited })
     return (
         <div className={styles.toggleContainer}>
             <label className={styles.switchLabel}>
-            <span>Switch to {currentActiveRole === 'BUYER' ? 'seller' : 'buyer'}</span>
+            <span>Switch to {currentActiveRole === 'BUYER' ? 'worker' : 'buyer'}</span>
             <input
                 type="checkbox"
                 onChange={() =>
