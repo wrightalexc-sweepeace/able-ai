@@ -22,7 +22,7 @@ const RoleToggle: React.FC<{ lastViewVisited?: string }> = ({ lastViewVisited })
                 localStorage.setItem('currentActiveRole', newRole);
             }
             // Redirect based on the new role
-            router.push(newAppRole);
+            router.push(newAppRole); // TODO: explore `router.asPath` to get current path as default
         } catch (error) {
             console.error("Failed to switch role:", error);
             // Optionally show an error to the user
