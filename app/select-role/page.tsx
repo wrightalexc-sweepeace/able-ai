@@ -21,7 +21,6 @@ export default function SelectRolePage() {
       router.push("/signin");
     }
     if (!loadingAuth && user?.isAuthenticated) {
-      console.log({user})
       if (user?.isBuyerMode) {
         if (user?.lastViewVisitedBuyer) {
           router.push(user?.lastViewVisitedBuyer);

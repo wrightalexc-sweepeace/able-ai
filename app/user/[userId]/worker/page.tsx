@@ -31,26 +31,26 @@ import Logo from '@/app/components/brand/Logo';
 
 export default function WorkerDashboardPage() { // Renamed for clarity
   const router = useRouter();
-  const { isAuthenticated, isLoading: loadingAuth, isBuyerMode, isWorkerMode, user: userPublicProfile } = useAppContext();
-  const currentActiveRole = isBuyerMode ? 'BUYER' : isWorkerMode ? 'GIG_WORKER' : 'UNKNOWN';
+  // const { isAuthenticated, isLoading: loadingAuth, isBuyerMode, isWorkerMode, user: userPublicProfile } = useAppContext();
+  const currentActiveRole = 'GIG_WORKER';
   const THIS_HOME_ROLE = 'GIG_WORKER';
 
-  useEffect(() => {
-    if (!loadingAuth) {
-      if (!isAuthenticated) {
-        router.replace('/signin');
-      } else if (currentActiveRole !== THIS_HOME_ROLE) {
-        // Attempt to switch or redirect based on actual capabilities
-        if (userPublicProfile?.isBuyer) { // Check if user *can* be a buyer
-          router.push('buyer'); // Redirect to buyer home
-        } else {
-          router.replace('/select-role'); // Fallback if current role doesn't match expected and cannot be buyer
-        }
-      }
-    }
-  }, [isAuthenticated, loadingAuth, currentActiveRole, userPublicProfile, router, THIS_HOME_ROLE]);
+  // useEffect(() => {
+  //   if (!loadingAuth) {
+  //     if (!isAuthenticated) {
+  //       router.replace('/signin');
+  //     } else if (currentActiveRole !== THIS_HOME_ROLE) {
+  //       // Attempt to switch or redirect based on actual capabilities
+  //       if (userPublicProfile?.isBuyer) { // Check if user *can* be a buyer
+  //         router.push('buyer'); // Redirect to buyer home
+  //       } else {
+  //         router.replace('/select-role'); // Fallback if current role doesn't match expected and cannot be buyer
+  //       }
+  //     }
+  //   }
+  // }, [isAuthenticated, loadingAuth, currentActiveRole, userPublicProfile, router, THIS_HOME_ROLE]);
 
-  const uid = userPublicProfile?.uid;
+  const uid = 'test';
   // Define actionItems specific to the role (Worker)
   const actionItems = [
     { label: "Gigfolio", icon: <UserCircle size={28} />, to: `/user/${uid}/worker/profile` },
@@ -68,9 +68,9 @@ export default function WorkerDashboardPage() { // Renamed for clarity
   //   }
   // }, [isAuthenticated, currentActiveRole, THIS_HOME_ROLE]);
 
-  if (loadingAuth || !isAuthenticated || currentActiveRole !== THIS_HOME_ROLE) {
-    return <Loader />
-  }
+  // if (loadingAuth || !isAuthenticated || currentActiveRole !== THIS_HOME_ROLE) {
+  //   return <Loader />
+  // }
 
   return (
     <div className={styles.container}>
@@ -84,8 +84,8 @@ export default function WorkerDashboardPage() { // Renamed for clarity
           )} */}
         <Logo width={60} height={60} />
           {/* Notification Icon */}
-          {userPublicProfile?.uid && (
-            <Link href={`/user/${userPublicProfile.uid}/notifications`} passHref>
+          {uid && (
+            <Link href={`/user/${uid}/notifications`} passHref>
               <button className={styles.notificationButton} aria-label="Notifications">
                 <Image 
                   src="/images/notifications.svg"
