@@ -17,7 +17,7 @@ const qaMockProfileData = {
   displayName: "QA Worker",
   userHandle: "@qaworker",
   profileHeadline: "Experienced Tester & Debugger",
-  avatarUrl: "/images/avatar-placeholder.png", // Use a placeholder image
+  avatarUrl: "/images/benji.jpeg", // Use a placeholder image
   location: "Remote",
   isVerified: true,
   viewCalendarLink: "#qa-calendar",
@@ -57,7 +57,7 @@ export default function WorkerOwnedProfilePage() {
   const router = useRouter();
   const params = useParams();
   const userId = params.userId as string;
-  const { user, isLoading, isWorkerMode } = useAppContext();
+  // const { user, isLoading, isWorkerMode } = useAppContext();
 
   const [profile, setProfile] = useState<any>(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
@@ -66,17 +66,17 @@ export default function WorkerOwnedProfilePage() {
   // Read isViewQA flag (example from local storage, could be context or query param)
   const isViewQA = typeof window !== 'undefined' ? localStorage.getItem('isViewQA') === 'true' : false;
 
-  useEffect(() => {
-    // Redirect if not logged in, not the correct user, or not in worker mode
-    if (!isLoading && (!user || (user.uid !== userId && !isViewQA) || !isWorkerMode)) {
-      // Allow viewing mock data in QA mode even if userId doesn't match auth user
-      if (!isViewQA) {
-         router.replace("/signin");
-      } else if (!isWorkerMode) { // Still require worker mode in QA view
-         router.replace("/select-role"); // Or an appropriate redirect
-      }
-    }
-  }, [user, isLoading, isWorkerMode, userId, router, isViewQA]);
+  // useEffect(() => {
+  //   // Redirect if not logged in, not the correct user, or not in worker mode
+  //   if (!isLoading && (!user || (user.uid !== userId && !isViewQA) || !isWorkerMode)) {
+  //     // Allow viewing mock data in QA mode even if userId doesn't match auth user
+  //     if (!isViewQA) {
+  //        router.replace("/signin");
+  //     } else if (!isWorkerMode) { // Still require worker mode in QA view
+  //        router.replace("/select-role"); // Or an appropriate redirect
+  //     }
+  //   }
+  // }, [user, isLoading, isWorkerMode, userId, router, isViewQA]);
 
   useEffect(() => {
     if (userId) {
@@ -89,13 +89,13 @@ export default function WorkerOwnedProfilePage() {
     }
   }, [userId, isViewQA]); // Add isViewQA to dependency array
 
-  if (isLoading || loadingProfile) {
-    return (
-      <div className={styles.pageLoadingContainer}>
-        <Loader2 className="animate-spin" size={48} /> Loading Profile...
-      </div>
-    );
-  }
+  // if (isLoading || loadingProfile) {
+  //   return (
+  //     <div className={styles.pageLoadingContainer}>
+  //       <Loader2 className="animate-spin" size={48} /> Loading Profile...
+  //     </div>
+  //   );
+  // }
   if (error) {
     return <div className={styles.pageWrapper}><p className={styles.errorMessage}>{error}</p></div>;
   }

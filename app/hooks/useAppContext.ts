@@ -58,6 +58,8 @@ export function useAppContext(): AppContextValue {
                     const lastViewVisitedWorker = localStorage.getItem('lastViewVisitedWorker') as string | null || userData?.lastViewVisitedWorker;
                     const isQA = localStorage.getItem('isViewQA') === 'true' || userData?.appRole === 'QA';
                     const extendedUser = {
+                        appRole: userData?.appRole,
+                        lastRoleUsed: userData?.lastRoleUsed,
                         uid: firebaseUser.uid,
                         displayName: firebaseUser.displayName,
                         email: firebaseUser.email,
@@ -92,6 +94,14 @@ export function useAppContext(): AppContextValue {
         if (!user?.isAuthenticated || !idToken) return { ok: false, error: 'Not authenticated' };
 
         try {
+            if (user.lastRoleUsed === updates.lastRoleUsed) {
+                if (updates.lastRoleUsed === 'BUYER' && user.lastViewVisitedBuyer === updates.lastViewVisited) {
+                    return {ok: false, error: 'Same view as before'}
+                }
+                if (updates.lastRoleUsed === 'GIG_WORKER' && user.lastViewVisitedWorker === updates.lastViewVisited) {
+                    return {ok: false, error: 'Same view as before'}
+                }
+            } 
             // Call backend API to update PostgreSQL
             const { value: updatedPgData, error } = await updateUserAppContext(updates, idToken);
 

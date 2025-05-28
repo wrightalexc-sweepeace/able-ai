@@ -99,7 +99,7 @@ export async function findOrCreatePgUserAndUpdateRole(
           email,
           fullName: displayName,
           appRole: 'USER', // Default appRole for new sign-ups
-          isBuyer: newUserIsBuyer,
+          isBuyer: true,
           isGigWorker: newUserIsGigWorker,
           lastRoleUsed: initialRoleContext || null, // Set initial context if provided
           phone,
@@ -208,9 +208,9 @@ export async function updateUserAppContext(
     // When lastRoleUsed is updated, also update the specific lastViewVisited for that role
     if (updates.lastViewVisited) {
       if (updates.lastRoleUsed === 'BUYER') {
-        updateData.lastViewVisitedWorker = updates.lastViewVisited;
-      } else if (updates.lastRoleUsed === 'GIG_WORKER') {
         updateData.lastViewVisitedBuyer = updates.lastViewVisited;
+      } else if (updates.lastRoleUsed === 'GIG_WORKER') {
+        updateData.lastViewVisitedWorker = updates.lastViewVisited;
       }
     }
   } else if (updates.lastViewVisited) {

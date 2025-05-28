@@ -11,6 +11,7 @@ const RoleToggle: React.FC<{ lastViewVisited?: string }> = ({ lastViewVisited })
     const currentActiveRole = user?.isBuyerMode ? 'BUYER' : user?.isWorkerMode ? 'GIG_WORKER' : 'QA';
 
     const handleToggle = async (newRole: 'BUYER' | 'GIG_WORKER') => {
+        console.log({ newRole, currentActiveRole})
         if (newRole === currentActiveRole && !lastViewVisited) return;
 
         try {
@@ -22,7 +23,7 @@ const RoleToggle: React.FC<{ lastViewVisited?: string }> = ({ lastViewVisited })
                 localStorage.setItem('currentActiveRole', newRole);
             }
             // Redirect based on the new role
-            router.push(newAppRole); // TODO: explore `router.asPath` to get current path as default
+            router.push(newAppRole);
         } catch (error) {
             console.error("Failed to switch role:", error);
             // Optionally show an error to the user
