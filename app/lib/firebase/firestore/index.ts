@@ -142,7 +142,7 @@ export async function createUserProfile(
     profileImageUrl: userData.profileImageUrl,
     // Set initial values required by rules, potentially placeholders
     currentActiveRole: 'BUYER', // Placeholder, will be updated during onboarding
-    canBeBuyer: false, // Placeholder, should match token claim
+    canBeBuyer: true, // Placeholder, should match token claim
     canBeGigWorker: false, // Placeholder, should match token claim
     createdAt: Timestamp.now(),
   }, { merge: true }); // Use merge: true to allow adding other fields later

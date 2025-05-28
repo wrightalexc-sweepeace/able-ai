@@ -20,10 +20,11 @@ interface RegistrationResult extends SignInResult {
 }
 
 // Helper to handle NextAuth sign-in after Firebase auth
-export async function handleFirebaseSignInWithNextAuth(idToken: string, phone?: string): Promise<SignInResult> {
+export async function handleFirebaseSignInWithNextAuth(idToken: string, phone?: string, role?: 'BUYER' | 'GIG_WORKER'): Promise<SignInResult> {
     const result = await signIn("credentials", {
         idToken,
         phone,
+        role,
         redirect: false,
     });
 
@@ -102,7 +103,7 @@ export async function registerWithEmailPassword(email: string, password: string,
 
         // The role will be passed to NextAuth's authorize callback via handleFirebaseSignIn
         const idToken = await getIdToken(userCredential.user, true);
-        const signInResult = await handleFirebaseSignInWithNextAuth(idToken, phone);
+        const signInResult = await handleFirebaseSignInWithNextAuth(idToken, phone, 'BUYER');
 
         return { ...signInResult, user: userCredential.user };
 

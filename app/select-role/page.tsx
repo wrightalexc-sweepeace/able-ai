@@ -7,6 +7,7 @@ import Logo from "@/app/components/brand/Logo";
 import ActionButton from "./ActionButton";
 import styles from "./SelectRolePage.module.css";
 import Loader from "@/app/components/shared/Loader";
+import { toast } from "sonner";
 
 export default function SelectRolePage() {
   const router = useRouter();
@@ -20,10 +21,11 @@ export default function SelectRolePage() {
       router.push("/signin");
     }
     if (!loadingAuth && user?.isAuthenticated) {
-      console.log({ user })
-      if (user?.canBeBuyer && user?.isBuyerMode) {
+      console.log({user})
+      if (user?.isBuyerMode) {
         if (user?.lastViewVisitedBuyer) {
           router.push(user?.lastViewVisitedBuyer);
+          toast('loaded your last location')
         } else {
           router.push(`user/${user?.uid || 'this_user'}/buyer`);
         }
@@ -56,7 +58,7 @@ export default function SelectRolePage() {
         if (user?.canBeBuyer) {
           router.push(`user/${user?.uid || 'this_user'}/buyer`);
         } else {
-          router.push(`user/${user?.uid || 'this_user'}/buyer/onboarding`);
+          router.push(`user/${user?.uid || 'this_user'}/buyer/gigs/new`);
         }
       } else if (role === "GIG_WORKER") {
         if (user?.canBeGigWorker) {

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, FormEvent, useMemo } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useAppContext } from '@/app/hooks/useAppContext';
 
 import ChatBotLayout from '@/app/components/onboarding/ChatBotLayout'; // Corrected path
@@ -22,8 +22,8 @@ import ShareLinkBubble from '@/app/components/onboarding/ShareLinkBubble';
 
 
 export default function OnboardWorkerPage() {
-  const router = useRouter();
-  const { isLoading: loadingAuth } = useAppContext();
+  const pathname = usePathname()
+  const { isLoading: loadingAuth, updateUserContext, user } = useAppContext();
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
   const isViewQA = useMemo(() => {
@@ -38,6 +38,12 @@ export default function OnboardWorkerPage() {
   const [currentFocusedInputName, setCurrentFocusedInputName] = useState<string | null>(null);
   const [workerName, setWorkerName] = useState<string | null>(null); // Added state
   const [workerPrice, setWorkerPrice] = useState<number | null>(null); // Added state
+
+  useEffect(() => {
+    if (!loadingAuth && user?.isAuthenticated) {
+      updateUserContext({ lastRoleUsed: 'GIG_WORKER', lastViewVisited: pathname });
+    }
+  }, [loadingAuth, user?.isAuthenticated]);
 
   useEffect(() => {
     if (isViewQA) {
