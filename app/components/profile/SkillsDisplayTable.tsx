@@ -24,13 +24,12 @@ const SkillsDisplayTable: React.FC<SkillsDisplayTableProps> = ({
 
   return (
     <div className={styles.skillsCard}>
-      <h3 className={styles.skillsTitle}>{title}</h3>
       <table className={styles.skillsTable}>
         <thead>
           <tr>
-            <th className={styles.skillNameHeader}>Skill</th>
-            {hasAbleGigs && <th>Able gigs</th>}
-            {hasExperience && <th>Experience</th>}
+            <th className={styles.skillNameHeader}>Skills:</th>
+            {hasAbleGigs && <th>Able gigs:</th>}
+            {hasExperience && <th>Experience:</th>}
             {hasEph && <th>£ph</th>}
           </tr>
         </thead>
@@ -38,7 +37,7 @@ const SkillsDisplayTable: React.FC<SkillsDisplayTableProps> = ({
           {skills.map((skill, index) => (
             <tr key={index}>
               <td>
-                <PillBadge text={skill.name} variant="dark" />
+                <PillBadge className={styles.skill} text={skill.name} variant="dark" />
               </td>
               {hasAbleGigs && <td>{skill.ableGigs}</td>}
               {hasExperience && <td>{skill.experience}</td>}
