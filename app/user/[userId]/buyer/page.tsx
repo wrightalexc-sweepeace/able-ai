@@ -1,24 +1,24 @@
 "use client";
 
-import React, { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAppContext } from '@/app/hooks/useAppContext';
-import Link from 'next/link';
+import React, { useEffect } from "react";
+import { useRouter, usePathname } from "next/navigation";
+import { useAppContext } from "@/app/hooks/useAppContext";
+import Link from "next/link";
 
 // Import shared components (ensure paths are correct)
-import AiSuggestionBanner from '@/app/components/shared/AiSuggestionBanner';
-import IconGrid from '@/app/components/shared/IconGrid';
-import ReferralBanner from '@/app/components/shared/ReferralBanner';
-import RoleToggle from '@/app/components/shared/RoleToggle';
-import SettingsButton from '@/app/components/shared/SettingsButton';
+import AiSuggestionBanner from "@/app/components/shared/AiSuggestionBanner";
+import IconGrid from "@/app/components/shared/IconGrid";
+import ReferralBanner from "@/app/components/shared/ReferralBanner";
+import RoleToggle from "@/app/components/shared/RoleToggle";
+import SettingsButton from "@/app/components/shared/SettingsButton";
 
 // Import Lucide icons as needed for the specific dashboard
-import { Users, CalendarDays, CreditCard, LayoutDashboard } from 'lucide-react';
+import { Users, CalendarDays, CreditCard, LayoutDashboard } from "lucide-react";
 
-import styles from './HomePage.module.css'; // Create this CSS Module
-import Image from 'next/image';
-import Loader from '@/app/components/shared/Loader';
-import Logo from '@/app/components/brand/Logo'; // Assuming you have a Logo component
+import styles from "./HomePage.module.css"; // Create this CSS Module
+import Image from "next/image";
+import Loader from "@/app/components/shared/Loader";
+import Logo from "@/app/components/brand/Logo"; // Assuming you have a Logo component
 
 // Define this interface if you add the optional summary section
 // interface UpcomingGigSummary {
@@ -29,36 +29,50 @@ import Logo from '@/app/components/brand/Logo'; // Assuming you have a Logo comp
 //   link: string;
 // }
 
-export default function BuyerDashboardPage() { // Renamed for clarity
+export default function BuyerDashboardPage() {
+  // Renamed for clarity
   const router = useRouter();
-  const { isAuthenticated, isLoading: loadingAuth, isBuyerMode, isWorkerMode, user: userPublicProfile } = useAppContext();
-  const currentActiveRole = isBuyerMode ? 'BUYER' : isWorkerMode ? 'GIG_WORKER' : 'UNKNOWN';
-  const THIS_HOME_ROLE = 'BUYER';
+  const pathname = usePathname();
+  const {
+    isLoading: loadingAuth,
+    user: userPublicProfile,
+    updateUserContext,
+  } = useAppContext();
 
   useEffect(() => {
-    if (!loadingAuth) {
-      // if (!isAuthenticated) {
-      //   router.replace('/signin');
-      // } else if (currentActiveRole !== THIS_HOME_ROLE) {
-      //   // Attempt to switch or redirect based on actual capabilities
-      //   if (userPublicProfile?.isGigWorker) { // Check if user *can* be a worker
-      //     router.push('worker'); // Redirect to worker home
-      //   } else {
-      //     router.replace('/select-role'); // Fallback if current role doesn't match expected and cannot be worker
-      //   }
-      // }
+    if (!loadingAuth && userPublicProfile?.isAuthenticated) {
+      if (userPublicProfile?.canBeBuyer) {
+        updateUserContext({
+          lastRoleUsed: "BUYER", // Ensure the context reflects the current role
+          lastViewVisited: pathname, // Update last view visited
+        });
+      } else {
+        router.replace("/select-role");
+      }
     }
-  }, [isAuthenticated, loadingAuth, currentActiveRole, userPublicProfile, router, THIS_HOME_ROLE]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userPublicProfile?.isAuthenticated, loadingAuth]);
 
-
-  // Define actionItems specific to the role (Buyer)
   const uid = userPublicProfile?.uid;
 
+  // Define actionItems specific to the role (Buyer)
   const actionItems = [
-    { label: "Dashboard", icon: <LayoutDashboard size={28} />, to: `/user/${uid}/buyer/analytics` },
+    {
+      label: "Dashboard",
+      icon: <LayoutDashboard size={28} />,
+      to: `/user/${uid}/buyer/analytics`,
+    },
     { label: "Hire", icon: <Users size={28} />, to: "/onboard-buyer" },
-    { label: "Calendar & Gigs", icon: <CalendarDays size={28} />, to: `/user/${uid}/buyer/calendar` },
-    { label: "Payments & History", icon: <CreditCard size={28} />, to: `/user/${uid}/buyer/payments` },
+    {
+      label: "Calendar & Gigs",
+      icon: <CalendarDays size={28} />,
+      to: `/user/${uid}/buyer/calendar`,
+    },
+    {
+      label: "Payments & History",
+      icon: <CreditCard size={28} />,
+      to: `/user/${uid}/buyer/payments`,
+    },
   ];
 
   // Optional: Fetch summary data for upcoming gigs/offers
@@ -69,9 +83,9 @@ export default function BuyerDashboardPage() { // Renamed for clarity
   //   }
   // }, [isAuthenticated, currentActiveRole, THIS_HOME_ROLE]);
 
-  // if (loadingAuth || !isAuthenticated || currentActiveRole !== THIS_HOME_ROLE) {
-  //   return <Loader />
-  // }
+  if (loadingAuth || !userPublicProfile?.isAuthenticated) {
+    return <Loader />;
+  }
 
   return (
     <div className={styles.container}>
@@ -93,8 +107,14 @@ export default function BuyerDashboardPage() { // Renamed for clarity
           <Logo width={60} height={60} />
           {/* Notification Icon */}
           {userPublicProfile?.uid && (
-            <Link href={`/user/${userPublicProfile.uid}/notifications`} passHref>
-              <button className={styles.notificationButton} aria-label="Notifications">
+            <Link
+              href={`/user/${userPublicProfile.uid}/notifications`}
+              passHref
+            >
+              <button
+                className={styles.notificationButton}
+                aria-label="Notifications"
+              >
                 <Image
                   src="/images/notifications.svg"
                   alt="Notifications"
@@ -112,7 +132,7 @@ export default function BuyerDashboardPage() { // Renamed for clarity
         />
 
         {/* <h2 className={styles.sectionTitle}>Manage Your Activity</h2> */}
-        <IconGrid items={actionItems} color={"#7eeef9"}/>
+        <IconGrid items={actionItems} color={"#7eeef9"} />
 
         {/* Optional Summary Section - Example Structure
         {summaryData.length > 0 && (
@@ -129,7 +149,6 @@ export default function BuyerDashboardPage() { // Renamed for clarity
           </section>
         )}
         */}
-
 
         <ReferralBanner
           title="Refer a business and earn £5!"
