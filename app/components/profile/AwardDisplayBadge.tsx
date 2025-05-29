@@ -9,7 +9,7 @@ interface AwardDisplayBadgeProps {
 const AwardDisplayBadge: React.FC<AwardDisplayBadgeProps> = ({ icon: Icon, textLines }) => {
   return (
     <div className={styles.awardBadge}>
-      <Icon size={28} className={styles.awardIcon} />
+      <Icon size={28} className={styles.awardIcon} color= '#eab308' strokeWidth = '3' />
       <div className={styles.awardTextContainer}>
         {textLines.map((line, index) => (
           <span key={index} className={styles.awardTextLine}>
