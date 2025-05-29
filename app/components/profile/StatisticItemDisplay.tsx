@@ -16,7 +16,7 @@ const StatisticItemDisplay: React.FC<StatisticItemDisplayProps> = ({
 }) => {
   return (
     <div className={styles.statItem}>
-      <Icon size={36} className={styles.statIcon} style={{ color: iconColor }} />
+      <Icon size={39} className={styles.statIcon} style={{ color: iconColor }} />
       <div className={styles.statText}>
         <span className={styles.statValue}>{value}</span>
         <span className={styles.statLabel}>{label}</span>
