@@ -62,7 +62,7 @@ a:hover {
 
 button {
   cursor: pointer;
-  font-family: var(--font-family); /* Ensure buttons inherit font */
+  /* font-family: var(--font-family); Ensure buttons inherit font */
 }
 
 .container {

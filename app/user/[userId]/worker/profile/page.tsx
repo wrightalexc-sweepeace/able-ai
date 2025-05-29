@@ -3,37 +3,46 @@
 import React, { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useAppContext } from "@/app/hooks/useAppContext";
-import Avatar from "../../../../components/shared/Avatar";
-import ContentCard from "../../../../components/shared/ContentCard";
-import SkillsDisplayTable from "../../../../components/profile/SkillsDisplayTable";
-import CheckboxDisplayItem from "../../../../components/profile/CheckboxDisplayItem";
-import PillBadge from "../../../../components/shared/PillBadge";
-import { BadgeCheck, CalendarDays, Loader2, MapPin, Pencil } from "lucide-react";
+import { BadgeCheck, CalendarDays, Loader2, MapPin, Pencil, ThumbsUp, MessageCircleCode, Award as AwardIconLucide, UserCircle} from "lucide-react";
 import styles from "./page.module.css";
+import WorkerProfile from "@/app/components/profile/WorkerProfile";
 
 // Mock data for QA testing
 const qaMockProfileData = {
-  id: "qa-worker-id",
-  displayName: "QA Worker",
-  userHandle: "@qaworker",
-  profileHeadline: "Experienced Tester & Debugger",
-  avatarUrl: "/images/benji.jpeg", // Use a placeholder image
-  location: "Remote",
+  id: "benji-asamoah-id",
+  displayName: "Benji Asamoah",
+  userHandle: "@benjiasamoah",
+  profileHeadline: "Expert Mixologist & Event Bartender",
+  avatarUrl: "/images/avatar-benji.jpg",
+  profileImageUrl: "/images/benji.jpeg",
+  qrCodeUrl: "/images/qr.svg",
+  location: "Streatham, London",
   isVerified: true,
-  viewCalendarLink: "#qa-calendar",
-  skills: [
-    { name: "Manual Testing", ableGigs: 50, experience: "5 years", eph: 30 },
-    { name: "Automated Testing", ableGigs: 20, experience: "3 years", eph: 40 },
-    { name: "Debugging", ableGigs: 100, experience: "8 years", eph: 35 },
+  viewCalendarLink: "#view-calendar",
+
+  statistics: [
+    { id: "s1", icon: ThumbsUp, value: "100%", label: "Would work with Benji again" },
+    { id: "s2", icon: MessageCircleCode, value: "100%", label: "Response rate" },
   ],
+  skills: [
+    { name: "Bartender", ableGigs: 15, experience: "3 years", eph: 15 },
+    { name: "Waiter", ableGigs: 2, experience: "8 years", eph: 15 },
+    { name: "Graphic Designer", ableGigs: 1, experience: "7 years", eph: 22 }
+  ],
+  awards: [
+    { id: "a1", icon: AwardIconLucide, textLines: ["Always on", "time"] },
+    { id: "a2", icon: UserCircle, textLines: ["Able", "Professional"] },
+   
+  ],
+  feedbackSummary: "Professional, charming and lively",
   qualifications: [
-    "ISTQB Certified Tester",
-    "Bachelor's Degree in Computer Science",
+    "Bachelor's Degree in Graphic Design",
+    "Licensed bar manager",
+    "Drivers license",
   ],
   equipment: [
-    "Multiple Monitors", "High-Speed Internet", "Testing Rig",
+    "Camera gear", "Laptop", "Smartphone", "Uniform", "Bicycle", "Car"
   ],
-  bio: "Dedicated QA professional ensuring high-quality software delivery.",
 };
 
 // Mock data fetch for the worker's own profile
@@ -105,7 +114,7 @@ export default function WorkerOwnedProfilePage() {
 
   return (
     <div className={styles.profilePageContainer}>
-      <div className={styles.profileHeaderSection}>
+      {/* <div className={styles.profileHeaderSection}>
         <Avatar src={profile.avatarUrl} alt={profile.displayName} size={110} className={styles.avatarLarge} />
         <div className={styles.headerInfo}>
           <div className={styles.headerTopRow}>
@@ -157,7 +166,8 @@ export default function WorkerOwnedProfilePage() {
             <p className={styles.bioText}>{profile.bio}</p>
           </ContentCard>
         )}
-      </div>
+      </div> */}
+      <WorkerProfile workerProfile={profile} />
     </div>
   );
 } 
