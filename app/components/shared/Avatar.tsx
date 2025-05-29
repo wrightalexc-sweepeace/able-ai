@@ -6,29 +6,31 @@ import styles from './Avatar.module.css';
 interface AvatarProps {
   src?: string | null;
   alt: string;
-  size?: number;
+  width?: number;
+  height?: number;
   className?: string;
 }
 
 const Avatar: React.FC<AvatarProps> = ({
   src,
   alt,
-  size = 40, // Default size
+  width = 40, // Default size
+  height = 40,
   className = '',
 }) => {
-  const avatarSize = `${size}px`;
+  // const avatarSize = `${size}px`;
 
   if (src) {
     return (
       <div
         className={`${styles.avatarContainer} ${className}`}
-        style={{ width: avatarSize, height: avatarSize }}
+        style={{ width: width, height: height }}
       >
         <Image
           src={src}
           alt={alt}
-          width={size}
-          height={size}
+          width={width}
+          height={height}
           className={styles.avatarImage}
           objectFit="cover" // Ensure image covers the circular area
         />
