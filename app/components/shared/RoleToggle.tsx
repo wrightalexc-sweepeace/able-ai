@@ -21,6 +21,11 @@ const RoleToggle: React.FC<{ lastViewVisited?: string }> = ({
 
     try {
       // Redirect based on the new role
+      if (user?.lastRoleUsed === "BUYER" && !user?.canBeGigWorker) {
+        toast.error("You cannot switch to worker mode, please complete onboarding first.");
+        router.push(`/user/${user?.uid}/worker/onboarding`);
+        return;
+      }
       router.push(newRole === "GIG_WORKER" ? "worker" : "buyer");
     } catch (error) {
       console.error("Failed to switch role:", error);
@@ -28,30 +33,26 @@ const RoleToggle: React.FC<{ lastViewVisited?: string }> = ({
     }
   };
 
-  if (user?.isAuthenticated) {
-    if (user?.lastRoleUsed === "BUYER" && !user?.canBeGigWorker) {
-      return null;
-    }
-    if (user?.lastRoleUsed === "GIG_WORKER" && !user?.canBeBuyer) {
-      return null;
-    }
-  }
   return (
-    <div className={styles.toggleContainer}>
-      <label className={styles.switchLabel}>
-        <span>
-          Switch to {currentActiveRole === "BUYER" ? "worker" : "buyer"}
-        </span>
-        <input
-          type="checkbox"
-          onChange={() =>
-            handleToggle(currentActiveRole === "BUYER" ? "GIG_WORKER" : "BUYER")
-          }
-          disabled={isLoading}
-          className={styles.switchInput}
-        />
-        <span className={styles.switchSlider}></span>
-      </label>
+    <div className={styles.roleToggleContainer}>
+      <button
+        type="button"
+        className={currentActiveRole === "GIG_WORKER" ? styles.activeRole : styles.inactiveRole}
+        disabled={currentActiveRole === "GIG_WORKER"}
+        onClick={() => handleToggle("GIG_WORKER")}
+        aria-pressed={currentActiveRole === "GIG_WORKER"}
+      >
+        GIGEE
+      </button>
+      <button
+        type="button"
+        className={currentActiveRole === "BUYER" ? styles.activeRole : styles.inactiveRole}
+        disabled={currentActiveRole === "BUYER"}
+        onClick={() => handleToggle("BUYER")}
+        aria-pressed={currentActiveRole === "BUYER"}
+      >
+        BUYER
+      </button>
     </div>
   );
 };
