@@ -51,8 +51,15 @@
 } 
 
 .addSkill {
-  outline: none;
-  border: 0;
-  color: #ffffff;
+  width: 119px;
+  height: 32px;
+  padding: 0px 8px;
+  border: 1px solid #000000;
+  border-radius: 24px;
+  background-color: #ffffff;
+  color: #212121;
+  font-size: 18px;
   font-family: var(--font-family);
+  line-height: 23px;
+  outline: none;
 }

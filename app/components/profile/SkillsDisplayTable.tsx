@@ -52,7 +52,7 @@ const SkillsDisplayTable: React.FC<SkillsDisplayTableProps> = ({
               </tr>
           ))}
           <tr>
-            {isSelfView && <td><button className={`${styles.skill} ${styles.addSkill}`} onClick={handleAddSkill}>Add skill</button></td>}
+            {isSelfView && <td><button className={styles.addSkill} onClick={handleAddSkill}>+ add skill</button></td>}
           </tr>
         </tbody>
       </table>
