@@ -1,9 +1,9 @@
 "use client";
 import React from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { useAppContext } from "@/app/hooks/useAppContext";
 import styles from "./RoleToggle.module.css";
-import { toast } from "sonner";
 
 const RoleToggle: React.FC<{ lastViewVisited?: string }> = ({
   lastViewVisited,
@@ -13,8 +13,8 @@ const RoleToggle: React.FC<{ lastViewVisited?: string }> = ({
   const currentActiveRole = user?.isBuyerMode
     ? "BUYER"
     : user?.isWorkerMode
-    ? "GIG_WORKER"
-    : "QA";
+      ? "GIG_WORKER"
+      : "QA";
 
   const handleToggle = async (newRole: "BUYER" | "GIG_WORKER") => {
     if (newRole === currentActiveRole && !lastViewVisited) return;
@@ -55,4 +55,5 @@ const RoleToggle: React.FC<{ lastViewVisited?: string }> = ({
     </div>
   );
 };
-export default RoleToggle;
+
+export default React.memo(RoleToggle);

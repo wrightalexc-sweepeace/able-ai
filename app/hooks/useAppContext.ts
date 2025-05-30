@@ -4,7 +4,7 @@
 import { User } from "firebase/auth";
 import { useFirebaseAuth } from "./useFirebaseAuth";
 import { updateUserAppContext } from "@/app/actions/update-user-app-context";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import {
   getFirestoreUserByFirebaseUid,
   updateUserProfile,
@@ -201,9 +201,12 @@ export function useAppContext(): AppContextValue {
     }
   };
 
-  return {
+  // Add memoization for better performance
+  const userValue = useMemo(() => ({
     user,
     isLoading,
-    updateUserContext,
-  };
+    updateUserContext
+  }), [user, isLoading]);
+
+  return userValue;
 }
