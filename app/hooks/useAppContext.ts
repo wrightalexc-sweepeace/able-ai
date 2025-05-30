@@ -11,7 +11,7 @@ import {
 } from "../lib/firebase/firestore";
 import { getUserByFirebaseUid } from "../actions/userActions";
 
-interface ExtendedUser extends User {
+export interface ExtendedUser extends User {
   appRole?: "ADMIN" | "SUPER_ADMIN" | "QA" | "USER";
   lastRoleUsed?: "BUYER" | "GIG_WORKER";
   isBuyer?: boolean;

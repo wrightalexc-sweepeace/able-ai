@@ -2,14 +2,14 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { useAppContext } from "@/app/hooks/useAppContext";
+import { ExtendedUser } from "@/app/hooks/useAppContext";
 import styles from "./RoleToggle.module.css";
 
-const RoleToggle: React.FC<{ lastViewVisited?: string }> = ({
+const RoleToggle: React.FC<{ lastViewVisited?: string, user: ExtendedUser }> = ({
+  user,
   lastViewVisited,
 }) => {
   const router = useRouter();
-  const { isLoading, user } = useAppContext();
   const currentActiveRole = user?.isBuyerMode
     ? "BUYER"
     : user?.isWorkerMode
