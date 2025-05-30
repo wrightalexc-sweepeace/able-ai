@@ -3,6 +3,7 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { useAppContext } from "@/app/hooks/useAppContext";
 import styles from "./RoleToggle.module.css";
+import { toast } from "sonner";
 
 const RoleToggle: React.FC<{ lastViewVisited?: string }> = ({
   lastViewVisited,
@@ -23,7 +24,7 @@ const RoleToggle: React.FC<{ lastViewVisited?: string }> = ({
       router.push(newRole === "GIG_WORKER" ? "worker" : "buyer");
     } catch (error) {
       console.error("Failed to switch role:", error);
-      // Optionally show an error to the user
+      toast.error("Failed to switch roles. Please try again.");
     }
   };
 
