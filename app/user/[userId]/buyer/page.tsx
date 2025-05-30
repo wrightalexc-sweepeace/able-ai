@@ -19,6 +19,7 @@ import styles from "./HomePage.module.css"; // Create this CSS Module
 import Image from "next/image";
 import Loader from "@/app/components/shared/Loader";
 import Logo from "@/app/components/brand/Logo"; // Assuming you have a Logo component
+import { Toaster } from "sonner";
 
 // Define this interface if you add the optional summary section
 // interface UpcomingGigSummary {
@@ -160,6 +161,7 @@ export default function BuyerDashboardPage() {
           <SettingsButton />
         </footer>
       </div>
+      <Toaster />
     </div>
   );
 }

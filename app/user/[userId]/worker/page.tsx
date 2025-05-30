@@ -24,6 +24,7 @@ import styles from "./HomePage.module.css";
 import Image from "next/image";
 import Loader from "@/app/components/shared/Loader";
 import Logo from "@/app/components/brand/Logo";
+import { Toaster } from "sonner";
 
 // Define this interface if you add the optional summary section
 // interface UpcomingGigSummary {
@@ -154,6 +155,7 @@ export default function WorkerDashboardPage() {
           <RoleToggle />
           <SettingsButton />
         </footer>
+        <Toaster />
       </div>
     </div>
   );
