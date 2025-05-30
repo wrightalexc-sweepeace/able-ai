@@ -49,3 +49,10 @@
   font-weight: 700;
   line-height: 21px;
 } 
+
+.addSkill {
+  outline: none;
+  border: 0;
+  color: #ffffff;
+  font-family: var(--font-family);
+}

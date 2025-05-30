@@ -66,14 +66,30 @@ export default function WorkerOwnedProfilePage() {
   const router = useRouter();
   const params = useParams();
   const userId = params.userId as string;
-  // const { user, isLoading, isWorkerMode } = useAppContext();
-
+  
+ 
+  // const { user: authUser } = useAppContext();
+  
   const [profile, setProfile] = useState<any>(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const isSelfView = true;
 
   // Read isViewQA flag (example from local storage, could be context or query param)
   const isViewQA = typeof window !== 'undefined' ? localStorage.getItem('isViewQA') === 'true' : false;
+
+  const handleAddSkill = () => {
+    const newSkill = {
+      name: "developer",
+      ableGigs: 2,
+      experience: "3 years",
+      eph: 20
+    };
+    setProfile({
+      ...profile,
+      skills: [...(profile.skills || []), newSkill]
+    });
+  };
 
   // useEffect(() => {
   //   // Redirect if not logged in, not the correct user, or not in worker mode
@@ -167,7 +183,7 @@ export default function WorkerOwnedProfilePage() {
           </ContentCard>
         )}
       </div> */}
-      <WorkerProfile workerProfile={profile} />
+      <WorkerProfile workerProfile={profile} isSelfView={isSelfView} handleAddSkill={handleAddSkill}/>
     </div>
   );
 } 
