@@ -16,7 +16,15 @@ CalendarDays, BadgeCheck, UserCircle, MapPin, Share2 } from 'lucide-react';
 
 import PublicWorkerProfile from '@/app/types/workerProfileTypes';
 
-const WorkerProfile = ({ workerProfile }: { workerProfile: PublicWorkerProfile }) => {
+const WorkerProfile = ({
+  workerProfile,
+  isSelfView = false,
+  handleAddSkill,
+}: {
+  workerProfile: PublicWorkerProfile;
+  isSelfView: boolean;
+  handleAddSkill: () => void;
+}) => {
   return (
     <div>
       {/* Top Section (Benji Image Style - Profile Image/Video, QR, Location) */}
@@ -90,7 +98,7 @@ const WorkerProfile = ({ workerProfile }: { workerProfile: PublicWorkerProfile }
 
         {/* Skills Section (Benji Image Style - Blue Card) */}
         {workerProfile.skills && workerProfile.skills.length > 0 && (
-          <SkillsDisplayTable skills={workerProfile.skills} />
+          <SkillsDisplayTable skills={workerProfile.skills} isSelfView={isSelfView} handleAddSkill={handleAddSkill}/>
         )}
 
         {/* Awards & Feedback Section (Benji Image Style) */}

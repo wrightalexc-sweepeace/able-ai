@@ -2,17 +2,18 @@
 
 import React, { useState, useEffect, useRef, FormEvent, useMemo } from 'react';
 import { usePathname } from 'next/navigation';
-import { useAppContext } from '@/app/hooks/useAppContext'; // Corrected path
+import { useAppContext } from '@/app/hooks/useAppContext'; 
 
-import ChatBotLayout from '@/app/components/onboarding/ChatBotLayout'; // Corrected path
-import MessageBubble from '@/app/components/onboarding/MessageBubble'; // Corrected path
+import ChatBotLayout from '@/app/components/onboarding/ChatBotLayout'; 
+import MessageBubble from '@/app/components/onboarding/MessageBubble';
 import InputBubble from '@/app/components/onboarding/InputBubble'; // Corrected path
 import TextAreaBubble from '@/app/components/onboarding/TextAreaBubble'; // Corrected path
 // import FileUploadBubble from '@/app/components/onboarding/FileUploadBubble'; // Corrected path - Uncomment if used
 import WorkerCard, { WorkerData } from '@/app/components/onboarding/WorkerCard'; // Import shared WorkerCard and WorkerData
 
-import pageStyles from './page.module.css'; // Updated import
-// import chatStyles from '@/app/styles/chat.module.css'; // Import global styles
+import Loader from '@/app/components/shared/Loader';
+
+import pageStyles from './page.module.css';
 
 interface OnboardingStep {
   id: number;
@@ -35,70 +36,71 @@ interface OnboardingStep {
 
 const baseInitialSteps: OnboardingStep[] = [
   { id: 1, type: 'botMessage', content: "Hi! Tell me about yourself and what gig or gigs you need filling - we can assemble a team if you need one!" },
-  { id: 2, type: 'botMessage', content: "We have some great bartenders available. Do you need any special skills or do you have instructions for your hire?", dependsOn: 1 },
+  {id: 2, type: 'userInput', inputType: 'text', inputName: 'gigDescription', inputPlaceholder: 'e.g., Bartender for a wedding reception', inputLabel: 'Gig Description:'},
+  { id: 3, type: 'botMessage', content: "We have some great bartenders available. Do you need any special skills or do you have instructions for your hire?", dependsOn: 1 },
   {
-    id: 3, type: 'userInput', inputType: 'textarea', inputName: 'additionalInstructions',
+    id: 4, type: 'userInput', inputType: 'textarea', inputName: 'additionalInstructions',
     inputPlaceholder: 'e.g., Cocktail making experience would be ideal', inputLabel: 'Additional Instructions:', dependsOn: 2
   },
-  { id: 4, type: 'botMessage', content: "How much you would like to pay per hour? We suggest £15 plus tips to keep a motivated and happy team!", dependsOn: 3 },
+  { id: 5, type: 'botMessage', content: "How much you would like to pay per hour? We suggest £15 plus tips to keep a motivated and happy team!", dependsOn: 3 },
   {
-    id: 5, type: 'userInput', inputType: 'number', inputName: 'hourlyRate',
+    id: 6, type: 'userInput', inputType: 'number', inputName: 'hourlyRate',
     inputPlaceholder: '£15', inputLabel: 'Hourly Rate:', dependsOn: 4
   },
-  { id: 6, type: 'botMessage', content: "Where is the gig? What time and day do you need someone and for how long?", dependsOn: 5 },
+  { id: 7, type: 'botMessage', content: "Where is the gig? What time and day do you need someone and for how long?", dependsOn: 5 },
   {
-    id: 7, type: 'userInput', inputType: 'text', inputName: 'gigLocation',
+    id: 8, type: 'userInput', inputType: 'text', inputName: 'gigLocation',
     inputPlaceholder: 'e.g., The Green Tavern, Rye Lane, Peckham, SE15 5AR', inputLabel: 'Gig Location:', dependsOn: 6
   },
   {
-    id: 8, type: 'userInput', inputType: 'date', inputName: 'gigDate',
-    inputLabel: 'Date of Gig:', dependsOn: 7
+    id: 9, type: 'userInput', inputType: 'date', inputName: 'gigDate',
+    inputLabel: 'Date of Gig:', dependsOn: 8
   },
-  { id: 9, type: 'discountCode', content: "I have a discount code 2FREEABLE", dependsOn: 8 }, // This will be rendered as a MessageBubble
-  { id: 10, type: 'botMessage', content: "Thankyou! We will apply your discount code", dependsOn: 9 },
-  { id: 11, type: 'botMessage', content: "Here are our incredible available gig workers ready to accept your gig. Click on their profile for an indepth look at their gigfolio or simply book now", dependsOn: 10 },
+  { id: 10, type: 'discountCode', content: "I have a discount code 2FREEABLE", dependsOn: 9}, // This will be rendered as a MessageBubble
+  { id: 11, type: 'botMessage', content: "Thankyou! We will apply your discount code", dependsOn: 10 },
+  { id: 12, type: 'botMessage', content: "Here are our incredible available gig workers ready to accept your gig. Click on their profile for an indepth look at their gigfolio or simply book now", dependsOn: 10 },
   {
-    id: 12,
-    type: 'workerCard',
-    dependsOn: 11,
-    workerData: {
-      name: 'Benji Asamoah',
-      title: 'Bartender',
-      gigs: 15,
-      experience: '3 years experience',
-      keywords: 'lively, professional and hardworking',
-      hourlyRate: 15,
-      totalHours: 6,
-      totalPrice: 98.68,
-      ableFees: '6.5% +VAT',
-      stripeFees: '1.5% + 20p',
-      imageSrc: '/images/benji.jpeg', // Replace with actual image URL
-    }
-  },
-  {
-    id: 13,
-    type: 'workerCard',
-    dependsOn: 11, // Should depend on the previous message, not the previous card for parallel display
-    workerData: {
-      name: 'Jessica Hersey',
-      title: 'Bartender',
-      gigs: 11,
-      experience: '2 years experience',
-      keywords: 'charming, peaceful and kind',
-      hourlyRate: 15,
-      totalHours: 6,
-      totalPrice: 85.55,
-      ableFees: '6.5% +VAT',
-      stripeFees: '1.5% + 20p',
-      imageSrc: '/images/jessica.jpeg', // Replace with actual image URL
-    }
-  },
+        id: 13,
+        type: 'workerCard',
+        dependsOn: 12,
+        workerData: {
+            name: 'Benji Asamoah',
+            title: 'Bartender',
+            gigs: 15,
+            experience: '3 years experience',
+            keywords: 'lively, professional and hardworking',
+            hourlyRate: 15,
+            totalHours: 6,
+            totalPrice: 98.68,
+            ableFees: '6.5% +VAT',
+            stripeFees: '1.5% + 20p',
+            imageSrc: '/images/benji.jpeg', // Replace with actual image URL
+        }
+    },
+    {
+        id: 14,
+        type: 'workerCard',
+        dependsOn: 12, // Should depend on the previous message, not the previous card for parallel display
+        workerData: {
+            name: 'Jessica Hersey',
+            title: 'Bartender',
+            gigs: 11,
+            experience: '2 years experience',
+            keywords: 'charming, peaceful and kind',
+            hourlyRate: 15,
+            totalHours: 6,
+            totalPrice: 85.55,
+            ableFees: '6.5% +VAT',
+            stripeFees: '1.5% + 20p',
+            imageSrc: '/images/jessica.jpeg', // Replace with actual image URL
+        }
+    },
 ];
 
 
-export default function NewGigPage() {
-  const pathname = usePathname()
-  const { isLoading: loadingAuth, updateUserContext, user } = useAppContext();
+export default function OnboardBuyerPage() {
+  const pathname = usePathname();
+  const { isLoading: loadingAuth, user, updateUserContext } = useAppContext();
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
   const isQA = !!user?.isQA;
@@ -137,7 +139,7 @@ export default function NewGigPage() {
     if (!loadingAuth && user?.isAuthenticated) {
       updateUserContext({ lastRoleUsed: 'BUYER', lastViewVisited: pathname });
     }
-  }, [loadingAuth, user?.isAuthenticated]);
+  }, [isQA]);
 
   useEffect(() => {
     if (isQA) {
@@ -219,10 +221,10 @@ export default function NewGigPage() {
   const handleInputSubmit = (stepId: number, inputName: string) => {
     if (isQA) return; // Disable submission in QA mode
     if (formData[inputName] === undefined || formData[inputName] === '') {
-      const stepBeingSubmitted = onboardingSteps.find(s => s.id === stepId);
-      if (stepBeingSubmitted?.inputType !== 'file' && stepBeingSubmitted?.inputType !== 'date') {
-        return;
-      }
+        const stepBeingSubmitted = onboardingSteps.find(s => s.id === stepId);
+        if (stepBeingSubmitted?.inputType !== 'file' && stepBeingSubmitted?.inputType !== 'date') {
+            return;
+        }
     }
     const stepIndex = onboardingSteps.findIndex(s => s.id === stepId);
     if (stepIndex !== -1) {
@@ -238,16 +240,16 @@ export default function NewGigPage() {
           isComplete: true,
         };
         let insertAtIndex = -1;
-        for (let i = 0; i < updatedSteps.length; i++) {
-          if (updatedSteps[i].id === stepId) {
-            insertAtIndex = i + 1;
-            break;
-          }
+        for(let i=0; i < updatedSteps.length; i++) {
+            if(updatedSteps[i].id === stepId) {
+                insertAtIndex = i + 1;
+                break;
+            }
         }
-        if (insertAtIndex !== -1) {
-          updatedSteps.splice(insertAtIndex, 0, userResponseStep);
+        if(insertAtIndex !== -1) {
+            updatedSteps.splice(insertAtIndex, 0, userResponseStep);
         } else {
-          updatedSteps.push(userResponseStep);
+            updatedSteps.push(userResponseStep);
         }
       }
       setOnboardingSteps(updatedSteps);
@@ -255,14 +257,14 @@ export default function NewGigPage() {
     let nextFocus: string | null = null;
     const currentStepInFlowIndex = onboardingSteps.findIndex(s => s.id === stepId);
     for (let i = currentStepInFlowIndex + 1; i < onboardingSteps.length; i++) {
-      const nextStepDef = onboardingSteps[i];
-      if ((nextStepDef.type === 'userInput' || nextStepDef.type === 'fileUpload' || nextStepDef.type === 'datePicker') && !nextStepDef.isComplete) {
-        const depStep = onboardingSteps.find(s => s.id === nextStepDef.dependsOn);
-        if ((depStep && depStep.isComplete) || !nextStepDef.dependsOn) {
-          nextFocus = nextStepDef.inputName || null;
-          break;
+        const nextStepDef = onboardingSteps[i];
+        if ((nextStepDef.type === 'userInput' || nextStepDef.type === 'fileUpload' || nextStepDef.type === 'datePicker') && !nextStepDef.isComplete) {
+            const depStep = onboardingSteps.find(s => s.id === nextStepDef.dependsOn);
+            if ((depStep && depStep.isComplete) || !nextStepDef.dependsOn) {
+                nextFocus = nextStepDef.inputName || null;
+                break;
+            }
         }
-      }
     }
     setCurrentFocusedInputName(nextFocus);
   };
@@ -273,24 +275,24 @@ export default function NewGigPage() {
     setWorkerPrice(price);
     // Mark all preceding steps as complete to show final message
     const stepsToComplete = baseInitialSteps.filter(s => s.type !== 'workerCard' && s.type !== 'botMessage' && s.id < 11); // Assuming 11 is the "Here are our workers" message
-    const updatedSteps = onboardingSteps.map(os =>
-      stepsToComplete.find(sc => sc.id === os.id) ? { ...os, isComplete: true } : os
+    const updatedSteps = onboardingSteps.map(os => 
+        stepsToComplete.find(sc => sc.id === os.id) ? { ...os, isComplete: true } : os
     );
-    // Add user's "booking action" as a response if desired
+     // Add user's "booking action" as a response if desired
     const bookingResponseStep: OnboardingStep = {
-      id: Date.now(),
-      type: 'userResponseDisplay',
-      senderType: 'user',
-      content: `Booking ${name} for £${price.toFixed(2)}...`,
-      dependsOn: 11, // Depends on the message before cards
-      isComplete: true,
+        id: Date.now(),
+        type: 'userResponseDisplay',
+        senderType: 'user',
+        content: `Booking ${name} for £${price.toFixed(2)}...`,
+        dependsOn: 11, // Depends on the message before cards
+        isComplete: true,
     };
     // Find index of step 11 to insert after it
     const lastBotMessageIndex = updatedSteps.findIndex(s => s.id === 11);
     if (lastBotMessageIndex !== -1) {
-      updatedSteps.splice(lastBotMessageIndex + 1, 0, bookingResponseStep);
+        updatedSteps.splice(lastBotMessageIndex + 1, 0, bookingResponseStep);
     } else {
-      updatedSteps.push(bookingResponseStep);
+        updatedSteps.push(bookingResponseStep);
     }
 
     setOnboardingSteps(updatedSteps);
@@ -306,38 +308,38 @@ export default function NewGigPage() {
     console.log("Mock Buyer Onboarding Data:", formData, "Booked Worker:", workerName, "Price:", workerPrice);
     await new Promise(resolve => setTimeout(resolve, 1500));
     console.log("Mock submission successful!");
-
+    
     const contentMessage = workerName && workerPrice
-      ? `Great! ${workerName} is booked for £${workerPrice.toFixed(2)}. We've applied your discount. (Mocked)`
-      : "Thanks! Your request is being processed (Mocked).";
+        ? `Great! ${workerName} is booked for £${workerPrice.toFixed(2)}. We've applied your discount. (Mocked)`
+        : "Thanks! Your request is being processed (Mocked).";
 
     const successMessageStep: OnboardingStep = {
-      id: Date.now() + 1,
-      type: 'botMessage',
-      content: contentMessage,
+        id: Date.now() + 1,
+        type: 'botMessage',
+        content: contentMessage,
     };
-
-    const allBaseStepsNowComplete = onboardingSteps.map(bs => ({ ...bs, isComplete: true }));
+    
+    const allBaseStepsNowComplete = onboardingSteps.map(bs => ({...bs, isComplete: true}));
     const finalOnboardingState = [...allBaseStepsNowComplete, successMessageStep];
-
+    
     const finalChatMessages: OnboardingStep[] = [];
     let lastIdForDep = 0;
     finalOnboardingState.forEach(step => {
-      finalChatMessages.push({ ...step, dependsOn: lastIdForDep });
-      lastIdForDep = step.id;
-      if (step.inputName && formData[step.inputName] && step.type !== 'botMessage' && step.type !== 'userResponseDisplay' && step.type !== 'workerCard') {
-        finalChatMessages.push({
-          id: step.id + 0.5,
-          type: 'userResponseDisplay',
-          senderType: 'user',
-          content: String(formData[step.inputName]),
-          isComplete: true,
-          dependsOn: step.id,
-        });
-        lastIdForDep = step.id + 0.5;
-      } else if (step.type === 'workerCard' && step.workerData) {
-        // Worker card is already in finalOnboardingState, no separate user response for it
-      }
+        finalChatMessages.push({...step, dependsOn: lastIdForDep});
+        lastIdForDep = step.id;
+        if(step.inputName && formData[step.inputName] && step.type !== 'botMessage' && step.type !== 'userResponseDisplay' && step.type !== 'workerCard'){
+            finalChatMessages.push({
+                id: step.id + 0.5,
+                type: 'userResponseDisplay',
+                senderType: 'user',
+                content: String(formData[step.inputName]),
+                isComplete: true,
+                dependsOn: step.id,
+            });
+            lastIdForDep = step.id + 0.5;
+        } else if (step.type === 'workerCard' && step.workerData) {
+            // Worker card is already in finalOnboardingState, no separate user response for it
+        }
     });
     setChatMessages(finalChatMessages);
     setOnboardingSteps(finalOnboardingState);
@@ -356,7 +358,7 @@ export default function NewGigPage() {
   }, [onboardingSteps, isQA]);
 
   if (loadingAuth) {
-    return <div className={pageStyles.loadingContainer}><p>Loading authentication...</p></div>;
+    return <Loader />;
   }
 
   return (
@@ -419,4 +421,4 @@ export default function NewGigPage() {
       </ChatBotLayout>
     </>
   );
-} 
+}

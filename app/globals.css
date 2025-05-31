@@ -41,7 +41,7 @@
 }
 
 body {
-  font-family: var(--font-family);
+  /* font-family: var(--font-family); */
   color: var(--text-color);
   background-color: var(--background-color); /* Changed to use variable */
   margin: 0;

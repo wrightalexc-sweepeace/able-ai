@@ -1,6 +1,7 @@
 import React from 'react';
 import PillBadge from '../shared/PillBadge';
 import styles from './SkillsDisplayTable.module.css';
+import { is } from 'drizzle-orm';
 
 interface SkillItem {
   name: string;
@@ -12,15 +13,21 @@ interface SkillItem {
 interface SkillsDisplayTableProps {
   skills: SkillItem[];
   title?: string;
+  isSelfView?: boolean;
+  handleAddSkill?: () => void;
 }
 
 const SkillsDisplayTable: React.FC<SkillsDisplayTableProps> = ({
   skills,
-  title = "Skills:"
+  title = "Skills:",
+  isSelfView,
+  handleAddSkill,
 }) => {
   const hasAbleGigs = skills.length > 0 && skills[0].ableGigs !== undefined;
   const hasExperience = skills.length > 0 && skills[0].experience !== undefined;
   const hasEph = skills.length > 0 && skills[0].eph !== undefined;
+
+  
 
   return (
     <div className={styles.skillsCard}>
@@ -35,15 +42,18 @@ const SkillsDisplayTable: React.FC<SkillsDisplayTableProps> = ({
         </thead>
         <tbody>
           {skills.map((skill, index) => (
-            <tr key={index}>
-              <td>
-                <PillBadge className={styles.skill} text={skill.name} variant="dark" />
-              </td>
-              {hasAbleGigs && <td>{skill.ableGigs}</td>}
-              {hasExperience && <td>{skill.experience}</td>}
-              {hasEph && <td>£{skill.eph}</td>}
-            </tr>
+              <tr key={index}>
+                <td>
+                  <PillBadge className={styles.skill} text={skill.name} variant="dark" />
+                </td>
+                {hasAbleGigs && <td>{skill.ableGigs}</td>}
+                {hasExperience && <td>{skill.experience}</td>}
+                {hasEph && <td>£{skill.eph}</td>}
+              </tr>
           ))}
+          <tr>
+            {isSelfView && <td><button className={styles.addSkill} onClick={handleAddSkill}>+ add skill</button></td>}
+          </tr>
         </tbody>
       </table>
     </div>
