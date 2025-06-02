@@ -1,6 +1,6 @@
 "use client";
 import React from 'react';
-import * as SwitchPrimitives from '@radix-ui/react-switch'; // Assuming Radix UI
+import * as SwitchPrimitives from '@radix-ui/react-switch';
 import styles from './SwitchControl.module.css';
 
 const SwitchControl = ({ id, label, checked, onCheckedChange, disabled = false }) => {

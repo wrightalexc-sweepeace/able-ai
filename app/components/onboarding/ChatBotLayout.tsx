@@ -7,15 +7,14 @@ import Image from 'next/image';
 interface ChatBotLayoutProps {
   children: ReactNode;
   onScroll?: (event: React.UIEvent<HTMLDivElement>) => void;
-  tag?: string;
+  onHomeClick?: () => void;
   className?: string;
 }
 
 const ChatBotLayout = React.forwardRef<HTMLDivElement, ChatBotLayoutProps>(
-  ({ children, onScroll, tag, className }, ref) => { // Destructure className
+  ({ children, onScroll, onHomeClick, className }, ref) => {
     return (
-      <div className={`${styles.chatContainerWrapper} ${className}`}> {/* Apply className */}
-        {/* {tag && <div className={styles.chatTag}>{tag}</div>} Render the tag */}
+      <div className={`${styles.chatContainerWrapper} ${className}`}>
         <div className={styles.chatContainer} onScroll={onScroll} ref={ref}>
           <div className={styles.header}>
             <span className={styles.headerText}>Chat with me, Able</span>
@@ -31,7 +30,20 @@ const ChatBotLayout = React.forwardRef<HTMLDivElement, ChatBotLayoutProps>(
                 target.value = '';
               }
             }} />
-            <Image src='/images/home.svg' width={40} height={40} alt='home' style={{ margin: 'auto' }} />
+            <button 
+              onClick={onHomeClick}
+              style={{ 
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: 0,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              <Image src='/images/home.svg' width={40} height={40} alt='home' style={{ margin: 'auto' }} />
+            </button>
           </div>
         </div>
       </div>
