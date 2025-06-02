@@ -20,7 +20,7 @@ export default function SelectRolePage() {
     if (!loadingAuth && user?.isAuthenticated === false) {
       router.push("/signin");
     }
-    if (!loadingAuth && user?.isAuthenticated) {
+    if (!loadingAuth && user?.isAuthenticated && !user?.isQA) {
       if (user?.isBuyerMode) {
         if (user?.lastViewVisitedBuyer) {
           router.push(user?.lastViewVisitedBuyer);

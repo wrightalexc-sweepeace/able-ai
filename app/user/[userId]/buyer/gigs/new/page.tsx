@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, FormEvent, useMemo } from 'react';
-import { usePathname } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useAppContext } from '@/app/hooks/useAppContext'; 
 
 import ChatBotLayout from '@/app/components/onboarding/ChatBotLayout'; 
@@ -100,6 +100,7 @@ const baseInitialSteps: OnboardingStep[] = [
 
 export default function OnboardBuyerPage() {
   const pathname = usePathname();
+  const router = useRouter();
   const { isLoading: loadingAuth, user, updateUserContext } = useAppContext();
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
@@ -139,7 +140,8 @@ export default function OnboardBuyerPage() {
     if (!loadingAuth && user?.isAuthenticated) {
       updateUserContext({ lastRoleUsed: 'BUYER', lastViewVisited: pathname });
     }
-  }, [isQA]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadingAuth, user?.isAuthenticated]);
 
   useEffect(() => {
     if (isQA) {
@@ -357,6 +359,15 @@ export default function OnboardBuyerPage() {
     return interactiveSteps.every(step => step.isComplete);
   }, [onboardingSteps, isQA]);
 
+  const handleHomeClick = () => {
+    if (isSubmitting) return; // Prevent home click while submitting
+    if (!allInteractiveStepsComplete) {
+      alert("Please complete all steps before going home.");
+      return;
+    }
+    router.push(`/user/${user?.uid || 'this_user'}/buyer`); // Redirect to buyer home
+  };
+
   if (loadingAuth) {
     return <Loader />;
   }
@@ -368,7 +379,7 @@ export default function OnboardBuyerPage() {
           QA Mode: Full Chat Preview
         </div>
       )}
-      <ChatBotLayout ref={chatContainerRef} onScroll={(e: React.UIEvent<HTMLDivElement>) => { }} tag='Looking for an experienced bartender' className={pageStyles.container}>
+      <ChatBotLayout ref={chatContainerRef} onScroll={(e: React.UIEvent<HTMLDivElement>) => { }} onHomeClick={handleHomeClick} className={pageStyles.container}>
         {chatMessages.map((step) => {
           const key = `step-${step.id}-${step.senderType || step.type}-${step.inputName || Math.random()}`;
 

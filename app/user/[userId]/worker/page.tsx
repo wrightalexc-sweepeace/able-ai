@@ -47,7 +47,7 @@ export default function WorkerDashboardPage() {
 
   useEffect(() => {
     if (!loadingAuth && userPublicProfile?.isAuthenticated) {
-      if (userPublicProfile?.canBeGigWorker) {
+      if (userPublicProfile?.canBeGigWorker || userPublicProfile?.isQA) {
         updateUserContext({
           lastRoleUsed: "GIG_WORKER", // Ensure the context reflects the current role
           lastViewVisited: pathname, // Update last view visited

@@ -49,7 +49,6 @@ export default function SettingsPage() {
   const pageUserId = params.userId as string; // userId from the URL
 
   const {
-    isAuthenticated,
     isLoading, // Use isLoading from AppContextValue
     user, // Use user object from AppContextValue
   } = useAppContext();
@@ -93,15 +92,15 @@ export default function SettingsPage() {
   // Redirect if not authenticated or if trying to access settings for another user
   useEffect(() => {
     if (!isLoading) { // Use isLoading
-      if (!isAuthenticated || authUserId !== pageUserId) { // authUserId is now derived from user?.uid
+      if (!user?.isAuthenticated || authUserId !== pageUserId) { // authUserId is now derived from user?.uid
         router.replace('/signin');
       }
     }
-  }, [isAuthenticated, isLoading, authUserId, pageUserId, router]); // Update dependency array
+  }, [user?.isAuthenticated, isLoading, authUserId, pageUserId, router]); // Update dependency array
 
   // Fetch user settings from backend API
   useEffect(() => {
-    if (isAuthenticated && authUserId === pageUserId) { // authUserId is now derived from user?.uid
+    if (user?.isAuthenticated && authUserId === pageUserId) { // authUserId is now derived from user?.uid
       setIsLoadingSettings(true);
       // Replace with your actual API call
       const fetchSettings = async () => {
@@ -145,7 +144,7 @@ export default function SettingsPage() {
       };
       fetchSettings();
     }
-  }, [isAuthenticated, authUserId, pageUserId, user]); // Update dependency array
+  }, [user?.isAuthenticated, authUserId, pageUserId, user]); // Update dependency array
 
   const clearMessages = () => {
     setError(null);
@@ -331,7 +330,7 @@ export default function SettingsPage() {
     return <Loader />;
   }
 
-  if (!isAuthenticated || !userSettings) {
+  if (!user?.isAuthenticated || !userSettings) {
     // Should have been caught by useEffect, but as a fallback
     return <div className={styles.loadingContainer}>Unable to load settings. Please ensure you are logged in.</div>;
   }
