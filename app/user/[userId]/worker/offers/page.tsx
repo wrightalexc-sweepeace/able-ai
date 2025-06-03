@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams, usePathname } from 'next/navigation';
 import { useAppContext } from '@/app/hooks/useAppContext';
 import Link from 'next/link';
 
@@ -50,10 +50,12 @@ async function fetchWorkerData(userId: string, filters?: any): Promise<{ offers:
 
 export default function WorkerOffersPage() {
   const router = useRouter();
+  const pathname = usePathname()
   const params = useParams();
   const pageUserId = params.userId as string;
 
-  const { isAuthenticated, isLoading, user, isWorkerMode } = useAppContext(); // Adjusted destructuring
+  
+  const { isLoading: loadingAuth, user, updateUserContext } = useAppContext();
 
   const [offers, setOffers] = useState<GigOffer[]>([]);
   const [acceptedGigs, setAcceptedGigs] = useState<GigOffer[]>([]); // New state for accepted gigs
@@ -64,16 +66,18 @@ export default function WorkerOffersPage() {
 
   // Auth check
   useEffect(() => {
-    if (!isLoading) { // Use isLoading
-       // if (!isAuthenticated || user?.uid !== pageUserId || !isWorkerMode) { // Use user?.uid and isWorkerMode
-       //   router.replace('/signin');
-       // }
+    if (!loadingAuth && user?.isAuthenticated) {
+      if (user?.canBeGigWorker || user?.isQA) {
+        updateUserContext({ lastRoleUsed: 'GIG_WORKER', lastViewVisited: pathname });
+      } else {
+        router.replace("/select-role");
+      }
     }
-  }, [isAuthenticated, isLoading, user?.uid, pageUserId, isWorkerMode, router]); // Added user?.uid and isWorkerMode dependencies
+  }, [loadingAuth, user?.isAuthenticated]);
 
   // Fetch worker data (offers and accepted gigs)
   useEffect(() => {
-    if (isAuthenticated && user?.uid) { // Use user?.uid
+    if (user?.isAuthenticated && user?.uid) { // Use user?.uid
       setIsLoadingData(true); // Use renamed loading state
       fetchWorkerData(user.uid) // Use user.uid and new function
         .then(data => {
@@ -87,7 +91,7 @@ export default function WorkerOffersPage() {
         })
         .finally(() => setIsLoadingData(false)); // Use renamed loading state
     }
-  }, [isAuthenticated, user?.uid]); // Added user?.uid dependency
+  }, [user?.isAuthenticated, user?.uid]); // Added user?.uid dependency
 
 
   const handleAcceptOffer = async (offerId: string) => {
@@ -139,7 +143,7 @@ export default function WorkerOffersPage() {
     }
   };
 
-  if (isLoading || (!isAuthenticated && !isLoading) || (user?.uid && user.uid !== pageUserId) ) { // Use isLoading and user?.uid
+  if (loadingAuth || (!user?.isAuthenticated && !loadingAuth) || (user?.uid && user.uid !== pageUserId) ) { // Use isLoading and user?.uid
     return <div className={styles.loadingContainer}><Loader2 className="animate-spin" size={32} /> Loading...</div>;
   }
 

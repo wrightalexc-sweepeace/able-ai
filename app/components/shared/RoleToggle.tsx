@@ -21,7 +21,7 @@ const RoleToggle: React.FC<{ lastViewVisited?: string, user: ExtendedUser }> = (
 
     try {
       // Redirect based on the new role
-      if (user?.lastRoleUsed === "BUYER" && !user?.canBeGigWorker) {
+      if (user?.lastRoleUsed === "BUYER" && !user?.canBeGigWorker && !user?.isQA) {
         toast.error("You cannot switch to worker mode, please complete onboarding first.");
         router.push(`/user/${user?.uid}/worker/onboarding`);
         return;
@@ -37,7 +37,7 @@ const RoleToggle: React.FC<{ lastViewVisited?: string, user: ExtendedUser }> = (
     <div className={styles.roleToggleContainer}>
       <button
         type="button"
-        className={currentActiveRole === "GIG_WORKER" ? styles.activeRole : styles.inactiveRole}
+        className={(currentActiveRole === "GIG_WORKER") ? styles.activeRole : styles.inactiveRole}
         disabled={currentActiveRole === "GIG_WORKER"}
         onClick={() => handleToggle("GIG_WORKER")}
         aria-pressed={currentActiveRole === "GIG_WORKER"}
@@ -46,7 +46,7 @@ const RoleToggle: React.FC<{ lastViewVisited?: string, user: ExtendedUser }> = (
       </button>
       <button
         type="button"
-        className={currentActiveRole === "BUYER" ? styles.activeRole : styles.inactiveRole}
+        className={(currentActiveRole === "BUYER") ? styles.activeRole : styles.inactiveRole}
         disabled={currentActiveRole === "BUYER"}
         onClick={() => handleToggle("BUYER")}
         aria-pressed={currentActiveRole === "BUYER"}

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams, usePathname } from 'next/navigation';
 import { useAppContext } from '@/app/hooks/useAppContext';
 import Link from 'next/link';
 
@@ -68,10 +68,11 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 export default function WorkerEarningsPage() {
   const router = useRouter();
-  const params = useParams();
+  const pathname = usePathname()
   const pageUserId = params.userId as string;
-
-  const { isAuthenticated, isLoading: loadingAuth, isQA } = useAppContext();
+  
+  const params = useParams();
+  const { isLoading: loadingAuth, user, updateUserContext } = useAppContext();
 
   const [earnings, setEarnings] = useState<Earning[]>([]);
   const [isLoadingEarnings, setIsLoadingEarnings] = useState(true);
@@ -85,14 +86,18 @@ export default function WorkerEarningsPage() {
 
   // Auth check and initial data load
   useEffect(() => {
-    if (!loadingAuth && !isAuthenticated && !isQA) {
-      router.replace('/signin');
+    if (!loadingAuth && user?.isAuthenticated) {
+      if (user?.canBeGigWorker || user?.isQA) {
+        updateUserContext({ lastRoleUsed: 'GIG_WORKER', lastViewVisited: pathname });
+      } else {
+        router.replace("/select-role");
+      }
     }
-  }, [isAuthenticated, loadingAuth, router, isQA]);
+  }, [loadingAuth, user?.isAuthenticated]);
 
   // Fetch earnings
   useEffect(() => {
-    if (isAuthenticated || isQA) {
+    if (user?.isAuthenticated || user?.isQA) {
       setIsLoadingEarnings(true);
       fetchWorkerEarnings(pageUserId, filterGigType)
         .then(data => {
@@ -105,7 +110,7 @@ export default function WorkerEarningsPage() {
         })
         .finally(() => setIsLoadingEarnings(false));
     }
-  }, [isAuthenticated, isQA, pageUserId, filterGigType]);
+  }, [user?.isAuthenticated, user?.isQA, pageUserId, filterGigType]);
   
   const chartData = useMemo(() => getEarningsChartData(earnings), [earnings]);
 
@@ -116,7 +121,7 @@ export default function WorkerEarningsPage() {
     return <Briefcase size={18} className={styles.earningGigIcon} />;
   }
 
-  if (loadingAuth || (!isAuthenticated && !isQA)) {
+  if (loadingAuth || (!user?.isAuthenticated && !user?.isQA)) {
     return <div className={styles.loadingContainer}><Loader2 className="animate-spin" size={32} /> Loading...</div>;
   }
 

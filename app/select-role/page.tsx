@@ -66,7 +66,7 @@ export default function SelectRolePage() {
           setIsLoading(false);
         }
       } else if (role === "GIG_WORKER") {
-        if (user?.canBeGigWorker) {
+        if (user?.canBeGigWorker || user?.isQA) {
           router.push(`user/${user?.uid || 'this_user'}/worker`);
         } else {
           router.push(`user/${user?.uid || 'this_user'}/worker/onboarding`);
