@@ -15,10 +15,10 @@ const RecommendationCardItem: React.FC<RecommendationCardItemProps> = ({
   return (
     <div className={styles.recommendationCard}>
       <div className={styles.header}>
-        <span className={styles.recommenderName}>{recommenderName}</span>
+        <span className={styles.recommenderName}>{recommenderName} -</span>
         <span className={styles.date}>{date}</span>
       </div>
-      <p className={styles.comment}>{comment}</p>
+      <p className={styles.comment}>&quot;{comment}&quot;</p>
     </div>
   );
 };
