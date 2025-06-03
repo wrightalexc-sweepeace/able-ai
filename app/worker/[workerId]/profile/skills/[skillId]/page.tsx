@@ -5,7 +5,6 @@ import React, { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 // useAppContext might not be needed for the public view, but include for now if context is used elsewhere
 // import { useAppContext } from '@/app/hooks/useAppContext';
-import Link from 'next/link';
 
 // --- SHARED & HELPER COMPONENTS ---
 import PageCloseButton from '@/app/components/shared/PageCloseButton';

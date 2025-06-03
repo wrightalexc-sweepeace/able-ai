@@ -1,9 +1,10 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { AlertCircle, Bot, MessageSquare, Edit3 } from 'lucide-react';
 import styles from './ConfirmAmendedGigDetailsPage.module.css';
 import { useAppContext } from '@/app/hooks/useAppContext';
+import { usePathname } from 'next/navigation';
 
 // Mock data for Buyer view
 const buyerGigDetailsData = {
@@ -37,11 +38,19 @@ const workerNotificationMessage = {
 };
 
 export default function ConfirmAmendedGigDetailsPage() {
-  const { isBuyerMode, isWorkerMode } = useAppContext();
+  const pathname = usePathname()
+  const { isLoading: loadingAuth, updateUserContext, user } = useAppContext();
+
+  useEffect(() => {
+    if (!loadingAuth && user?.isAuthenticated) {
+      updateUserContext({ lastRoleUsed: user?.lastRoleUsed || "BUYER", lastViewVisited: pathname });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadingAuth, user?.isAuthenticated]);
 
   // Determine which data and UI elements to use based on role
-  const gigDetailsData = isBuyerMode ? buyerGigDetailsData : workerGigDetailsData;
-  const notificationMessage = isBuyerMode ? buyerNotificationMessage : workerNotificationMessage;
+  const gigDetailsData = user?.canBeBuyer ? buyerGigDetailsData : workerGigDetailsData;
+  const notificationMessage = user?.canBeBuyer ? buyerNotificationMessage : workerNotificationMessage;
 
   const handleEditDetails = () => {
     console.log("Edit details clicked");
@@ -81,7 +90,7 @@ export default function ConfirmAmendedGigDetailsPage() {
               {notificationMessage.user} has {notificationMessage.change}, the update details are below. {notificationMessage.prompt}
             </p>
           </div>
-          {isBuyerMode && (
+          {user?.canBeBuyer && (
             <MessageSquare className={styles.chatIcon} strokeWidth={1.5} onClick={() => console.log("Chat icon clicked")} />
           )}
         </section>
@@ -90,7 +99,7 @@ export default function ConfirmAmendedGigDetailsPage() {
         <section className={styles.card}>
           <div className={styles.detailsHeader}>
             <h2 className={styles.detailsTitle}>Updated gig details:</h2>
-            {isBuyerMode && (
+            {user?.canBeBuyer && (
               <Edit3 className={styles.editIcon} onClick={handleEditDetails} />
             )}
           </div>
@@ -109,11 +118,11 @@ export default function ConfirmAmendedGigDetailsPage() {
             </div>
             <div className={styles.detailItem}>
               <span className={styles.detailItemLabel}>Pay per hour:</span>
-              <span className={`${styles.detailItemValue} ${isBuyerMode ? styles.highlightedValue : ''}`}>
+              <span className={`${styles.detailItemValue} ${user?.canBeBuyer ? styles.highlightedValue : ''}`}>
                 {gigDetailsData.payPerHour}
               </span>
             </div>
-            {isBuyerMode ? (
+            {user?.canBeBuyer ? (
               <div className={styles.detailItem}>
                 <span className={styles.detailItemLabel}>Total cost:</span>
                 <span className={styles.detailItemValue}>
@@ -134,12 +143,12 @@ export default function ConfirmAmendedGigDetailsPage() {
       <footer className={styles.actionsFooter}>
         <button
           type="button"
-          className={`${styles.actionButton} ${isBuyerMode ? styles.confirmButton : styles.suggestButton /* Using suggestButton style for worker confirm */}`}
+          className={`${styles.actionButton} ${user?.canBeBuyer ? styles.confirmButton : styles.suggestButton /* Using suggestButton style for worker confirm */}`}
           onClick={handleConfirm}
         >
           Confirm changes
         </button>
-        {isBuyerMode && (
+        {user?.canBeBuyer && (
           <>
             <button
               type="button"

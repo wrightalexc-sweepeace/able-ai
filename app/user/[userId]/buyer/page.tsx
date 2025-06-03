@@ -29,7 +29,7 @@ export default function BuyerDashboardPage() {
 
   useEffect(() => {
     if (!loadingAuth && userPublicProfile?.isAuthenticated) {
-      if (userPublicProfile?.canBeBuyer) {
+      if (userPublicProfile?.canBeBuyer || userPublicProfile?.isQA) {
         updateUserContext({
           lastRoleUsed: "BUYER", // Ensure the context reflects the current role
           lastViewVisited: pathname, // Update last view visited

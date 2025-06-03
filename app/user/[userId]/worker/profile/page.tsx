@@ -1,9 +1,19 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter, useParams, usePathname } from "next/navigation";
 import { useAppContext } from "@/app/hooks/useAppContext";
-import { BadgeCheck, CalendarDays, Loader2, MapPin, Pencil, ThumbsUp, MessageCircleCode, Award as AwardIconLucide, UserCircle} from "lucide-react";
+import {
+  // BadgeCheck,
+  // CalendarDays,
+  // Loader2,
+  // MapPin,
+  // Pencil,
+  ThumbsUp,
+  MessageCircleCode,
+  Award as AwardIconLucide,
+  UserCircle,
+} from "lucide-react";
 import styles from "./page.module.css";
 import WorkerProfile from "@/app/components/profile/WorkerProfile";
 
@@ -21,18 +31,27 @@ const qaMockProfileData = {
   viewCalendarLink: "#view-calendar",
 
   statistics: [
-    { id: "s1", icon: ThumbsUp, value: "100%", label: "Would work with Benji again" },
-    { id: "s2", icon: MessageCircleCode, value: "100%", label: "Response rate" },
+    {
+      id: "s1",
+      icon: ThumbsUp,
+      value: "100%",
+      label: "Would work with Benji again",
+    },
+    {
+      id: "s2",
+      icon: MessageCircleCode,
+      value: "100%",
+      label: "Response rate",
+    },
   ],
   skills: [
     { name: "Bartender", ableGigs: 15, experience: "3 years", eph: 15 },
     { name: "Waiter", ableGigs: 2, experience: "8 years", eph: 15 },
-    { name: "Graphic Designer", ableGigs: 1, experience: "7 years", eph: 22 }
+    { name: "Graphic Designer", ableGigs: 1, experience: "7 years", eph: 22 },
   ],
   awards: [
     { id: "a1", icon: AwardIconLucide, textLines: ["Always on", "time"] },
     { id: "a2", icon: UserCircle, textLines: ["Able", "Professional"] },
-   
   ],
   feedbackSummary: "Professional, charming and lively",
   qualifications: [
@@ -41,7 +60,12 @@ const qaMockProfileData = {
     "Drivers license",
   ],
   equipment: [
-    "Camera gear", "Laptop", "Smartphone", "Uniform", "Bicycle", "Car"
+    "Camera gear",
+    "Laptop",
+    "Smartphone",
+    "Uniform",
+    "Bicycle",
+    "Car",
   ],
 };
 
@@ -52,11 +76,11 @@ async function fetchWorkerOwnedProfile(userId: string, isViewQA: boolean) {
     // Assign the correct userId from the route to the mock data
     return { ...qaMockProfileData, id: userId };
   }
-  
+
   // --- REAL DATA FETCH LOGIC GOES HERE IN A REAL APPLICATION ---
   console.log("Attempting to fetch real worker profile for userId:", userId);
   await new Promise((resolve) => setTimeout(resolve, 500)); // Simulate fetch delay
-  
+
   // For now, still return mock data if isViewQA is false for demonstration
   // In a real app, you would fetch data based on userId here.
   return { ...qaMockProfileData, id: userId }; // Still returning mock for demo
@@ -65,54 +89,53 @@ async function fetchWorkerOwnedProfile(userId: string, isViewQA: boolean) {
 export default function WorkerOwnedProfilePage() {
   const router = useRouter();
   const params = useParams();
+  const pathname = usePathname();
   const userId = params.userId as string;
-  
- 
-  // const { user: authUser } = useAppContext();
-  
+
+  const { isLoading: loadingAuth, user, updateUserContext } = useAppContext();
+
   const [profile, setProfile] = useState<any>(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const isSelfView = true;
-
-  // Read isViewQA flag (example from local storage, could be context or query param)
-  const isViewQA = typeof window !== 'undefined' ? localStorage.getItem('isViewQA') === 'true' : false;
 
   const handleAddSkill = () => {
     const newSkill = {
       name: "developer",
       ableGigs: 2,
       experience: "3 years",
-      eph: 20
+      eph: 20,
     };
     setProfile({
       ...profile,
-      skills: [...(profile.skills || []), newSkill]
+      skills: [...(profile.skills || []), newSkill],
     });
   };
 
-  // useEffect(() => {
-  //   // Redirect if not logged in, not the correct user, or not in worker mode
-  //   if (!isLoading && (!user || (user.uid !== userId && !isViewQA) || !isWorkerMode)) {
-  //     // Allow viewing mock data in QA mode even if userId doesn't match auth user
-  //     if (!isViewQA) {
-  //        router.replace("/signin");
-  //     } else if (!isWorkerMode) { // Still require worker mode in QA view
-  //        router.replace("/select-role"); // Or an appropriate redirect
-  //     }
-  //   }
-  // }, [user, isLoading, isWorkerMode, userId, router, isViewQA]);
+  useEffect(() => {
+    if (!loadingAuth && user?.isAuthenticated) {
+      if (user?.canBeBuyer || user?.isQA) {
+        updateUserContext({
+          lastRoleUsed: "GIG_WORKER",
+          lastViewVisited: pathname,
+        });
+      } else {
+        router.replace("/select-role");
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadingAuth, user?.isAuthenticated]);
 
   useEffect(() => {
     if (userId) {
       setLoadingProfile(true);
       // Pass the isViewQA flag to the fetch function
-      fetchWorkerOwnedProfile(userId, isViewQA)
+      fetchWorkerOwnedProfile(userId, !!user?.isQA)
         .then((data) => setProfile(data))
         .catch(() => setError("Could not load your profile."))
         .finally(() => setLoadingProfile(false));
     }
-  }, [userId, isViewQA]); // Add isViewQA to dependency array
+  }, [userId, user?.isQA]);
 
   // if (isLoading || loadingProfile) {
   //   return (
@@ -122,10 +145,18 @@ export default function WorkerOwnedProfilePage() {
   //   );
   // }
   if (error) {
-    return <div className={styles.pageWrapper}><p className={styles.errorMessage}>{error}</p></div>;
+    return (
+      <div className={styles.pageWrapper}>
+        <p className={styles.errorMessage}>{error}</p>
+      </div>
+    );
   }
   if (!profile) {
-    return <div className={styles.pageWrapper}><p className={styles.emptyState}>Profile not available.</p></div>;
+    return (
+      <div className={styles.pageWrapper}>
+        <p className={styles.emptyState}>Profile not available.</p>
+      </div>
+    );
   }
 
   return (
@@ -183,7 +214,11 @@ export default function WorkerOwnedProfilePage() {
           </ContentCard>
         )}
       </div> */}
-      <WorkerProfile workerProfile={profile} isSelfView={isSelfView} handleAddSkill={handleAddSkill}/>
+      <WorkerProfile
+        workerProfile={profile}
+        isSelfView={isSelfView}
+        handleAddSkill={handleAddSkill}
+      />
     </div>
   );
-} 
+}

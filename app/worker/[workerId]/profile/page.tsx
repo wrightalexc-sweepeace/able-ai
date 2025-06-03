@@ -116,7 +116,7 @@ export default function PublicWorkerProfilePage() {
         <X size={24} />
       </button>
 
-      <WorkerProfile workerProfile={workerProfile} />
+      <WorkerProfile workerProfile={workerProfile} isSelfView={false} handleAddSkill={() => {}} />
       {/* --- Footer Action Bar (from first "Benji" image) --- */}
       <div className={styles.footerActionBar}>
           <button onClick={handleHireWorker} className={styles.primaryActionButton}>

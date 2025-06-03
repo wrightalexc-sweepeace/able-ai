@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams, usePathname } from 'next/navigation';
 import { useAppContext } from '@/app/hooks/useAppContext';
 import Link from 'next/link';
 
@@ -86,12 +86,12 @@ const calculateDuration = (startIso: string, endIso: string): string => {
 
 
 export default function WorkerGigDetailsPage() {
+  const pathname = usePathname();
   const router = useRouter();
+  const { isLoading: loadingAuth, user, updateUserContext } = useAppContext();
   const params = useParams();
-  const pageUserId = params.userId as string;
   const gigId = params.gigId as string;
 
-  const { isLoading, isAuthenticated, user, isWorkerMode } = useAppContext();
 
   const [gig, setGig] = useState<GigDetails | null>(null);
   const [isLoadingGig, setIsLoadingGig] = useState(true);
@@ -99,17 +99,20 @@ export default function WorkerGigDetailsPage() {
   const [isActionLoading, setIsActionLoading] = useState(false);
 
   // Auth check
-  useEffect(() => {
-    if (!isLoading) {
-    //   if (!isAuthenticated || user?.uid !== pageUserId || !isWorkerMode) {
-    //     router.replace('/signin');
-    //   }
-    }
-  }, [isAuthenticated, isLoading, user, pageUserId, isWorkerMode, router]);
+    useEffect(() => {
+      if (!loadingAuth && user?.isAuthenticated) {
+        if (user?.canBeBuyer || user?.isQA) {
+          updateUserContext({ lastRoleUsed: "GIG_WORKER", lastViewVisited: pathname });
+        } else {
+          router.replace("/select-role");
+        }
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [loadingAuth, user?.isAuthenticated]);
 
   // Fetch gig details
   useEffect(() => {
-    if (isAuthenticated && user?.uid && gigId) {
+    if (user?.isAuthenticated && user?.uid && gigId) {
       setIsLoadingGig(true);
       fetchWorkerGigDetails(user.uid, gigId)
         .then(data => {
@@ -125,7 +128,7 @@ export default function WorkerGigDetailsPage() {
         })
         .finally(() => setIsLoadingGig(false));
     }
-  }, [isAuthenticated, user, gigId]);
+  }, [user?.isAuthenticated, gigId]);
 
   const handleGigAction = async (action: 'start' | 'complete' | 'requestAmendment' | 'reportIssue' | 'delegate') => {
     if (!gig) return;
@@ -163,7 +166,7 @@ export default function WorkerGigDetailsPage() {
     }
   }
 
-  if (isLoading || isLoadingGig) {
+  if (isLoadingGig || isLoadingGig) {
     return <div className={styles.loadingContainer}><Loader2 className="animate-spin" size={32} /> Loading Gig Details...</div>;
   }
 

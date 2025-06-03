@@ -50,7 +50,7 @@ export default function GigChatPage() {
   };
 
   return (
-    <ChatBotLayout ref={chatContainerRef} tag="Gig Chat">
+    <ChatBotLayout ref={chatContainerRef}>
       {messages.map((msg) => (
         <MessageBubble
           key={msg.id}

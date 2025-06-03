@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, FormEvent, useMemo } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAppContext } from '@/app/hooks/useAppContext';
 
 import ChatBotLayout from '@/app/components/onboarding/ChatBotLayout'; // Corrected path
@@ -22,14 +22,10 @@ import ShareLinkBubble from '@/app/components/onboarding/ShareLinkBubble';
 
 
 export default function OnboardWorkerPage() {
+  const router = useRouter();
   const pathname = usePathname()
   const { isLoading: loadingAuth, updateUserContext, user } = useAppContext();
   const chatContainerRef = useRef<HTMLDivElement>(null);
-
-  const isViewQA = useMemo(() => {
-    if (typeof window === "undefined") return false;
-    return localStorage.getItem("isViewQA") === "true";
-  }, []);
 
   const [onboardingSteps, setOnboardingSteps] = useState<OnboardingStep[]>(baseInitialSteps.map(s => ({...s, isComplete: false})));
   const [formData, setFormData] = useState<Record<string, any>>({});
@@ -41,12 +37,16 @@ export default function OnboardWorkerPage() {
 
   useEffect(() => {
     if (!loadingAuth && user?.isAuthenticated) {
-      updateUserContext({ lastRoleUsed: 'GIG_WORKER', lastViewVisited: pathname });
+      if (user?.canBeGigWorker || user?.isQA) {
+        updateUserContext({ lastRoleUsed: 'GIG_WORKER', lastViewVisited: pathname });
+      } else {
+        router.replace("/select-role");
+      }
     }
   }, [loadingAuth, user?.isAuthenticated]);
 
   useEffect(() => {
-    if (isViewQA) {
+    if (user?.isQA) {
       const qaFormData: Record<string, any> = {};
       baseInitialSteps.forEach(step => {
         if (step.inputName) {
@@ -62,11 +62,11 @@ export default function OnboardWorkerPage() {
       setOnboardingSteps(baseInitialSteps.map(s => ({...s, isComplete: false})));
       setFormData({});
     }
-  }, [isViewQA]);
+  }, [user?.isQA]);
 
   useEffect(() => {
     const newMessages: OnboardingStep[] = [];
-    if (isViewQA) {
+    if (user?.isQA) {
       let currentStepIdForDependency = 0;
       baseInitialSteps.forEach(step => {
         const messageToAdd = { ...step, content: step.content, isComplete: true, dependsOn: currentStepIdForDependency };
@@ -125,25 +125,25 @@ export default function OnboardWorkerPage() {
       }
     }
     setChatMessages(newMessages);
-  }, [onboardingSteps, formData, isViewQA]);
+  }, [onboardingSteps, formData, user?.isQA]);
 
   useEffect(() => {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
-    if (!isViewQA && currentFocusedInputName) {
+    if (!user?.isQA && currentFocusedInputName) {
         const inputElement = document.querySelector(`[name="${currentFocusedInputName}"]`) as HTMLElement;
         inputElement?.focus();
     }
-  }, [chatMessages, currentFocusedInputName, isViewQA]);
+  }, [chatMessages, currentFocusedInputName, user?.isQA]);
 
   const handleInputChange = (name: string, value: any) => {
-    if (isViewQA) return;
+    if (user?.isQA) return;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleInputSubmit = (stepId: number, inputName: string) => {
-    if (isViewQA) return;
+    if (user?.isQA) return;
     if (formData[inputName] === undefined || formData[inputName] === '') {
         const stepBeingSubmitted = onboardingSteps.find(s => s.id === stepId);
         if (stepBeingSubmitted?.inputType !== 'file' && stepBeingSubmitted?.inputType !== 'date') {
@@ -196,7 +196,7 @@ export default function OnboardWorkerPage() {
   };
 
   const handleBookWorker = (name: string, price: number) => {
-    if (isViewQA) return;
+    if (user?.isQA) return;
     setWorkerName(name);
     setWorkerPrice(price);
     // Mark all preceding steps as complete to show final message
@@ -227,7 +227,7 @@ export default function OnboardWorkerPage() {
   };
 
   const handleFinalSubmit = async (event?: FormEvent) => {
-    if (isViewQA && !workerName) return; // Allow final submit in QA if a worker was "booked"
+    if (user?.isQA && !workerName) return; // Allow final submit in QA if a worker was "booked"
     event?.preventDefault();
     setIsSubmitting(true);
     console.log("Mock Buyer Onboarding Data:", formData, "Booked Worker:", workerName, "Price:", workerPrice);
@@ -272,7 +272,7 @@ export default function OnboardWorkerPage() {
   };
 
   const allInteractiveStepsComplete = useMemo(() => {
-    if (isViewQA) return true;
+    if (user?.isQA) return true;
     const interactiveSteps = onboardingSteps.filter(step =>
         step.type !== 'userResponseDisplay' &&
         step.type !== 'botMessage' &&
@@ -280,7 +280,7 @@ export default function OnboardWorkerPage() {
         (step.type === 'userInput' || step.type === 'fileUpload' || step.type === 'datePicker' || step.type === 'discountCode')
     );
     return interactiveSteps.every(step => step.isComplete);
-  }, [onboardingSteps, isViewQA]);
+  }, [onboardingSteps, user?.isQA]);
 
   const handleCalendarChange = (date: Date | null) => {
     console.log("Selected date:", date);
@@ -291,7 +291,7 @@ export default function OnboardWorkerPage() {
   }
 
   return (
-    <ChatBotLayout ref={chatContainerRef} onScroll={(e: React.UIEvent<HTMLDivElement>) => {}} tag='Looking for an experienced bartender'>
+    <ChatBotLayout ref={chatContainerRef} onScroll={(e: React.UIEvent<HTMLDivElement>) => {}} >
       {/* {isViewQA && (
         <div style={{ background: 'rgba(255,220,220,0.8)', borderBottom: '1px solid rgba(200,0,0,0.3)', color: '#8B0000', textAlign: 'center', padding: '8px 5px', fontSize: '0.85em', fontWeight: '500' }}>
           QA Mode: Full Chat Preview
@@ -371,7 +371,7 @@ export default function OnboardWorkerPage() {
       {/* Removed the generic "Confirm & Proceed" button as booking is per card now */}
       {/* {allInteractiveStepsComplete && !isSubmitting && !isViewQA && onboardingSteps[onboardingSteps.length-1]?.type !== 'botMessage' && ( ... )} */}
 
-       {isSubmitting && !isViewQA && (
+       {isSubmitting && !user?.isQA && (
          <MessageBubble key="submitting-msg" text="Processing..." senderType="bot" />
       )}
        {/* <input

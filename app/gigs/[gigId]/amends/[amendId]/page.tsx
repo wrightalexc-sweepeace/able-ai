@@ -1,25 +1,38 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Bot, Edit3 } from 'lucide-react'; // Icons: Bot for friendly face, Edit3 for pencil
-import styles from './CancelOrAmendGigDetailsPage.module.css';
-import { useAppContext } from '@/app/hooks/useAppContext'; // Import the hook
+import React, { useEffect, useState } from "react";
+import { Bot, Edit3 } from "lucide-react"; // Icons: Bot for friendly face, Edit3 for pencil
+import styles from "./CancelOrAmendGigDetailsPage.module.css";
+import { useAppContext } from "@/app/hooks/useAppContext"; // Import the hook
+import { usePathname } from "next/navigation";
 
 // Mock data - replace with actual props or state
 const gigDetailsData = {
-  location: 'The Green Tavern, Main Street, Springfield',
-  date: 'Saturday, 12th November 2023',
-  time: '6:00 PM - 1:00 AM',
-  payPerHour: '20',
-  totalPay: '140',
-  summary: 'Add one more hour. Total gig value is now 140, with Able and payment provider fees of 14.',
+  location: "The Green Tavern, Main Street, Springfield",
+  date: "Saturday, 12th November 2023",
+  time: "6:00 PM - 1:00 AM",
+  payPerHour: "20",
+  totalPay: "140",
+  summary:
+    "Add one more hour. Total gig value is now 140, with Able and payment provider fees of 14.",
 };
 
 export default function CancelOrAmendGigDetailsPage() {
-  const [userMessage, setUserMessage] = useState('');
+  const pathname = usePathname();
+  const { isLoading: loadingAuth, updateUserContext, user } = useAppContext();
+  const [userMessage, setUserMessage] = useState("");
   const [isEditingDetails, setIsEditingDetails] = useState(false); // Add state for edit mode
   const [editedGigDetails, setEditedGigDetails] = useState(gigDetailsData); // State for edited details
-  const { isBuyerMode, isWorkerMode } = useAppContext(); // Use the hook
+
+  useEffect(() => {
+    if (!loadingAuth && user?.isAuthenticated) {
+      updateUserContext({
+        lastRoleUsed: user?.lastRoleUsed || "BUYER",
+        lastViewVisited: pathname,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadingAuth, user?.isAuthenticated]);
 
   const handleEditDetails = () => {
     // Logic for editing gig details - perhaps opens a modal or navigates
@@ -27,11 +40,13 @@ export default function CancelOrAmendGigDetailsPage() {
     setIsEditingDetails(!isEditingDetails); // Toggle edit mode
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
-    setEditedGigDetails(prevState => ({
+    setEditedGigDetails((prevState) => ({
       ...prevState,
-      [name]: value
+      [name]: value,
     }));
   };
 
@@ -56,7 +71,7 @@ export default function CancelOrAmendGigDetailsPage() {
             <Bot className={styles.instructionIcon} strokeWidth={1.5} />
           </div>
           <p className={styles.instructionText}>
-            What changes would you like to make to the gig?{' '}
+            What changes would you like to make to the gig?{" "}
             <strong>Tell me or edit using the icon below</strong>
           </p>
         </section>
@@ -83,102 +98,118 @@ export default function CancelOrAmendGigDetailsPage() {
             <h2 className={styles.detailsTitle}>Updated gig details:</h2>
             <Edit3 className={styles.editIcon} onClick={handleEditDetails} />
           </div>
-          {
-            isEditingDetails ? (
-              /* Editable Form View */
-              <div className={styles.detailsList}>
-                <div className={styles.detailItem}>
-                  <span className={styles.detailItemLabel}>Location:</span>
-                  <input
-                    type="text"
-                    name="location"
-                    value={editedGigDetails.location}
-                    onChange={handleInputChange}
-                    className={styles.textareaInput} // Reuse input style
-                    disabled={isWorkerMode} // Disable for workers
-                  />
-                </div>
-                <div className={styles.detailItem}>
-                  <span className={styles.detailItemLabel}>Date:</span>
-                   <input
-                    type="text"
-                    name="date"
-                    value={editedGigDetails.date}
-                    onChange={handleInputChange}
-                    className={styles.textareaInput} // Reuse input style
-                     disabled={isWorkerMode} // Disable for workers
-                  />
-                </div>
-                <div className={styles.detailItem}>
-                  <span className={styles.detailItemLabel}>Time:</span>
-                   <input
-                    type="text"
-                    name="time"
-                    value={editedGigDetails.time}
-                    onChange={handleInputChange}
-                    className={styles.textareaInput} // Reuse input style
-                  />
-                </div>
-                <div className={styles.detailItem}>
-                  <span className={styles.detailItemLabel}>Pay per hour:</span>
-                   <input
-                    type="text"
-                    name="payPerHour"
-                    value={editedGigDetails.payPerHour}
-                    onChange={handleInputChange}
-                    className={styles.textareaInput} // Reuse input style
-                     disabled={isWorkerMode} // Disable for workers
-                  />
-                </div>
-                <div className={styles.detailItem}>
-                  <span className={styles.detailItemLabel}>Total Pay:</span>
-                  <input
-                    type="text"
-                    name="totalPay"
-                    value={editedGigDetails.totalPay}
-                    onChange={handleInputChange}
-                    className={styles.textareaInput} // Reuse input style
-                     disabled={true} // Total pay likely calculated
-                  />
-                </div>
-                 {/* Summary might be recalculated or hidden in edit mode */}
-                 {/* <p className={styles.detailsSummaryText}>{editedGigDetails.summary}</p> */}
+          {isEditingDetails ? (
+            /* Editable Form View */
+            <div className={styles.detailsList}>
+              <div className={styles.detailItem}>
+                <span className={styles.detailItemLabel}>Location:</span>
+                <input
+                  type="text"
+                  name="location"
+                  value={editedGigDetails.location}
+                  onChange={handleInputChange}
+                  className={styles.textareaInput} // Reuse input style
+                  disabled={user?.isWorkerMode} // Disable for workers
+                />
               </div>
-            ) : (
-              /* Read-only View */
-              <div className={styles.detailsList}>
-                <div className={styles.detailItem}>
-                  <span className={styles.detailItemLabel}>Location:</span>
-                  <span className={styles.detailItemValue}>{gigDetailsData.location}</span>
-                </div>
-                <div className={styles.detailItem}>
-                  <span className={styles.detailItemLabel}>Date:</span>
-                  <span className={styles.detailItemValue}>{gigDetailsData.date}</span>
-                </div>
-                <div className={styles.detailItem}>
-                  <span className={styles.detailItemLabel}>Time:</span>
-                  <span className={styles.detailItemValue}>{gigDetailsData.time}</span>
-                </div>
-                <div className={styles.detailItem}>
-                  <span className={styles.detailItemLabel}>Pay per hour:</span>
-                  <span className={styles.detailItemValue}>{gigDetailsData.payPerHour}</span>
-                </div>
-                <div className={styles.detailItem}>
-                  <span className={styles.detailItemLabel}>Total Pay:</span>
-                  <span className={styles.detailItemValue}>{gigDetailsData.totalPay}</span>
-                </div>
+              <div className={styles.detailItem}>
+                <span className={styles.detailItemLabel}>Date:</span>
+                <input
+                  type="text"
+                  name="date"
+                  value={editedGigDetails.date}
+                  onChange={handleInputChange}
+                  className={styles.textareaInput} // Reuse input style
+                  disabled={user?.isWorkerMode} // Disable for workers
+                />
               </div>
-            )
-          }
-           {/* Always show summary in read-only mode, maybe hide in edit mode */}
-           {!isEditingDetails && <p className={styles.detailsSummaryText}>{gigDetailsData.summary}</p>}
+              <div className={styles.detailItem}>
+                <span className={styles.detailItemLabel}>Time:</span>
+                <input
+                  type="text"
+                  name="time"
+                  value={editedGigDetails.time}
+                  onChange={handleInputChange}
+                  className={styles.textareaInput} // Reuse input style
+                />
+              </div>
+              <div className={styles.detailItem}>
+                <span className={styles.detailItemLabel}>Pay per hour:</span>
+                <input
+                  type="text"
+                  name="payPerHour"
+                  value={editedGigDetails.payPerHour}
+                  onChange={handleInputChange}
+                  className={styles.textareaInput} // Reuse input style
+                  disabled={user?.isWorkerMode} // Disable for workers
+                />
+              </div>
+              <div className={styles.detailItem}>
+                <span className={styles.detailItemLabel}>Total Pay:</span>
+                <input
+                  type="text"
+                  name="totalPay"
+                  value={editedGigDetails.totalPay}
+                  onChange={handleInputChange}
+                  className={styles.textareaInput} // Reuse input style
+                  disabled={true} // Total pay likely calculated
+                />
+              </div>
+              {/* Summary might be recalculated or hidden in edit mode */}
+              {/* <p className={styles.detailsSummaryText}>{editedGigDetails.summary}</p> */}
+            </div>
+          ) : (
+            /* Read-only View */
+            <div className={styles.detailsList}>
+              <div className={styles.detailItem}>
+                <span className={styles.detailItemLabel}>Location:</span>
+                <span className={styles.detailItemValue}>
+                  {gigDetailsData.location}
+                </span>
+              </div>
+              <div className={styles.detailItem}>
+                <span className={styles.detailItemLabel}>Date:</span>
+                <span className={styles.detailItemValue}>
+                  {gigDetailsData.date}
+                </span>
+              </div>
+              <div className={styles.detailItem}>
+                <span className={styles.detailItemLabel}>Time:</span>
+                <span className={styles.detailItemValue}>
+                  {gigDetailsData.time}
+                </span>
+              </div>
+              <div className={styles.detailItem}>
+                <span className={styles.detailItemLabel}>Pay per hour:</span>
+                <span className={styles.detailItemValue}>
+                  {gigDetailsData.payPerHour}
+                </span>
+              </div>
+              <div className={styles.detailItem}>
+                <span className={styles.detailItemLabel}>Total Pay:</span>
+                <span className={styles.detailItemValue}>
+                  {gigDetailsData.totalPay}
+                </span>
+              </div>
+            </div>
+          )}
+          {/* Always show summary in read-only mode, maybe hide in edit mode */}
+          {!isEditingDetails && (
+            <p className={styles.detailsSummaryText}>
+              {gigDetailsData.summary}
+            </p>
+          )}
         </section>
       </main>
 
       {/* Action Button Area */}
-      <button type="button" className={styles.submitButton} onClick={handleSubmit}>
+      <button
+        type="button"
+        className={styles.submitButton}
+        onClick={handleSubmit}
+      >
         Submit for Confirmation
       </button>
     </div>
   );
-} 
+}
