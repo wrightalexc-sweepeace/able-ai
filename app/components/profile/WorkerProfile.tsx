@@ -20,10 +20,12 @@ const WorkerProfile = ({
   workerProfile,
   isSelfView = false,
   handleAddSkill,
+  handleSkillDetails, // Optional handler for skill details
 }: {
   workerProfile: PublicWorkerProfile;
   isSelfView: boolean;
   handleAddSkill: () => void;
+  handleSkillDetails: (name: string) => void; // Optional handler for skill details
 }) => {
   return (
     <div>
@@ -98,7 +100,7 @@ const WorkerProfile = ({
 
         {/* Skills Section (Benji Image Style - Blue Card) */}
         {workerProfile.skills && workerProfile.skills.length > 0 && (
-          <SkillsDisplayTable skills={workerProfile.skills} isSelfView={isSelfView} handleAddSkill={handleAddSkill}/>
+          <SkillsDisplayTable skills={workerProfile.skills} isSelfView={isSelfView} handleAddSkill={handleAddSkill} handleSkillDetails={handleSkillDetails} />
         )}
 
         {/* Awards & Feedback Section (Benji Image Style) */}
@@ -114,6 +116,8 @@ const WorkerProfile = ({
                       key={award.id}
                       icon={award.icon}
                       textLines={award.textLines}
+                      color="#eab308"
+                      border="3px solid #eab308"
                     />
                   ))}
                 </div>
