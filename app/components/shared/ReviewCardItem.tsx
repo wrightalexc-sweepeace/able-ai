@@ -16,10 +16,10 @@ const ReviewCardItem: React.FC<ReviewCardItemProps> = ({
   return (
     <div className={styles.reviewCard}>
       <div className={styles.header}>
-        <span className={styles.reviewerName}>{reviewerName}</span>
+        <span className={styles.reviewerName}>{reviewerName} -</span>
         <span className={styles.date}>{date}</span>
       </div>
-      <p className={styles.comment}>{comment}</p>
+      <p className={styles.comment}>&quot;{comment}&quot;</p>
     </div>
   );
 };
