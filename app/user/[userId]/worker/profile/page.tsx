@@ -126,6 +126,11 @@ export default function WorkerOwnedProfilePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loadingAuth, user?.isAuthenticated]);
 
+  const handleSkillDetails = (name: string) => {
+    return router.push(`/user/${userId}/worker/profile/skills/${name}`);
+  }
+
+
   useEffect(() => {
     if (userId) {
       setLoadingProfile(true);
@@ -218,6 +223,7 @@ export default function WorkerOwnedProfilePage() {
         workerProfile={profile}
         isSelfView={isSelfView}
         handleAddSkill={handleAddSkill}
+        handleSkillDetails={handleSkillDetails}
       />
     </div>
   );

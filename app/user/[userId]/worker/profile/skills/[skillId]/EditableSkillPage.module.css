@@ -1,87 +1,155 @@
-/* app/user/[userId]/worker/profile/skills/[skillId]/EditableSkillPage.module.css */
-
-/* Container similar to public view but perhaps wider or different padding */
-.editableSkillPageContainer {
-  max-width: 900px; /* Adjust as needed for form layout */
+.container {
+  width: 100%;
+  height: auto;
+  min-height: 100vh;
+  max-width: 450px;
   margin: 0 auto;
   padding: 20px;
-  color: var(--text-primary);
-  background-color: var(--background);
-}
-
-.pageLoadingContainer,
-.pageWrapper {
+  color: #ffffff;
+  background-color: var(--foreground);
   display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 80vh;
-  color: var(--text-neutral);
+  flex-direction: column;
+  gap: 1rem;
+  font-family: var(--font-family);
 }
 
-.errorMessage,
-.emptyState {
-  font-size: 1.1rem;
-  text-align: center;
+.header {
+  display: flex;
+  justify-content: space-between;
 }
 
-.pageTitle {
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: var(--text-primary);
-    margin-top: 0;
-    margin-bottom: 30px;
-    text-align: center;
+.name {
+  font-weight: bold;
+  width: 30%;
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 31px;
 }
 
-/* Basic form field styling for textarea */
-.formField {
-    margin-bottom: 20px;
+.role {
+  font-size: 0.9rem;
+  color: #ccc;
 }
 
-.formLabel {
-    display: block;
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--text-secondary);
-    margin-bottom: 8px;
+.icon {
+  color: #41a1e8;
+  height: 64px;
+  width: 69px;
 }
 
-.textareaField {
-  width: 100%;
-  padding: 12px;
-  background-color: var(--surface-dark);
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius);
-  color: var(--text-primary);
+.hashtags {
+  background-color: var(--primary-color);
+  padding: 0.25rem 0.75rem;
+  border-radius: 1.6rem;
   font-size: 1rem;
-  resize: vertical; /* Allow vertical resizing */
+  color: #000000;
+  word-wrap: break-word;
 }
 
-.textareaField:focus {
-    outline: none;
-    border-color: var(--accent-color);
+.review {
+  font-size: 1.1rem;
+  font-weight: 500;
+  line-height: 23px;
 }
 
-/* Styling for placeholder list items in EditableList */
-.editableListItem {
-    background-color: var(--surface-dark);
-    border-radius: var(--border-radius-small);
-    padding: 10px 15px;
-    margin-bottom: 8px;
-    font-size: 0.9rem;
-    color: var(--text-neutral);
-    display: flex;
-    align-items: center;
-    gap: 10px; /* Space between elements in the item */
-    border: 1px solid var(--border-color);
+.skillDisplayTable {
+  font-size: 1rem;
 }
 
-.editableListItem img {
-    border-radius: var(--border-radius-small);
+.skillDisplayTable th {
+  text-align: left;
+  padding: 0.3rem 0;
+  font-weight: 500;
+  line-height: 1.4;
+  
 }
 
-/* Save Button Container */
-.saveButtonContainer {
-  margin-top: 30px;
-  text-align: center;
-} 
+.section {
+  font-size: 0.9rem;
+}
+
+.statistics {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: #ccc;
+  margin-top: 0.5rem;
+}
+
+.stats {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.stats p {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.stats span{
+  display: block;
+  font-size: 0.8rem;
+  line-height: 1;
+}
+
+.supportingImages {
+  display: flex;
+  gap: 2rem;
+  margin: 1rem 0;
+}
+
+.images {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.attachButton {
+  background-color: transparent;
+  border: 0;
+  outline: none;
+}
+
+.attachButton:hover {
+  background-color: var(--border-color-light);
+}
+
+.hiddenInput {
+  display: none;
+}
+
+.sectionTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 24px;
+  margin-bottom: 1rem;
+}
+.badges {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin: 0.5rem 0 1rem;
+}
+
+.badge {
+  border: none;
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: #ccc;
+  margin-bottom: 0.5rem;
+  list-style: none;
+}
+
+.reviewCard {
+  background: #222;
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  font-size: 0.8rem;
+  margin-top: 0.5rem;
+}
