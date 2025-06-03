@@ -78,11 +78,6 @@ export default function SelectRolePage() {
       setIsLoading(false);
     }
   };
-
-  if (loadingAuth) {
-    return <Loader />;
-  }
-
   return (
     <div className={styles.container}>
       <div className={styles.card}>
