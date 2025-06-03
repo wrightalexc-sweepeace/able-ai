@@ -15,13 +15,14 @@ interface SkillsDisplayTableProps {
   title?: string;
   isSelfView?: boolean;
   handleAddSkill?: () => void;
+  handleSkillDetails: (name: string) => void; // Optional handler for skill details 
 }
 
 const SkillsDisplayTable: React.FC<SkillsDisplayTableProps> = ({
   skills,
-  title = "Skills:",
   isSelfView,
   handleAddSkill,
+  handleSkillDetails,
 }) => {
   const hasAbleGigs = skills.length > 0 && skills[0].ableGigs !== undefined;
   const hasExperience = skills.length > 0 && skills[0].experience !== undefined;
@@ -44,7 +45,7 @@ const SkillsDisplayTable: React.FC<SkillsDisplayTableProps> = ({
           {skills.map((skill, index) => (
               <tr key={index}>
                 <td>
-                  <PillBadge className={styles.skill} text={skill.name} variant="dark" />
+                  <PillBadge className={styles.skill} text={skill.name} variant="dark" handleSkillDetails={handleSkillDetails}/>
                 </td>
                 {hasAbleGigs && <td>{skill.ableGigs}</td>}
                 {hasExperience && <td>{skill.experience}</td>}
