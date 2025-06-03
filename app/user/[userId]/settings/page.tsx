@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, FormEvent, useLayoutEffect } from "react";
+import React, { useState, useEffect, FormEvent } from "react";
 import { useRouter, useParams, usePathname } from "next/navigation";
-import { useAppContext } from "@/app/hooks/useAppContext"; // Corrected path
+import { useAppContext } from "@/app/hooks/useAppContext";
 import { auth as firebaseAuthClient } from "@/app/lib/firebase/clientApp"; // Corrected path
 import {
   updatePassword,
@@ -126,12 +126,11 @@ export default function SettingsPage() {
         lastViewVisited: pathname,
       });
       if (authUserId !== pageUserId) {
-        // authUserId is now derived from user?.uid
         router.replace("/signin");
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.isAuthenticated, isLoading]); // Update dependency array
+  }, [user?.isAuthenticated, isLoading]);
 
   // Fetch user settings from backend API
   useEffect(() => {

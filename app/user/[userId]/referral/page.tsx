@@ -2,7 +2,7 @@
 
 import React, { useState, ChangeEvent, FormEvent, useEffect } from 'react';
 import Image from 'next/image';
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams, usePathname } from 'next/navigation';
 import { useAppContext } from '@/app/hooks/useAppContext'; // Assuming path
 
 // Shared InputField, or use direct styling with .input class
@@ -23,11 +23,12 @@ interface ReferralFormData {
 export default function ReferralPage() {
   const router = useRouter();
   const params = useParams();
+  const pathname = usePathname();
   const pageUserId = params.userId as string;
 
-  const { isAuthenticated, isLoading: loadingAuth, user: userPublicProfile } = useAppContext();
+  const { isLoading: loadingAuth, user, updateUserContext } = useAppContext();
 
-  const authUserId = userPublicProfile?.uid;
+  const authUserId = user?.uid;
   const [formData, setFormData] = useState<ReferralFormData>({
     businessName: '',
     contactName: '',
@@ -42,12 +43,17 @@ export default function ReferralPage() {
 
   // Redirect if not authenticated or wrong user
   useEffect(() => {
-    if (!loadingAuth) {
-      if (!isAuthenticated || authUserId !== pageUserId) {
-        router.replace('/signin'); // Or a relevant access denied page
+    if (!loadingAuth && user?.isAuthenticated) {
+      updateUserContext({
+        lastRoleUsed: user?.lastRoleUsed || "BUYER",
+        lastViewVisited: pathname,
+      });
+      if (authUserId !== pageUserId) {
+        router.replace("/signin");
       }
     }
-  }, [isAuthenticated, loadingAuth, authUserId, pageUserId, router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.isAuthenticated, loadingAuth]);
 
   const handleChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = event.target;
@@ -119,7 +125,7 @@ export default function ReferralPage() {
     }
   };
   
-  if (loadingAuth || (!isAuthenticated && !loadingAuth) || (authUserId && authUserId !== pageUserId) ) {
+  if (loadingAuth || (!user?.isAuthenticated && !loadingAuth) || (authUserId && authUserId !== pageUserId) ) {
     return <div className={styles.loadingContainer}><Loader2 className="animate-spin" size={32} /> Loading...</div>;
   }
 
@@ -128,13 +134,13 @@ export default function ReferralPage() {
       <div className={styles.pageWrapper}>
         <div className={styles.profileHeader}>
           <Image
-            src={userPublicProfile?.photoURL || "/images/logo-placeholder.svg"} // Use user's actual image or placeholder
-            alt={userPublicProfile?.displayName || "User"}
+            src={user?.photoURL || "/images/logo-placeholder.svg"} // Use user's actual image or placeholder
+            alt={user?.displayName || "User"}
             width={48}
             height={48}
             className={styles.profileImage}
           />
-          <span className={styles.profileName}>{userPublicProfile?.displayName || "User"}</span>
+          <span className={styles.profileName}>{user?.displayName || "User"}</span>
         </div>
 
         <h1 className={styles.referralHeading}>Refer a New Business</h1>
