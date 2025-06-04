@@ -11,6 +11,8 @@ import WorkerProfile from '@/app/components/profile/WorkerProfile';
 
 // --- INTERFACE (Adapted for image elements) ---
 import PublicWorkerProfile from '@/app/types/workerProfileTypes';
+import CloseButton from '@/app/components/profile/CloseButton';
+import HireButton from '@/app/components/profile/HireButton';
 
 // --- MOCK FUNCTION (Updated with new data points) ---
 async function fetchPublicWorkerProfile(workerIdToView: string): Promise<PublicWorkerProfile | null> {
@@ -68,6 +70,10 @@ export default function PublicWorkerProfilePage() {
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const handleSkillDetails = (name: string) => {
+    return router.push(`/worker/${workerProfileIdToView}/profile/skills/${name}`);
+  }
+
   useEffect(() => {
     if (workerProfileIdToView) {
       setIsLoadingProfile(true);
@@ -87,11 +93,6 @@ export default function PublicWorkerProfilePage() {
     }
   }, [workerProfileIdToView]);
 
-  const handleHireWorker = () => {
-    if (!workerProfile || !authUser?.uid) return; // Ensure authUser is available for booking
-    router.push(`/user/${authUser.uid}/buyer/book-gig?workerId=${workerProfile.id}`);
-  };
-
   const handleSendMessage = () => {
     if (!workerProfile) return;
     // Placeholder for message functionality
@@ -110,20 +111,12 @@ export default function PublicWorkerProfilePage() {
   }
 
   return (
-    <div className={styles.profilePageContainer}>
-      {/* Close button from image */}
-      <button onClick={() => router.back()} className={styles.pageCloseButton} aria-label="Close profile">
-        <X size={24} />
-      </button>
-
-      <WorkerProfile workerProfile={workerProfile} isSelfView={false} handleAddSkill={() => {}} />
+    <div className={styles.profilePageContainer}>      
+      <CloseButton />
+      <WorkerProfile workerProfile={workerProfile} isSelfView={false} handleSkillDetails={handleSkillDetails}/>
       {/* --- Footer Action Bar (from first "Benji" image) --- */}
-      <div className={styles.footerActionBar}>
-          <button onClick={handleHireWorker} className={styles.primaryActionButton}>
-              <span>£</span>Hire {workerProfile.displayName.split(' ')[0]}
-          </button>
-      </div>
-
+      
+    <HireButton workerName={workerProfile.displayName} workerId={workerProfile.id} />
     </div> // End Profile Page Container
   );
 } 
