@@ -7,6 +7,7 @@ import Link from "next/link";
 
 // Import shared components
 import AiSuggestionBanner from "@/app/components/shared/AiSuggestionBanner";
+import { useAiSuggestionBanner } from "../../../hooks/useAiSuggestionBanner";
 import IconGrid from "@/app/components/shared/IconGrid";
 import ReferralBanner from "@/app/components/shared/ReferralBanner";
 import RoleToggle from "@/app/components/shared/RoleToggle";
@@ -60,6 +61,34 @@ export default function WorkerDashboardPage() {
   }, [userPublicProfile?.isAuthenticated, loadingAuth]);
 
   const uid = userPublicProfile?.uid;
+
+  // AI Suggestion Banner Hook
+  const {
+    suggestions: aiSuggestions,
+    currentIndex,
+    isLoading: isLoadingSuggestions,
+    error: suggestionsError,
+    dismissed: suggestionsDismissed,
+    dismiss: dismissSuggestions,
+    refresh: refreshSuggestions,
+    goToNext,
+    goToPrev,
+  } = useAiSuggestionBanner({
+    role: "worker",
+    userId: uid || "", // Provide fallback for undefined uid
+    // enabled: true, // Removed duplicate enabled property
+    context: {
+      // Example context for worker, replace with actual relevant data
+      profileCompletion: 0.7,
+      recentActivity: "applied for 2 gigs",
+      platformTrends: [
+        "high demand for photographers",
+        "weekend shifts available",
+      ],
+    },
+    enabled: !!uid, // Only enable if uid is available
+  });
+
   // Define actionItems specific to the role (Worker)
   const actionItems = [
     {
@@ -93,20 +122,28 @@ export default function WorkerDashboardPage() {
   // }, [isAuthenticated, currentActiveRole, THIS_HOME_ROLE]);
 
   if (loadingAuth || !userPublicProfile?.isAuthenticated) {
-    return <Loader />
+    return <Loader />;
   }
 
   return (
     <div className={styles.container}>
       <div className={styles.card}>
         <header className={styles.pageHeader}>
-          {/* <h1>Worker</h1>
-          {userPublicProfile?.displayName && (
-              <p className={styles.welcomeMessage}>
-                  Welcome back, {userPublicProfile.displayName}!
-              </p>
-          )} */}
           <Logo width={60} height={60} />
+          {uid && (
+            <AiSuggestionBanner
+              suggestions={aiSuggestions}
+              currentIndex={currentIndex}
+              isLoading={isLoadingSuggestions}
+              error={suggestionsError}
+              dismissed={suggestionsDismissed} // Pass the dismissed state
+              onDismiss={dismissSuggestions}
+              onRefresh={refreshSuggestions}
+              goToNext={goToNext}
+              goToPrev={goToPrev}
+              userId={uid}
+            />
+          )}
           {/* Notification Icon */}
           {uid && (
             <Link href={`/user/${uid}/notifications`} passHref>
@@ -117,18 +154,13 @@ export default function WorkerDashboardPage() {
                 <Image
                   src="/images/notifications.svg"
                   alt="Notifications"
-                  width={45}
-                  height={45}
+                  width={40}
+                  height={40}
                 />
               </button>
             </Link>
           )}
         </header>
-
-        <AiSuggestionBanner
-          // title="Gig Opportunity Alert 💡"
-          message="Hi! If you can be available next Tuesday, you are 75% likely to get a shift."
-        />
 
         {/* <h2 className={styles.sectionTitle}>Manage Your Activity</h2> */}
         <IconGrid items={actionItems} />
@@ -152,7 +184,7 @@ export default function WorkerDashboardPage() {
         <ReferralBanner title="Refer a worker and earn £5!" />
 
         <footer className={styles.pageFooter}>
-        <RoleToggle user={userPublicProfile}/>
+          <RoleToggle user={userPublicProfile} />
           <SettingsButton />
         </footer>
         <Toaster />

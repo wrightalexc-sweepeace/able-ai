@@ -24,7 +24,13 @@ import {
   ChatMessagesTable, // Added ChatMessagesTable
 } from "./interactions";
 import { PaymentsTable, MockPaymentsTable } from "./payments";
-import { AdminLogsTable, AiPromptsTable } from "./admin";
+import {
+  AdminLogsTable,
+  AiPromptsTable,
+  systemFlags, // Added systemFlags
+  userAiUsage, // Added userAiUsage
+  escalatedIssues, // Added escalatedIssues
+} from "./admin";
 import { VectorEmbeddingsTable } from "./vector";
 
 // --- USER DOMAIN RELATIONS ---
@@ -73,6 +79,10 @@ export const usersRelations = relations(UsersTable, ({ one, many }) => ({
   mockPaymentsAsBuyer: many(MockPaymentsTable, {
     relationName: "MockPaymentBuyerUser",
   }),
+  // New relations from admin.ts tables
+  userAiUsage: many(userAiUsage), // User -> UserAiUsage (1-to-many)
+  reportedIssues: many(escalatedIssues, { relationName: "UserAsReporterOfIssue" }), // User -> EscalatedIssues (1-to-many, as reporter)
+  assignedIssues: many(escalatedIssues, { relationName: "UserAsAssignedAdminOfIssue" }), // User -> EscalatedIssues (1-to-many, as assigned admin)
 }));
 
 export const gigWorkerProfilesRelations = relations(
@@ -328,6 +338,28 @@ export const aiPromptsRelations = relations(AiPromptsTable, ({ one }) => ({
     relationName: "UserWhoLastUpdatedPrompt",
   }),
 }));
+
+export const userAiUsageRelations = relations(userAiUsage, ({ one }) => ({
+  user: one(UsersTable, { // UserAiUsage -> User (many-to-one backlink)
+    fields: [userAiUsage.userId],
+    references: [UsersTable.id],
+  }),
+}));
+
+export const escalatedIssuesRelations = relations(escalatedIssues, ({ one }) => ({
+  reporter: one(UsersTable, { // EscalatedIssue -> User (many-to-one, reporter)
+    fields: [escalatedIssues.userId],
+    references: [UsersTable.id],
+    relationName: "UserAsReporterOfIssue", // Should match the relationName in usersRelations
+  }),
+  assignedAdmin: one(UsersTable, { // EscalatedIssue -> User (many-to-one, assigned admin)
+    fields: [escalatedIssues.adminUserId],
+    references: [UsersTable.id],
+    relationName: "UserAsAssignedAdminOfIssue", // Should match the relationName in usersRelations
+  }),
+}));
+
+// Note: systemFlags does not have any foreign keys to define relations from.
 
 // --- VECTOR DOMAIN RELATIONS (Generally not heavily relational in Drizzle sense) ---
 // As discussed, VectorEmbeddings are often queried independently or linked in application logic.

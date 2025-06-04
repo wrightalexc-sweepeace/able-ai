@@ -108,6 +108,23 @@ USER: {context here}
 - Support multi-language output.
 - Integrate with notification system for timely suggestions.
 
+## Admin Moderation
+
+AI-generated suggestions in the banner are typically short and derived from aggregated/anonymized data. Direct moderation of these specific outputs is less likely to be necessary compared to chat interactions. However, admins may monitor the types of suggestions being generated to ensure they are appropriate and helpful. If the underlying data used to generate suggestions raises moderation concerns, those source data points would be the primary target for review.
+
+## PII Handling
+
+PII handling is paramount for the suggestion banner feature:
+
+- **Input Data**: As noted in the "Data Available to the AI Agent" section, sensitive PII (names, emails, precise location) *must not* be included in the context provided to the AI agent. Only anonymized or aggregated data points and safe contextual information should be used.
+- **AI Prompt**: The prompt must explicitly instruct the AI *not* to generate suggestions that include or reveal PII.
+- **Output Suggestions**: The generated suggestions must be reviewed to confirm they are privacy-safe and contain no PII before being displayed.
+- **Storage**: If the generated suggestions are cached, they should not contain PII. The interactions with the AI agent for generating these suggestions (the prompt and response) might be logged for monitoring or analytics; if these logs contain any intermediate data with potential PII, they must be subject to the PII removal utility detailed in [AI Chat Model and Backend Logic Plan](ai-models-plan.md).
+
+## Data Deletion and Retention
+
+The AI-generated suggestions themselves are typically transient and displayed in the UI. Any temporary storage or caching of these suggestions would follow standard frontend/backend caching practices. Logs of the interactions with the AI agent to generate suggestions will fall under the general chat/AI interaction logging retention policy defined in the `system_flags` table and enforced by the scheduled data retention utility, as outlined in the [AI Chat Model and Backend Logic Plan](ai-models-plan.md).
+
 ## Integration Plan for `app/user/[userId]/worker/page.tsx` and `app/user/[userId]/buyer/page.tsx`
 1. **Export the AI Instance**
    - In `app/lib/firebase/clientApp.ts`, export the `ai` instance.
@@ -129,3 +146,55 @@ USER: {context here}
 
 5. **Extend as Needed**
    - Add support for more context fields, richer suggestions, or multi-turn interactions as your product evolves. 
+
+## Development Progress Checklist
+
+This section tracks the implementation status of the AI Suggestion Banner and related features.
+
+### Completed
+
+-   [x] **AI Suggestion Schema Enhancement:**
+    -   [x] Updated `Suggestion` interface to include `id`, `title`, `description`, and `suggestedActions` (optional array with `text` and `linkKey`).
+    -   [x] Defined `SuggestedAction` interface.
+-   [x] **AI Agent (`suggestionBannerAgent.ts`) Updates:**
+    -   [x] Modified Firebase AI `suggestionSchema` to reflect the new structure.
+    -   [x] Updated AI prompt for generating `id`, `title`, `description`, and `suggestedActions` with `linkKey`s.
+    -   [x] Adjusted `generateSuggestions` return type to `Promise<Suggestion[]>`.
+    -   [x] Ensured fallback logic conforms to the new schema.
+    -   [x] Corrected schema optional field declaration (using `optionalProperties`).
+-   [x] **Custom Hook (`useAiSuggestionBanner.tsx`) Adjustments:**
+    -   [x] Imported `SuggestedAction` interface.
+    -   [x] Ensured default and fetched suggestions map to the full `Suggestion` structure.
+    -   [x] Managed session storage caching and loading of enriched suggestions.
+-   [x] **AI Suggestion Banner Component (`AiSuggestionBanner.tsx`):**
+    -   [x] Updated interfaces to support the new suggestion schema (UI remains description-only for the banner itself).
+-   [x] **AI Chat Page (`app/user/[userId]/able-ai/page.tsx`) Enhancements:**
+    -   [x] Updated interfaces for enriched `Suggestion` and `SuggestedAction`.
+    -   [x] Added UI to display suggestion titles.
+    -   [x] Rendered `suggestedActions` as clickable buttons.
+    -   [x] Implemented initial `handleActionClick` for logging/alerting.
+    -   [x] Implemented routing logic in `handleActionClick` based on `linkKey`s using `router.push()`.
+    -   [x] Defined `linkKeyRoutes` for mapping `linkKey`s to app routes.
+-   [x] **UI Enhancements for Banner:**
+    -   [x] Implemented a skeleton loader with animation for the `isLoading` state in `AiSuggestionBanner.tsx`.
+
+### In Progress
+
+-   [ ] **Chat Input Integration for Suggested Actions:**
+    -   [ ] Implement UI for chat input on the AI Chat Page.
+    -   [ ] Integrate suggested action texts (for actions *without* a `linkKey`) to pre-fill or send messages in the chat.
+-   [ ] **Documentation Updates:**
+    -   [ ] Update technical documentation to reflect the new suggestion schema and usage (this document is part of that).
+    -   [ ] Document the `linkKey` to route mapping and action handling logic.
+
+### To Do
+
+-   [ ] **End-to-End Testing:**
+    -   [ ] Test the entire flow: suggestion generation, caching, banner display, chat page interaction (title, actions), and navigation.
+    -   [ ] Validate loading states, dismissal, refresh, carousel controls, and action button behavior.
+-   [ ] **Refine `linkKeyRoutes`:**
+    -   [ ] Verify and update all placeholder routes in `linkKeyRoutes` in `app/user/[userId]/able-ai/page.tsx` to match actual application paths.
+    -   [ ] Consider and implement handling for role-specific routes if necessary.
+-   [ ] **User Feedback and Iteration:**
+    -   [ ] Gather user feedback on enriched suggestions and the chat page experience.
+    -   [ ] Iterate on UI/UX and AI prompt tuning based on feedback.
