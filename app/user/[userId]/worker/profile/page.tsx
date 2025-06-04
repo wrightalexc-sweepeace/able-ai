@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import styles from "./page.module.css";
 import WorkerProfile from "@/app/components/profile/WorkerProfile";
+import CloseButton from "@/app/components/profile/CloseButton";
 
 // Mock data for QA testing
 const qaMockProfileData = {
@@ -166,59 +167,7 @@ export default function WorkerOwnedProfilePage() {
 
   return (
     <div className={styles.profilePageContainer}>
-      {/* <div className={styles.profileHeaderSection}>
-        <Avatar src={profile.avatarUrl} alt={profile.displayName} size={110} className={styles.avatarLarge} />
-        <div className={styles.headerInfo}>
-          <div className={styles.headerTopRow}>
-            <h1 className={styles.workerName}>{profile.displayName}
-              {profile.isVerified && <BadgeCheck size={20} className={styles.verifiedBadgeWorker} />}
-            </h1>
-            {profile.userHandle && <PillBadge text={profile.userHandle} variant="neutral" className={styles.userHandleBadge} />}
-          </div>
-          <div className={styles.profileHeadline}>{profile.profileHeadline}</div>
-          {profile.location && (
-            <div className={styles.locationInfo}><MapPin size={16} />{profile.location}</div>
-          )}
-          {profile.viewCalendarLink && (
-            <a href={profile.viewCalendarLink} className={styles.viewCalendarLink}>
-              <CalendarDays size={18} className={styles.calendarIcon} />
-              <span>View calendar</span>
-            </a>
-          )}
-        </div>
-        <button className={styles.editProfileButton} onClick={() => router.push(`/user/${userId}/worker/profile/edit`)}>
-          <Pencil size={18} /> Edit Profile
-        </button>
-      </div>
-
-      <div className={styles.mainContentWrapper}>
-        {profile.skills && profile.skills.length > 0 && (
-          <SkillsDisplayTable skills={profile.skills} />
-        )}
-        {profile.qualifications && profile.qualifications.length > 0 && (
-          <ContentCard title="Qualifications:">
-            <ul className={styles.listSimple}>
-              {profile.qualifications.map((q: string, index: number) => (
-                <li key={index}>{q}</li>
-              ))}
-            </ul>
-          </ContentCard>
-        )}
-        {profile.equipment && profile.equipment.length > 0 && (
-          <ContentCard title="Equipment">
-            <div className={styles.equipmentListContainer}>
-              {profile.equipment.map((item: string, index: number) => (
-                <CheckboxDisplayItem key={index} label={item} />
-              ))}
-            </div>
-          </ContentCard>
-        )}
-        {profile.bio && (
-          <ContentCard title="About Me">
-            <p className={styles.bioText}>{profile.bio}</p>
-          </ContentCard>
-        )}
-      </div> */}
+      <CloseButton />
       <WorkerProfile
         workerProfile={profile}
         isSelfView={isSelfView}
