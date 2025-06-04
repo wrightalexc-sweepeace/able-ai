@@ -4,6 +4,7 @@ import { initializeApp, getApps, getApp, type FirebaseApp } from "firebase/app";
 import { getAuth, type Auth } from "firebase/auth";
 import { getFirestore, type Firestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
+import { getAI, getGenerativeModel, GoogleAIBackend } from "firebase/ai";
 
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
@@ -33,5 +34,7 @@ if (!getApps().length) {
 const auth: Auth = getAuth(firebaseApp);
 const db: Firestore = getFirestore(firebaseApp);
 const storage = getStorage(firebaseApp);
+// Initialize the Gemini Developer API backend service
+const ai = getAI(firebaseApp, { backend: new GoogleAIBackend() });
 
-export { firebaseApp, auth, db, storage, firebaseConfig };
+export { firebaseApp, auth, db, storage, firebaseConfig, ai };
