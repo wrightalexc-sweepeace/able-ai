@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, FormEvent } from "react";
 import { useRouter, useParams, usePathname } from "next/navigation";
-import { useAppContext } from "@/app/hooks/useAppContext";
+import { useUser } from '@/app/context/UserContext';
 import { auth as firebaseAuthClient } from "@/app/lib/firebase/clientApp"; // Corrected path
 import {
   updatePassword,
@@ -75,10 +75,10 @@ export default function SettingsPage() {
   const pageUserId = params.userId as string; // userId from the URL
 
   const {
-    isLoading, // Use isLoading from AppContextValue
-    user, // Use user object from AppContextValue
+    user, // Use user object from useUser
+    loading: isLoading, // Use loading from useUser and alias to isLoading
     updateUserContext,
-  } = useAppContext();
+  } = useUser();
 
   const authUserId = user?.uid; // Get user ID from the user object
   const firebaseUser = user; // Alias user as firebaseUser for consistency with original code
@@ -118,19 +118,42 @@ export default function SettingsPage() {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Redirect if not authenticated or if trying to access settings for another user
+  // Authentication, Authorization, and initial context update
   useEffect(() => {
-    if (!isLoading && user?.isAuthenticated) {
-      updateUserContext({
-        lastRoleUsed: user?.lastRoleUsed || "BUYER",
-        lastViewVisited: pathname,
-      });
-      if (authUserId !== pageUserId) {
-        router.replace("/signin");
-      }
+    if (isLoading) {
+      return; // Wait for user context to load
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.isAuthenticated, isLoading]);
+
+    if (!user?.isAuthenticated) {
+      router.push(`/signin?redirect=${encodeURIComponent(pathname)}`);
+      return;
+    }
+
+    // authUserId is already derived from user?.uid at the top
+    if (!authUserId) {
+      // This case should ideally not happen if user.isAuthenticated is true and not loading
+      console.error("User is authenticated but UID is missing. Redirecting to signin.");
+      router.push(`/signin?redirect=${encodeURIComponent(pathname)}`);
+      return;
+    }
+
+    if (authUserId !== pageUserId) {
+      console.warn(`Authorization Mismatch: Authenticated user ${authUserId} attempting to access settings for ${pageUserId}. Redirecting.`);
+      router.push("/signin?error=unauthorized"); // Or a more appropriate page like '/' or '/dashboard'
+      return;
+    }
+
+    // If all checks pass, update context with last visited page and role (if necessary)
+    // This is kept from original logic but ensured to run only for authorized user viewing their own page.
+    updateUserContext({
+      lastRoleUsed: user?.lastRoleUsed || "BUYER", // Default to BUYER if not set
+      lastViewVisited: pathname,
+    }).catch(err => {
+      console.error("Failed to update user context with last visit/role:", err);
+      // Non-critical error, so don't block UI or redirect
+    });
+
+  }, [isLoading, user, authUserId, pageUserId, router, pathname, updateUserContext]);
 
   // Fetch user settings from backend API
   useEffect(() => {
@@ -204,7 +227,7 @@ export default function SettingsPage() {
       // Simulate API call
       await new Promise((res) => setTimeout(res, 1000));
       setSuccessMessage("Profile updated successfully!");
-      // Optionally, update useAppContext or trigger a refetch if name changes often
+      // Optionally, trigger a refetch if name changes often or rely on context update if displayName is part of User object
     } catch (err: any) {
       setError(err.message || "Failed to update profile.");
     } finally {
@@ -351,7 +374,7 @@ export default function SettingsPage() {
       setSuccessMessage("Account deleted successfully. Redirecting...");
       // On success, logout and redirect
       await firebaseSignOut(firebaseAuthClient);
-      await nextAuthSignOut({ redirect: false });
+      await nextAuthSignOut({ redirect: false }); // If using NextAuth
       router.push("/signin"); // Or home page
     } catch (err: any) {
       setError(err.message || "Failed to delete account.");
