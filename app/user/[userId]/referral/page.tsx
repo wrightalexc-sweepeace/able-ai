@@ -3,7 +3,7 @@
 import React, { useState, ChangeEvent, FormEvent, useEffect } from 'react';
 import Image from 'next/image';
 import { useRouter, useParams, usePathname } from 'next/navigation';
-import { useAppContext } from '@/app/hooks/useAppContext'; // Assuming path
+import { useUser } from '@/app/context/UserContext';
 
 // Shared InputField, or use direct styling with .input class
 import InputField from '@/app/components/form/InputField'; // Assuming general input style
@@ -26,7 +26,7 @@ export default function ReferralPage() {
   const pathname = usePathname();
   const pageUserId = params.userId as string;
 
-  const { isLoading: loadingAuth, user, updateUserContext } = useAppContext();
+  const { user, loading: loadingAuth, updateUserContext } = useUser();
 
   const authUserId = user?.uid;
   const [formData, setFormData] = useState<ReferralFormData>({
@@ -41,19 +41,40 @@ export default function ReferralPage() {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Redirect if not authenticated or wrong user
+  // Authentication, Authorization, and initial context update
   useEffect(() => {
-    if (!loadingAuth && user?.isAuthenticated) {
-      updateUserContext({
-        lastRoleUsed: user?.lastRoleUsed || "BUYER",
-        lastViewVisited: pathname,
-      });
-      if (authUserId !== pageUserId) {
-        router.replace("/signin");
-      }
+    if (loadingAuth) {
+      return; // Wait for user context to load
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.isAuthenticated, loadingAuth]);
+
+    if (!user?.isAuthenticated) {
+      router.push(`/signin?redirect=${encodeURIComponent(pathname)}`);
+      return;
+    }
+
+    // authUserId is derived from user?.uid above
+    if (!authUserId) {
+      console.error("User is authenticated but UID is missing. Redirecting to signin.");
+      router.push(`/signin?redirect=${encodeURIComponent(pathname)}`);
+      return;
+    }
+
+    if (authUserId !== pageUserId) {
+      console.warn(`Authorization Mismatch: Authenticated user ${authUserId} attempting to access referral page for ${pageUserId}. Redirecting.`);
+      router.push("/signin?error=unauthorized");
+      return;
+    }
+
+    // If all checks pass, update context with last visited page and role
+    updateUserContext({
+      lastRoleUsed: user?.lastRoleUsed || "BUYER", // Default to BUYER if not set
+      lastViewVisited: pathname,
+    }).catch(err => {
+      console.error("Failed to update user context with last visit/role:", err);
+      // Non-critical error
+    });
+
+  }, [user, loadingAuth, authUserId, pageUserId, router, pathname, updateUserContext]);
 
   const handleChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = event.target;
