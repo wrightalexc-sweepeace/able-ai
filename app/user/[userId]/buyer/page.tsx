@@ -2,7 +2,7 @@
 
 import React, { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { useAppContext } from "@/app/hooks/useAppContext";
+import { useUser } from '@/app/context/UserContext';
 import Link from "next/link";
 import { Toaster } from "sonner";
 import Image from "next/image";
@@ -23,10 +23,11 @@ export default function BuyerDashboardPage() {
   const router = useRouter();
   const pathname = usePathname();
   const {
-    isLoading: loadingAuth,
     user: userPublicProfile,
+    loading: loadingAuth,
     updateUserContext,
-  } = useAppContext();
+    // TODO: Handle authError if necessary
+  } = useUser();
 
   useEffect(() => {
     if (!loadingAuth && userPublicProfile?.isAuthenticated) {
@@ -39,8 +40,7 @@ export default function BuyerDashboardPage() {
         router.replace("/select-role");
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userPublicProfile?.isAuthenticated, loadingAuth]);
+  }, [userPublicProfile?.isAuthenticated, userPublicProfile?.canBeBuyer, userPublicProfile?.isQA, loadingAuth, updateUserContext, pathname, router]);
 
   const uid = userPublicProfile?.uid;
 
@@ -75,9 +75,9 @@ export default function BuyerDashboardPage() {
     {
       label: "Dashboard",
       icon: <LayoutDashboard size={28} />,
-      to: `/user/${uid}/buyer/analytics`,
+      to: `/user/${uid}/buyer/profile`,
     },
-    { label: "Hire", icon: <Users size={28} />, to: "/onboard-buyer" },
+    { label: "Hire", icon: <Users size={28} />, to: `/user/${uid}/buyer/gigs/new`},
     {
       label: "Calendar & Gigs",
       icon: <CalendarDays size={28} />,
