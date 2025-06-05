@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useRef, FormEvent, useMemo } from 'react';
+import React, { useState, useEffect, useRef, FormEvent } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { useAppContext } from '@/app/hooks/useAppContext';
+import { useUser } from '@/app/context/UserContext';
 
 import ChatBotLayout from '@/app/components/onboarding/ChatBotLayout'; // Corrected path
 import MessageBubble from '@/app/components/onboarding/MessageBubble'; // Corrected path
@@ -24,7 +24,7 @@ import ShareLinkBubble from '@/app/components/onboarding/ShareLinkBubble';
 export default function OnboardWorkerPage() {
   const router = useRouter();
   const pathname = usePathname()
-  const { isLoading: loadingAuth, updateUserContext, user } = useAppContext();
+  const { user, loading: loadingAuth, updateUserContext /* TODO: Handle authError if necessary */ } = useUser();
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
   const [onboardingSteps, setOnboardingSteps] = useState<OnboardingStep[]>(baseInitialSteps.map(s => ({...s, isComplete: false})));
@@ -43,7 +43,7 @@ export default function OnboardWorkerPage() {
         router.replace("/select-role");
       }
     }
-  }, [loadingAuth, user?.isAuthenticated]);
+  }, [loadingAuth, user?.isAuthenticated, user?.canBeGigWorker, user?.isQA, updateUserContext, pathname, router]);
 
   useEffect(() => {
     if (user?.isQA) {
@@ -135,65 +135,65 @@ export default function OnboardWorkerPage() {
         const inputElement = document.querySelector(`[name="${currentFocusedInputName}"]`) as HTMLElement;
         inputElement?.focus();
     }
-  }, [chatMessages, currentFocusedInputName, user?.isQA]);
+  }, [chatMessages, user?.isQA, currentFocusedInputName]);
 
-  const handleInputChange = (name: string, value: any) => {
-    if (user?.isQA) return;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
+  // const handleInputChange = (name: string, value: any) => {
+  //   if (user?.isQA) return;
+  //   setFormData(prev => ({ ...prev, [name]: value }));
+  // };
 
-  const handleInputSubmit = (stepId: number, inputName: string) => {
-    if (user?.isQA) return;
-    if (formData[inputName] === undefined || formData[inputName] === '') {
-        const stepBeingSubmitted = onboardingSteps.find(s => s.id === stepId);
-        if (stepBeingSubmitted?.inputType !== 'file' && stepBeingSubmitted?.inputType !== 'date') {
-            return;
-        }
-    }
-
-    const stepIndex = onboardingSteps.findIndex(s => s.id === stepId);
-    if (stepIndex !== -1) {
-      const updatedSteps = [...onboardingSteps];
-      updatedSteps[stepIndex].isComplete = true;
-
-      if (formData[inputName] !== undefined && formData[inputName] !== '') {
-        const userResponseStep: OnboardingStep = {
-          id: Date.now(),
-          type: 'userResponseDisplay',
-          senderType: 'user',
-          content: formData[inputName],
-          dependsOn: stepId,
-          isComplete: true,
-        };
-        let insertAtIndex = -1;
-        for(let i=0; i < updatedSteps.length; i++) {
-            if(updatedSteps[i].id === stepId) {
-                insertAtIndex = i + 1;
-                break;
-            }
-        }
-        if(insertAtIndex !== -1) {
-            updatedSteps.splice(insertAtIndex, 0, userResponseStep);
-        } else {
-            updatedSteps.push(userResponseStep);
-        }
-      }
-      setOnboardingSteps(updatedSteps);
-    }
-    let nextFocus: string | null = null;
-    const currentStepInFlowIndex = onboardingSteps.findIndex(s => s.id === stepId);
-    for (let i = currentStepInFlowIndex + 1; i < onboardingSteps.length; i++) {
-        const nextStepDef = onboardingSteps[i];
-        if ((nextStepDef.type === 'userInput' || nextStepDef.type === 'fileUpload' || nextStepDef.type === 'datePicker') && !nextStepDef.isComplete) {
-            const depStep = onboardingSteps.find(s => s.id === nextStepDef.dependsOn);
-            if ((depStep && depStep.isComplete) || !nextStepDef.dependsOn) {
-                nextFocus = nextStepDef.inputName || null;
-                break;
-            }
-        }
-    }
-    setCurrentFocusedInputName(nextFocus);
-  };
+  // const handleInputSubmit = (stepId: number, inputName: string) => {
+  //   if (user?.isQA) return;
+  //   if (formData[inputName] === undefined || formData[inputName] === '') {
+  //       const stepBeingSubmitted = onboardingSteps.find(s => s.id === stepId);
+  //       if (stepBeingSubmitted?.inputType !== 'file' && stepBeingSubmitted?.inputType !== 'date') {
+  //           return;
+  //       }
+  //   }
+  //
+  //   const stepIndex = onboardingSteps.findIndex(s => s.id === stepId);
+  //   if (stepIndex !== -1) {
+  //     const updatedSteps = [...onboardingSteps];
+  //     updatedSteps[stepIndex].isComplete = true;
+  //
+  //     if (formData[inputName] !== undefined && formData[inputName] !== '') {
+  //       const userResponseStep: OnboardingStep = {
+  //         id: Date.now(),
+  //         type: 'userResponseDisplay',
+  //         senderType: 'user',
+  //         content: formData[inputName],
+  //         dependsOn: stepId,
+  //         isComplete: true,
+  //       };
+  //       let insertAtIndex = -1;
+  //       for(let i=0; i < updatedSteps.length; i++) {
+  //           if(updatedSteps[i].id === stepId) {
+  //               insertAtIndex = i + 1;
+  //               break;
+  //           }
+  //       }
+  //       if(insertAtIndex !== -1) {
+  //           updatedSteps.splice(insertAtIndex, 0, userResponseStep);
+  //       } else {
+  //           updatedSteps.push(userResponseStep);
+  //       }
+  //     }
+  //     setOnboardingSteps(updatedSteps);
+  //   }
+  //   let nextFocus: string | null = null;
+  //   const currentStepInFlowIndex = onboardingSteps.findIndex(s => s.id === stepId);
+  //   for (let i = currentStepInFlowIndex + 1; i < onboardingSteps.length; i++) {
+  //       const nextStepDef = onboardingSteps[i];
+  //       if ((nextStepDef.type === 'userInput' || nextStepDef.type === 'fileUpload' || nextStepDef.type === 'datePicker') && !nextStepDef.isComplete) {
+  //           const depStep = onboardingSteps.find(s => s.id === nextStepDef.dependsOn);
+  //           if ((depStep && depStep.isComplete) || !nextStepDef.dependsOn) {
+  //               nextFocus = nextStepDef.inputName || null;
+  //               break;
+  //           }
+  //       }
+  //   }
+  //   setCurrentFocusedInputName(nextFocus);
+  // };
 
   const handleBookWorker = (name: string, price: number) => {
     if (user?.isQA) return;
@@ -271,16 +271,7 @@ export default function OnboardWorkerPage() {
     setIsSubmitting(false);
   };
 
-  const allInteractiveStepsComplete = useMemo(() => {
-    if (user?.isQA) return true;
-    const interactiveSteps = onboardingSteps.filter(step =>
-        step.type !== 'userResponseDisplay' &&
-        step.type !== 'botMessage' &&
-        step.type !== 'workerCard' && // Worker cards are not "inputs" for completion
-        (step.type === 'userInput' || step.type === 'fileUpload' || step.type === 'datePicker' || step.type === 'discountCode')
-    );
-    return interactiveSteps.every(step => step.isComplete);
-  }, [onboardingSteps, user?.isQA]);
+
 
   const handleCalendarChange = (date: Date | null) => {
     console.log("Selected date:", date);
