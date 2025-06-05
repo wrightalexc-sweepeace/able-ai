@@ -1,8 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { useRouter, useParams } from "next/navigation";
-import { useAppContext } from "@/app/hooks/useAppContext";
+import { useRouter, useParams, usePathname } from "next/navigation";
+import { useUser } from "@/app/context/UserContext";
 import Link from "next/link";
 
 import ChatBotLayout from "@/app/components/onboarding/ChatBotLayout"; // Reusing
@@ -85,7 +85,8 @@ export default function RehirePage() {
   const pageBuyerUserId = params.userId as string;
   const gigId = params.gigId as string;
 
-  const { isLoading: loadingAuth, user, updateUserContext } = useAppContext();
+  const { user, loading: loadingAuth, updateUserContext } = useUser();
+  const pathname = usePathname(); // Added for potential redirect query param
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
   const [originalGigInfo, setOriginalGigInfo] =
@@ -106,23 +107,46 @@ export default function RehirePage() {
     }>
   >([]);
 
-  // Auth check
+  // Auth check, Role check, and Context update
   useEffect(() => {
-    if (!loadingAuth && user?.isAuthenticated) {
-      if (user?.canBeBuyer || user?.isQA) {
-        updateUserContext({
-          lastRoleUsed: "BUYER", // Ensure the context reflects the current role
-          lastViewVisited: `/user/${user.uid}/buyer/gigs/${gigId}/rehire`, // Update last view visited
-        });
-      } else {
-        router.replace("/select-role");
-      }
-      if (user?.uid !== pageBuyerUserId) {
-        router.replace("/signin");
-      }
+    if (loadingAuth) {
+      return; // Wait for user context to load
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.isAuthenticated, loadingAuth]);
+
+    if (!user?.isAuthenticated) {
+      router.push(`/signin?redirect=${encodeURIComponent(pathname)}`);
+      return;
+    }
+
+    const authUserId = user?.uid;
+    if (!authUserId) {
+      console.error("User is authenticated but UID is missing. Redirecting to signin.");
+      router.push(`/signin?redirect=${encodeURIComponent(pathname)}`);
+      return;
+    }
+
+    if (authUserId !== pageBuyerUserId) {
+      console.warn(`Authorization Mismatch: User ${authUserId} trying to access rehire page for buyer ${pageBuyerUserId}. Redirecting.`);
+      router.push("/signin?error=unauthorized");
+      return;
+    }
+
+    if (!(user?.canBeBuyer || user?.isQA)) {
+      console.warn(`Role Mismatch: User ${authUserId} is not a Buyer or QA. Redirecting.`);
+      router.push("/select-role");
+      return;
+    }
+
+    // If all checks pass, update context
+    updateUserContext({
+      lastRoleUsed: "BUYER",
+      lastViewVisited: `/user/${authUserId}/buyer/gigs/${gigId}/rehire`, // Use authUserId here
+    }).catch(err => {
+      console.error("Failed to update user context with last visit/role:", err);
+      // Non-critical error
+    });
+
+  }, [user, loadingAuth, pageBuyerUserId, gigId, router, pathname, updateUserContext]);
 
   // Fetch initial data
   useEffect(() => {
