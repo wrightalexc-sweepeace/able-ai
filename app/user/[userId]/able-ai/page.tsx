@@ -1,8 +1,10 @@
 // app/user/[userId]/able-ai/page.tsx
 'use client';
 
-import { useSearchParams, useRouter } from 'next/navigation';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useUser } from '@/app/context/UserContext';
+import Loader from '@/app/components/shared/Loader';
 
 interface SuggestedAction {
   text: string;
@@ -17,6 +19,9 @@ interface Suggestion {
 }
 
 export default function AIChatPage({ params }: { params: { userId: string } }) {
+  const { user, loading, updateUserContext } = useUser();
+  const router = useRouter();
+  const pathname = usePathname();
   const linkKeyRoutes: { [key: string]: string } = {
     PROFILE_EDIT: `/user/${params.userId}/profile/edit`, // Example: Navigate to profile edit page
     VIEW_OFFERS: `/user/${params.userId}/offers`, // Example: Navigate to offers page (could be worker or buyer specific)
@@ -26,8 +31,27 @@ export default function AIChatPage({ params }: { params: { userId: string } }) {
     // e.g., LEARN_SKILL_PHOTOGRAPHY: `/learn/photography` (if not user-specific)
   };
   const searchParams = useSearchParams();
-  const router = useRouter();
   const [suggestion, setSuggestion] = useState<Suggestion | null>(null);
+
+  const authUserId = user?.uid;
+  const pageUserId = params.userId;
+
+  useEffect(() => {
+    if (!loading) {
+      if (user?.isAuthenticated) {
+        if (authUserId !== pageUserId) {
+          router.replace("/signin");
+          return;
+        }
+        updateUserContext({
+          lastRoleUsed: user.lastRoleUsed, // Preserve existing role or let context handle default
+          lastViewVisited: pathname,
+        });
+      } else {
+        router.replace("/signin");
+      }
+    }
+  }, [user, loading, authUserId, pageUserId, updateUserContext, pathname, router]);
 
   useEffect(() => {
     // Try to get suggestion from URL first
@@ -78,6 +102,10 @@ export default function AIChatPage({ params }: { params: { userId: string } }) {
       alert(`Action: Send '${action.text}' to chat. Chat input to be implemented.`);
     }
   };
+
+  if (loading || !user?.isAuthenticated || (authUserId && authUserId !== pageUserId)) {
+    return <Loader />;
+  }
 
   return (
     <div className="container mx-auto p-4">
