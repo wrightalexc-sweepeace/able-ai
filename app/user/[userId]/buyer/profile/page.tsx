@@ -1,17 +1,20 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { ReactElement, useEffect, useState } from "react";
 import { useRouter, useParams, usePathname } from "next/navigation";
 import { useAppContext } from "@/app/hooks/useAppContext";
 import Image from "next/image";
-import { ThumbsUp, MessageSquareText, Users, Award, Film, Video, Loader2, Sparkles } from "lucide-react";
+import { ThumbsUp, MessageSquareText, Users, Award, Film, Video, Loader2, Sparkles, MessageCircleCode } from "lucide-react";
 import styles from "./BuyerProfilePage.module.css";
+import StatisticItemDisplay from "@/app/components/profile/StatisticItemDisplay";
+import AwardDisplayBadge from "@/app/components/profile/AwardDisplayBadge";
+import ReviewCardItem from "@/app/components/shared/ReviewCardItem";
 
 // Types
 interface Badge {
     id: string;
     name: string;
-    icon?: React.ReactNode;
+    icon: React.ElementType;
 }
 interface Review {
     id: string;
@@ -29,10 +32,11 @@ interface DashboardData {
     businessName: string;
     businessLocation: string;
     userRoleInBusiness: string;
-    stats: {
-        wouldWorkAgainPercent: number;
-        responseRatePercent: number;
-    };
+    statistics: Array<{
+        icon: React.ElementType,
+        value: string,
+        label: string
+    }>
     completedHires: number;
     typesOfStaffHired: string[];
     pieChartData?: Array<{ name: string; value: number; fill: string }>;
@@ -50,7 +54,17 @@ const mockDashboardData: DashboardData = {
     businessName: "Friendship Cafe and Bar",
     businessLocation: "Soho, W1 56T",
     userRoleInBusiness: "Owner, manager",
-    stats: { wouldWorkAgainPercent: 100, responseRatePercent: 100 },
+    statistics: [
+    {
+      icon: ThumbsUp,
+      value: "100%",
+      label: "Would work with Alexandra again"
+    },
+    {
+      icon: MessageCircleCode,
+      value: "100%",
+      label: "Response rate",
+    }],
     completedHires: 150,
     typesOfStaffHired: ["Waiters", "Bartender", "Chef"],
     pieChartData: [
@@ -66,9 +80,9 @@ const mockDashboardData: DashboardData = {
         { name: "Apr", hires: 13, spend: 2000 },
     ],
     badgesEarnedByTheirWorkers: [
-        { id: "b1", name: "Mixology Master Hired", icon: <Award size={24} /> },
-        { id: "b2", name: "Consistent Positive Feedback", icon: <ThumbsUp size={24} /> },
-        { id: "b3", name: "Top Venue Choice", icon: <Sparkles size={24} /> },
+        { id: "b1", name: "Mixology Master Hired", icon: Award },
+        { id: "b2", name: "Consistent Positive Feedback", icon: ThumbsUp },
+        { id: "b3", name: "Top Venue Choice", icon: Sparkles }
     ],
     reviewsFromWorkers: [
         { id: "rw1", workerName: "Benji A.", date: "2023-10-15", reviewText: "Alexander is a great manager, very clear with instructions and fair. Always a pleasure to work for Friendship Cafe!", rating: 5, workerAvatarUrl: "/images/benji.jpeg" },
@@ -76,30 +90,6 @@ const mockDashboardData: DashboardData = {
     ],
 };
 
-interface ReviewCardProps {
-    review: {
-        id: string;
-        author: { name: string; profileImage?: string };
-        rating: number;
-        comment: string;
-        createdAt: string;
-    };
-}
-
-function ReviewCard({ review }: ReviewCardProps) {
-    return (
-        <div style={{ background: "#232323", borderRadius: 8, padding: 16, display: "flex", gap: 12 }}>
-            {review.author?.profileImage && (
-                <Image src={review.author.profileImage} alt={review.author.name} width={40} height={40} style={{ borderRadius: "50%" }} />
-            )}
-            <div>
-                <div style={{ fontWeight: 600, color: "#fff", fontSize: 15 }}>{review.author?.name}</div>
-                <div style={{ color: "#a0a0a0", fontSize: 13 }}>{review.createdAt}</div>
-                <div style={{ marginTop: 6, color: "#e0e0e0", fontSize: 14 }}>{review.comment}</div>
-            </div>
-        </div>
-    );
-}
 
 export default function BuyerProfilePage() {
     const router = useRouter();
@@ -176,7 +166,7 @@ export default function BuyerProfilePage() {
             <div className={styles.pageWrapper}>
                 {/* Profile Header */}
                 <header className={styles.profileHeader}>
-                    <h1 className={styles.profileHeaderName}>{dashboardData.displayName}</h1>
+                    <h3 className={styles.profileHeaderName}>{dashboardData.displayName}</h3>
                     <p className={styles.profileHeaderUsername}>{dashboardData.username}</p>
                 </header>
 
@@ -195,7 +185,8 @@ export default function BuyerProfilePage() {
                                 <Image
                                     src={dashboardData.introVideoThumbnailUrl}
                                     alt="Intro video thumbnail"
-                                    fill
+                                    width ={116}
+                                    height={116}
                                     style={{ objectFit: "cover" }}
                                     className={styles.actualVideoImage}
                                 />
@@ -221,30 +212,22 @@ export default function BuyerProfilePage() {
                 <section className={styles.section}>
                     <h2 className={styles.sectionTitle}>Statistics</h2>
                     <div className={styles.statsGrid}>
-                        <div className={styles.statItemCard}>
-                            <ThumbsUp size={32} className={styles.statIcon} />
-                            <div className={styles.statTextContent}>
-                                <p className={styles.statValue}>{dashboardData.stats.wouldWorkAgainPercent}%</p>
-                                <p className={styles.statLabel}>
-                                    Would work with {dashboardData.displayName.split(" ")[0]} again
-                                </p>
-                            </div>
-                        </div>
-                        <div className={styles.statItemCard}>
-                            <MessageSquareText size={32} className={styles.statIcon} />
-                            <div className={styles.statTextContent}>
-                                <p className={styles.statValue}>{dashboardData.stats.responseRatePercent}%</p>
-                                <p className={styles.statLabel}>Response rate</p>
-                            </div>
-                        </div>
+                        {dashboardData.statistics.map((stat, index) => (
+                            <StatisticItemDisplay 
+                                key={index}
+                                icon={stat.icon}
+                                value={stat.value}
+                                label={stat.label}
+                            />
+                        ))}
                     </div>
                 </section>
 
                 {/* Completed Hires Card */}
                 <div className={styles.completedHiresCard}>
                     <div className={styles.completedHiresCount}>
-                        <span className={styles.completedHiresNumber}>{dashboardData.completedHires}</span>
                         <span className={styles.completedHiresLabel}>Completed Hires</span>
+                        <span className={styles.completedHiresNumber}>{dashboardData.completedHires}</span>
                     </div>
                     <div className={styles.staffTypesList}>
                         <span className={styles.staffTypesTitle}>Types of Staff Hired:</span>
@@ -273,32 +256,30 @@ export default function BuyerProfilePage() {
 
                 {/* Badges Awarded Section */}
                 <section className={styles.section}>
-                    <h2 className={styles.sectionTitle}>Badges Highlights</h2>
+                    <h2 className={styles.sectionTitle}>Badges Awarded</h2>
                     <div className={styles.badgesGridDisplay}>
-                        {dashboardData.badgesEarnedByTheirWorkers.map((badge) => (
-                            <div key={badge.id} className={styles.badgeDisplayItem}>
-                                <span className={styles.badgeDisplayIcon}>{badge.icon || <Award size={20} />}</span>
-                                {badge.name}
-                            </div>
+                        {dashboardData.badgesEarnedByTheirWorkers.map(( award) => (
+                            <AwardDisplayBadge
+                                key={award.id}
+                                icon={award.icon}
+                                textLines={award.name}
+                                color="#eab308"
+                        />
                         ))}
                     </div>
                 </section>
 
                 {/* Worker Reviews Section */}
                 <section className={styles.section}>
-                    <h2 className={styles.sectionTitle}>What Workers Say About You</h2>
+                    <h2 className={styles.sectionTitle}>Worker Reviews</h2>
                     {dashboardData.reviewsFromWorkers.length > 0 ? (
                         <div className={styles.reviewsListContainer}>
-                            {dashboardData.reviewsFromWorkers.slice(0, 2).map((review) => (
-                                <ReviewCard
-                                    key={review.id}
-                                    review={{
-                                        id: review.id,
-                                        author: { name: review.workerName, profileImage: review.workerAvatarUrl },
-                                        rating: review.rating,
-                                        comment: review.reviewText,
-                                        createdAt: review.date,
-                                    }}
+                            {dashboardData.reviewsFromWorkers.slice(0, 2).map((review, index) => (
+                                <ReviewCardItem 
+                                    key={index} 
+                                    reviewerName={review.workerName}
+                                    date={review.date} 
+                                    comment={review.reviewText}
                                 />
                             ))}
                         </div>
@@ -307,10 +288,10 @@ export default function BuyerProfilePage() {
                     )}
                 </section>
 
-                {/* Add Team Member Button */}
+                {/* Add Team Member Button
                 <button onClick={handleAddTeamMember} className={styles.addTeamMemberButton}>
                     <Users size={20} /> Add team member to account
-                </button>
+                </button> */}
             </div>
         </div>
     );
