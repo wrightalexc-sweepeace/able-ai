@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useAppContext } from "@/app/hooks/useAppContext";
+import { useUser } from '@/app/context/UserContext';
 import Logo from "@/app/components/brand/Logo";
 import ActionButton from "./ActionButton";
 import styles from "./SelectRolePage.module.css";
@@ -11,7 +11,7 @@ import { toast } from "sonner";
 
 export default function SelectRolePage() {
   const router = useRouter();
-  const { updateUserContext, isLoading: loadingAuth, user } = useAppContext();
+  const { user, loading: loadingAuth, updateUserContext /* TODO: Handle authError if necessary */ } = useUser();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -78,6 +78,10 @@ export default function SelectRolePage() {
       setIsLoading(false);
     }
   };
+
+  if (isLoading) {
+    return <Loader />;
+  }
   return (
     <div className={styles.container}>
       <div className={styles.card}>
