@@ -31,6 +31,16 @@
   /* Added Buyer Accent Colors */
   --buyer-accent-color: #22d3ee; /* Cyan/Aqua */
   --buyer-accent-darker-color: #06b6d4;
+
+  /* AI Suggestion Banner Specific Colors */
+  --ai-suggestion-banner-background: #2a2a2a;
+  --ai-suggestion-banner-text-secondary: #a0a0a0;
+  --ai-suggestion-banner-error-background: #3a1e1e;
+  --ai-suggestion-banner-button-hover-background: rgba(255, 255, 255, 0.1);
+  --ai-suggestion-banner-nav-button-background: rgba(70, 70, 70, 0.8);
+  --ai-suggestion-banner-nav-button-hover-background: rgba(90, 90, 90, 0.9);
+  --ai-suggestion-banner-skeleton-base: #3f3f3f;
+  --ai-suggestion-banner-skeleton-highlight: #4f4f4f;
 }
 
 @media (prefers-color-scheme: dark) {

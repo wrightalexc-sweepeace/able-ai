@@ -1,6 +1,7 @@
 // app/components/shared/AiSuggestionBanner.tsx
 "use client";
 
+import React, { useCallback } from "react"; // Added useCallback
 import {
   ChevronLeft,
   ChevronRight,
@@ -12,15 +13,15 @@ import { useRouter } from "next/navigation";
 import styles from "./AiSuggestionBanner.module.css";
 
 export interface SuggestedAction {
-  text: string;      // User-facing text for the action, e.g., "Complete your profile"
-  linkKey?: string; // An identifier for a link, e.g., "PROFILE_EDIT", to be mapped to a URL by the frontend
+  text: string;
+  linkKey?: string;
 }
 
 export interface Suggestion {
   id: string;
-  title: string;        // e.g., "Boost Your Profile!"
-  description: string;  // e.g., "Adding more details to your profile can attract more offers."
-  suggestedActions?: SuggestedAction[]; // Array of 1-4 actions, for use in the AI chat page
+  title: string;
+  description: string;
+  suggestedActions?: SuggestedAction[];
 }
 
 interface AiSuggestionBannerProps {
@@ -28,7 +29,7 @@ interface AiSuggestionBannerProps {
   currentIndex: number;
   isLoading: boolean;
   error: string | null;
-  dismissed: boolean; // New prop to control internal visibility
+  dismissed: boolean;
   onDismiss: () => void;
   onRefresh: () => void;
   goToNext: () => void;
@@ -56,23 +57,9 @@ export default function AiSuggestionBanner({
       ? suggestions[currentIndex]
       : null;
 
-  if (dismissed) {
-    return (
-      <div
-        className={`${styles.suggestionBanner} ${styles.suggestionTextContainer} ${className}`}
-      >
-        <p className={styles.dismissedText}>AI suggestions are hidden.</p>
-        <button onClick={onRefresh}>
-          Show Ideas
-        </button>
-      </div>
-    );
-  }
-
-  const handleSuggestionInteraction = () => {
+  const handleSuggestionInteraction = useCallback(() => {
     if (!userId || !currentSuggestion) return;
 
-    // Save the current suggestion to localStorage for the chat page to pick up
     const suggestionWithTimestamp = {
       ...currentSuggestion,
       timestamp: new Date().toISOString(),
@@ -82,12 +69,50 @@ export default function AiSuggestionBanner({
       JSON.stringify(suggestionWithTimestamp)
     );
 
-    // Navigate to the AI chat page with the suggestion as a URL parameter
     const encodedSuggestion = encodeURIComponent(
       JSON.stringify(suggestionWithTimestamp)
     );
     router.push(`/user/${userId}/able-ai?suggestion=${encodedSuggestion}`);
-  };
+  }, [userId, currentSuggestion, router]);
+
+  const handleKeyDown = useCallback(
+    (event: React.KeyboardEvent<HTMLDivElement>) => {
+      if (event.key === "Enter" || event.key === " ") {
+        handleSuggestionInteraction();
+      }
+    },
+    [handleSuggestionInteraction]
+  );
+
+  const handleGoToPrev = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      e.stopPropagation();
+      goToPrev();
+    },
+    [goToPrev]
+  );
+
+  const handleGoToNext = useCallback(
+    (e: React.MouseEvent<HTMLButtonElement>) => {
+      e.stopPropagation();
+      goToNext();
+    },
+    [goToNext]
+  );
+
+  if (dismissed) {
+    return (
+      <div
+        className={`${styles.suggestionBanner} ${styles.suggestionTextContainer} ${className}`}
+      >
+        <p className={styles.dismissedText}>AI suggestions are hidden.</p>
+        {/* Ensure onRefresh is memoized if coming from props, or if defined in parent, it should be stable */}
+        <button onClick={onRefresh}>
+          Show Ideas
+        </button>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
@@ -106,8 +131,8 @@ export default function AiSuggestionBanner({
       >
         Error: {error}
         <button
-          onClick={onRefresh}
-          className={styles.controlButton}
+          onClick={onRefresh} // Ensure onRefresh is memoized if coming from props
+          className={styles.refreshButtonIcon}
           aria-label="Refresh suggestions"
         >
           <RefreshCw size={18} />
@@ -120,13 +145,6 @@ export default function AiSuggestionBanner({
     return null;
   }
 
-  const handleKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === "Enter" || event.key === " ") {
-      handleSuggestionInteraction();
-    }
-  };
-
-  // Main banner content when not dismissed
   return (
     <div
       className={`${styles.suggestionBanner} ${className}`}
@@ -136,9 +154,9 @@ export default function AiSuggestionBanner({
       <div className={styles.topRowContainer}>
         <div
           className={styles.suggestionTextContainer}
-          onClick={handleSuggestionInteraction} // Keep this if clicking text also initiates chat
-          onKeyDown={handleKeyDown} // Keep this if text is focusable for chat
-          role="button" // Role and tabIndex if text itself is interactive for chat
+          onClick={handleSuggestionInteraction}
+          onKeyDown={handleKeyDown}
+          role="button"
           tabIndex={0}
           aria-live="polite"
         >
@@ -150,16 +168,16 @@ export default function AiSuggestionBanner({
 
       <div className={styles.bottomControlsContainer}>
         <button
-          onClick={onDismiss}
-          className={`${styles.controlButton} ${styles.dismissButton}`}
+          onClick={onDismiss} // Ensure onDismiss is memoized if coming from props
+          className={styles.dismissButton}
           aria-label="Dismiss suggestions"
         >
           <X size={18} />
         </button>
 
         <button
-          onClick={onRefresh}
-          className={`${styles.controlButton} ${styles.refreshButtonIcon}`}
+          onClick={onRefresh} // Ensure onRefresh is memoized if coming from props
+          className={styles.refreshButtonIcon}
           aria-label="Refresh suggestions"
         >
           <RefreshCw size={18} />
@@ -168,10 +186,7 @@ export default function AiSuggestionBanner({
         {suggestions.length > 1 && (
           <div className={styles.inlineCarouselControls}>
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                goToPrev();
-              }}
+              onClick={handleGoToPrev}
               className={styles.navButton}
               aria-label="Previous suggestion"
             >
@@ -186,10 +201,7 @@ export default function AiSuggestionBanner({
               {currentIndex + 1} / {suggestions.length}
             </span>
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                goToNext();
-              }}
+              onClick={handleGoToNext}
               className={styles.navButton}
               aria-label="Next suggestion"
             >
@@ -200,11 +212,10 @@ export default function AiSuggestionBanner({
 
         <button
           onClick={handleSuggestionInteraction}
-          className={`${styles.controlButton} ${styles.chatButton}`}
+          className={styles.chatButton}
           aria-label="Chat about this suggestion"
         >
           <MessageSquare size={40} />{" "}
-          {/* Potentially larger icon for oversized button */}
         </button>
       </div>
     </div>

@@ -1,12 +1,14 @@
 /* app/components/shared/AiSuggestionBanner.module.css */
+/* CSS Variables are now defined in app/globals.css */
+
 .suggestionBanner {
   display: flex;
   flex-direction: column; /* Stack top row and bottom controls */
 }
 
 .suggestionBanner.error {
-  background-color: #3a1e1e; /* Darker red for error */
-  border-left: 3px solid #e53e3e; /* Red accent for error */
+  background-color: var(--ai-suggestion-banner-error-background);
+  border-left: 3px solid var(--error-color);
 }
 
 .suggestionHeader {
@@ -17,18 +19,15 @@
 }
 
 .suggestionTextContainer {
-  background-color: #2a2a2a;
-  color: #e0e0e0;
+  background-color: var(--ai-suggestion-banner-background);
+  color: var(--text-primary-light);
   padding: 0.5rem;
   border-radius: 0.5rem;
   flex-grow: 1; /* Allow text to take available space */
   min-width: 0; /* Prevents flex item from overflowing */
 }
 
-.suggestionContent { /* This class might be redundant now or could wrap suggestionTextContainer if needed */
-  flex: 1;
-  min-width: 0;
-}
+/* .suggestionContent class removed as it was deemed redundant */
 
 .suggestionIconContainer {
   display: flex;
@@ -38,14 +37,14 @@
 }
 
 .suggestionIcon {
-  color: var(--primary-color, #4f46e5); /* Use primary color variable */
+  color: var(--primary-color);
 }
 
 .suggestionTitle {
   font-weight: 600;
   font-size: 0.9rem; /* Slightly smaller title */
   margin: 0 0 0.25rem 0; /* Add some bottom margin if title is kept */
-  color: #ffffff;
+  color: var(--text-white);
   line-height: 1.3;
 }
 
@@ -53,43 +52,43 @@
   font-size: 0.9rem;
   line-height: 1.5;
   margin: 0; /* Removed margin-right */
-  color: #e0e0e0;
+  color: var(--text-primary-light);
 }
 
 .suggestionText {
   font-size: 0.8rem; /* Slightly smaller text */
   line-height: 1.4;
   margin: 0;
-  opacity: 0.85;
+  opacity: 0.85; /* Consider if this should be a variable or if text color should be slightly different */
 }
 
-/* .controls and .actionButtons are likely redundant now and can be removed */
+/* Comments regarding .controls and .actionButtons removed */
 
+/* Base styles for .navButton (carousel) and .closeButton (banner close) */
 .navButton,
-.closeButton,
-.chatButton {
+.closeButton {
   background: none;
   border: none;
-  color: #a0a0a0;
+  color: var(--ai-suggestion-banner-text-secondary);
   cursor: pointer;
-  padding: 0.35rem; /* Slightly increased padding */
+  padding: 0.35rem;
   border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  transition: color 0.2s ease, background-color 0.2s ease;
 }
 
 .navButton:hover,
-.closeButton:hover,
-.chatButton:hover {
-  color: #ffffff;
-  background-color: rgba(255, 255, 255, 0.1);
+.closeButton:hover {
+  color: var(--text-white);
+  background-color: var(--ai-suggestion-banner-button-hover-background);
 }
 
+/* Specific .chatButton styles */
 .chatButton {
-  background-color: #ffffff; /* White background */
-  color: #2a2a2a; /* Dark icon for contrast */
+  background-color: var(--background);
+  color: var(--foreground);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -98,66 +97,43 @@
   cursor: pointer;
   transition: box-shadow 0.2s ease;
   flex-shrink: 0; /* Prevent shrinking */
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2); /* Consider variables for shadow if used elsewhere */
   transform: translateY(-25%) translateX(50%);
+  padding: .25rem;
 }
 
 .chatButton:hover {
-  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3); /* Consider variables for shadow if used elsewhere */
 }
 
-.chatButtonCorner {
-  background: none;
-  border: none;
-  color: #a0a0a0;
-  cursor: pointer;
-  padding: 0.35rem;
-  border-radius: 50%; /* Make it circular like the image */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  position: absolute;
-  top: 50%;
-  right: 0.5rem;
-  transform: translateY(-50%);
-  background-color: rgba(255, 255, 255, 0.1); /* Slight background for visibility */
-}
-
-/* .chatButtonCorner and its hover are removed as it's no longer used */
 
 .counter {
   font-size: 0.75rem;
-  color: #a0a0a0;
+  color: var(--ai-suggestion-banner-text-secondary);
   min-width: 2.25rem; /* Adjusted min-width */
   text-align: center;
 }
 
+/* Styles for the text-based refresh button, if distinct from refreshButtonIcon */
 .refreshButton {
   background: none;
-  border: 1px solid currentColor;
-  color: currentColor;
+  border: 1px solid currentColor; /* Uses current text color for border */
+  color: var(--ai-suggestion-banner-text-secondary); /* Explicitly set color */
   cursor: pointer;
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
   margin-left: 0.5rem;
-  font-size: 0.8rem; /* Slightly smaller refresh button text */
+  font-size: 0.8rem;
 }
 
 .refreshButton:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-.suggestionContent:active {
-  transform: scale(0.99);
-  opacity: 0.9;
+  color: var(--text-white);
+  background-color: var(--ai-suggestion-banner-button-hover-background);
 }
 
 .suggestionBanner:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Consider variables for shadow */
 }
-
-/* .allControlsContainer is removed as it's no longer used */
 
 .topRowContainer {
   display: flex;
@@ -172,7 +148,7 @@
   align-items: center;
   gap: 0.75rem; /* Spacing between dismiss, refresh, and carousel */
   width: 100%; /* Take full width to align controls */
-  justify-content: space-between; /* Align controls to the left under text, or 'center' */
+  justify-content: space-between;
 }
 
 .inlineCarouselControls {
@@ -181,39 +157,42 @@
   gap: 0.25rem; /* Tighter spacing for prev/counter/next */
 }
 
-.navButton {
-  background-color: rgba(70, 70, 70, 0.8);
-  border: none;
-  color: #a0a0a0;
-  cursor: pointer;
-  padding: 0.35rem;
-  border-radius: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: color 0.2s ease, background-color 0.2s ease;
+/* Specific styling for .navButton when inside .inlineCarouselControls */
+.inlineCarouselControls .navButton {
+  background-color: var(--ai-suggestion-banner-nav-button-background);
+  /* Other properties like padding, border-radius, display, align, justify, transition are inherited or set here if different */
 }
-.navButton:hover {
-  color: #ffffff;
-  background-color: rgba(255, 255, 255, 0.05);
+
+.inlineCarouselControls .navButton:hover {
+  background-color: var(--ai-suggestion-banner-nav-button-hover-background);
+  /* color is inherited from .navButton:hover */
 }
 
 /* Skeleton Loader Styles */
 .skeletonBanner {
-  background-color: #2a2a2a; /* Match banner background */
-  padding: 0.75rem 1rem; /* Match banner padding */
-  border-radius: 0.5rem; /* Match banner border-radius */
+  background-color: var(--ai-suggestion-banner-background);
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem; /* Space between skeleton lines */
+  gap: 0.5rem;
 }
 
 .skeletonLine {
-  background-color: #3f3f3f; /* Darker grey for skeleton lines */
+  background-color: var(--ai-suggestion-banner-skeleton-base);
   border-radius: 4px;
-  height: 1em; /* Base height on font size */
+  height: 1em;
   animation: shimmer 1.5s infinite linear;
   opacity: 0.7;
+  background-image: linear-gradient(
+    to right,
+    var(--ai-suggestion-banner-skeleton-base) 0%,
+    var(--ai-suggestion-banner-skeleton-highlight) 20%,
+    var(--ai-suggestion-banner-skeleton-base) 40%,
+    var(--ai-suggestion-banner-skeleton-base) 100%
+  );
+  background-repeat: no-repeat;
+  background-size: 2000px 100%;
 }
 
 .skeletonLineShort {
@@ -233,44 +212,23 @@
   }
 }
 
-/* Apply shimmer effect via background gradient */
-.skeletonLine {
-  background-image: linear-gradient(
-    to right,
-    #3f3f3f 0%,
-    #4f4f4f 20%,
-    #3f3f3f 40%,
-    #3f3f3f 100%
-  );
-  background-repeat: no-repeat;
-  background-size: 2000px 100%; /* Large enough to cover the animation distance */
-}
-
-
-.dismissButton, .refreshButtonIcon {
-  background-color: rgba(70, 70, 70, 0.8); /* Light square background from image */
+/* Icon buttons: .dismissButton and .refreshButtonIcon */
+.dismissButton,
+.refreshButtonIcon {
+  background-color: var(--ai-suggestion-banner-nav-button-background);
   border-radius: 4px;
   padding: 0.4rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #e0e0e0;
+  color: var(--text-primary-light);
   border: none;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.dismissButton:hover, .refreshButtonIcon:hover {
-  background-color: rgba(90, 90, 90, 0.9);
-  color: #ffffff;
-}
-
-/* Remove old .bannerControls if not used, or adapt if it's the parent of dismiss/refresh */ 
-/* For now, assuming dismissButton and refreshButtonIcon are styled directly */
-.bannerControls {
-  /* This class is likely redundant. Styles for dismiss/refresh are on .dismissButton and .refreshButtonIcon */
-  /* If it's still used in JSX as a wrapper for dismiss/refresh, it can be simplified or removed */
-  display: flex;
-  align-items: center;
-  gap: 0.25rem; 
+.dismissButton:hover,
+.refreshButtonIcon:hover {
+  background-color: var(--ai-suggestion-banner-nav-button-hover-background);
+  color: var(--text-white);
 }
