@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef, FormEvent, useMemo } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { useAppContext } from "@/app/hooks/useAppContext";
+import { useUser } from '@/app/context/UserContext';
 
 import ChatBotLayout from "@/app/components/onboarding/ChatBotLayout";
 import MessageBubble from "@/app/components/onboarding/MessageBubble";
@@ -173,7 +173,7 @@ const baseInitialSteps: OnboardingStep[] = [
 export default function OnboardBuyerPage() {
   const pathname = usePathname();
   const router = useRouter();
-  const { isLoading: loadingAuth, user, updateUserContext } = useAppContext();
+  const { user, loading: loadingAuth, updateUserContext /* TODO: Handle authError if necessary */ } = useUser();
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
   const isQA = !!user?.isQA;
