@@ -2,7 +2,7 @@
 
 import React, { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { useAppContext } from "@/app/hooks/useAppContext";
+import { useUser } from '@/app/context/UserContext';
 import Link from "next/link";
 
 // Import shared components
@@ -41,10 +41,11 @@ export default function WorkerDashboardPage() {
   const router = useRouter();
   const pathname = usePathname();
   const {
-    isLoading: loadingAuth,
     user: userPublicProfile,
+    loading: loadingAuth,
     updateUserContext,
-  } = useAppContext();
+    // TODO: Handle authError if necessary
+  } = useUser();
 
   useEffect(() => {
     if (!loadingAuth && userPublicProfile?.isAuthenticated) {
@@ -57,8 +58,7 @@ export default function WorkerDashboardPage() {
         router.replace("/select-role");
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userPublicProfile?.isAuthenticated, loadingAuth]);
+  }, [userPublicProfile?.isAuthenticated, userPublicProfile?.canBeGigWorker, userPublicProfile?.isQA, loadingAuth, updateUserContext, pathname, router]);
 
   const uid = userPublicProfile?.uid;
 
