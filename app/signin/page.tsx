@@ -4,14 +4,14 @@ import { useEffect, useState } from "react";
 import { useRouter } from 'next/navigation';
 import { Toaster, toast } from 'sonner';
 import Logo from "@/app/components/brand/Logo";
-import { useAppContext } from '@/app/hooks/useAppContext';
+import { useUser } from '@/app/context/UserContext';
 import styles from "./SignInPage.module.css";
 import SignInView from "@/app/signin/SignInView";
 import RegisterView from "@/app/signin/RegisterView";
 
 export default function SignInPage() {
   const router = useRouter();
-  const { isLoading: loadingAuth, user } = useAppContext();
+  const { user, loading: loadingAuth /* TODO: Handle authError if necessary */ } = useUser();
   const [isRegistering, setIsRegistering] = useState(false);
   const [error, setError] = useState<React.ReactNode | null>(null);
 
