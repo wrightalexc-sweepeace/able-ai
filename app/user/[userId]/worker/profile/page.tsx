@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { useRouter, useParams, usePathname } from "next/navigation";
-import { useAppContext } from "@/app/hooks/useAppContext";
+import { useUser } from "@/app/context/UserContext";
 import {
   // BadgeCheck,
   // CalendarDays,
@@ -93,7 +93,7 @@ export default function WorkerOwnedProfilePage() {
   const pathname = usePathname();
   const userId = params.userId as string;
 
-  const { isLoading: loadingAuth, user, updateUserContext } = useAppContext();
+  const { user, loading: loadingAuth, updateUserContext } = useUser();
 
   const [profile, setProfile] = useState<any>(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
@@ -114,42 +114,54 @@ export default function WorkerOwnedProfilePage() {
   };
 
   useEffect(() => {
-    if (!loadingAuth && user?.isAuthenticated) {
-      if (user?.canBeBuyer || user?.isQA) {
-        updateUserContext({
-          lastRoleUsed: "GIG_WORKER",
-          lastViewVisited: pathname,
-        });
-      } else {
-        router.replace("/select-role");
-      }
+    if (loadingAuth) {
+      return; // Wait for user context to load
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loadingAuth, user?.isAuthenticated]);
+
+    if (!user || !user.isAuthenticated) {
+      router.replace(`/signin?redirect=${pathname}`);
+      return;
+    }
+
+    if (user.uid !== userId) {
+      router.replace('/signin?error=unauthorized'); // Or a more appropriate unauthorized page
+      return;
+    }
+
+    if (user.canBeGigWorker || user.isQA) {
+      updateUserContext({
+        lastRoleUsed: "GIG_WORKER",
+        lastViewVisited: pathname,
+      });
+
+      setLoadingProfile(true);
+      fetchWorkerOwnedProfile(userId, !!user.isQA)
+        .then((data) => {
+          setProfile(data);
+          setError(null);
+        })
+        .catch((err) => {
+          console.error("Failed to fetch worker profile:", err);
+          setError("Could not load your profile.");
+        })
+        .finally(() => setLoadingProfile(false));
+    } else {
+      router.replace("/select-role");
+    }
+  }, [loadingAuth, user, userId, pathname, router, updateUserContext]);
 
   const handleSkillDetails = (name: string) => {
     return router.push(`/user/${userId}/worker/profile/skills/${name}`);
   }
 
-
-  useEffect(() => {
-    if (userId) {
-      setLoadingProfile(true);
-      // Pass the isViewQA flag to the fetch function
-      fetchWorkerOwnedProfile(userId, !!user?.isQA)
-        .then((data) => setProfile(data))
-        .catch(() => setError("Could not load your profile."))
-        .finally(() => setLoadingProfile(false));
-    }
-  }, [userId, user?.isQA]);
-
-  // if (isLoading || loadingProfile) {
-  //   return (
-  //     <div className={styles.pageLoadingContainer}>
-  //       <Loader2 className="animate-spin" size={48} /> Loading Profile...
-  //     </div>
-  //   );
-  // }
+  if (loadingAuth || loadingProfile) {
+    return (
+      <div className={styles.pageLoadingContainer}>
+        {/* Using a generic Loader2 for now, ensure it's imported or replace with appropriate loader */}
+        <UserCircle className="animate-spin" size={48} /> Loading Profile...
+      </div>
+    );
+  }
   if (error) {
     return (
       <div className={styles.pageWrapper}>
