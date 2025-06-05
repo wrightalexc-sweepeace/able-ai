@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useRouter, usePathname } from "next/navigation";
-import { useAppContext } from "@/app/hooks/useAppContext";
+import React, { useState, useEffect, useMemo } from "react";
+import { useRouter, usePathname, useParams } from "next/navigation";
+import { useUser } from '@/app/context/UserContext';
 import AppCalendar from "@/app/components/shared/AppCalendar";
 import CalendarHeader from "@/app/components/shared/CalendarHeader";
 import CalendarEventComponent from "@/app/components/shared/CalendarEventComponent";
@@ -62,9 +62,12 @@ const MOCK_EVENTS: CalendarEvent[] = [
 const BuyerCalendarPage = () => {
   const pathname = usePathname();
   const router = useRouter();
-  const { isLoading: loadingAuth, user, updateUserContext } = useAppContext();
+  const params = useParams();
+  const pageUserId = params.userId as string;
+  const { user, loading: loadingAuth, updateUserContext } = useUser();
+  const authUserId = user?.uid;
   // Real events would be fetched or passed in here
-  const realEvents: CalendarEvent[] = [];
+  const realEvents: CalendarEvent[] = useMemo(() => [], []);
 
   // Set default view based on screen size
   const [view, setView] = useState<View>(() => {
@@ -78,15 +81,29 @@ const BuyerCalendarPage = () => {
   const [events, setEvents] = useState<CalendarEvent[]>(realEvents);
 
   useEffect(() => {
-    if (!loadingAuth && user?.isAuthenticated) {
+    if (loadingAuth) {
+      return; // Wait for user data to load
+    }
+
+    if (!user || !user.isAuthenticated) {
+      router.push(`/signin?redirect=${pathname}`);
+      return;
+    }
+
+    if (authUserId !== pageUserId) {
+      router.push(`/signin?error=unauthorized`); // Or user's own profile, or a generic error page
+      return;
+    }
+
+    // At this point, user is authenticated and authorized for this pageUserId
+    if (user?.isAuthenticated) { // This check is somewhat redundant due to above, but keeps structure similar
       if (user?.canBeBuyer || user?.isQA) {
         updateUserContext({ lastRoleUsed: "BUYER", lastViewVisited: pathname });
       } else {
         router.replace("/select-role");
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loadingAuth, user?.isAuthenticated]);
+  }, [loadingAuth, user, authUserId, pageUserId, updateUserContext, pathname, router]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -96,7 +113,7 @@ const BuyerCalendarPage = () => {
         setView("day");
       }
     }
-  }, []);
+  }, [user?.isQA, realEvents]);
 
   // Calendar navigation handler
   const handleNavigate = (action: "TODAY" | "PREV" | "NEXT") => {
