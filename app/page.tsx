@@ -2,42 +2,33 @@
 import Image from "next/image";
 import { Toaster } from 'sonner'
 import styles from "./page.module.css";
-import { useEffect, useState } from "react";
-import { auth } from "./lib/firebase/clientApp";
+import { useState } from "react";
 import Link from "next/link";
-import { useFirebaseAuth } from "./hooks/useFirebaseAuth";
+import { useUser } from "./context/UserContext";
 
 export default function Home() {
-  const { user, signOut } = useFirebaseAuth();
-  const [isProjectInfoOpen, setIsProjectInfoOpen] = useState(false);
-  const [isViewQA, setIsViewQAState] = useState<boolean>(false); // State to track isViewQA
-
-  // Effect to read initial isViewQA value from localStorage
-  useEffect(() => {
-    try {
-      const storedValue = localStorage.getItem('isViewQA');
-      setIsViewQAState(storedValue === 'true');
-    } catch (error) {
-      console.error('Error reading isViewQA from localStorage:', error);
-    }
-  }, []); 
+  const { user, loading, error, signOutUser, refetchUser } = useUser();
+  const [isProjectInfoOpen, setIsProjectInfoOpen] = useState(false); 
 
   const handleSignOut = async () => {
     try {
-      await signOut(auth);
+      await signOutUser();
     } catch (error) {
-      console.error("Error signing out:", error);
+      // Error is already logged in signOutUser, but can add more handling here if needed
+      console.error("Error during sign out process on page:", error);
     }
   };
 
-const toggleIsViewQA = () => {
+const toggleIsViewQA = async () => {
   try {
-    const newValue = !isViewQA;
-    localStorage.setItem('isViewQA', String(newValue));
-    setIsViewQAState(newValue); // Update component state
+    const currentIsQA = user?.isQA ?? false;
+    const newIsQA = !currentIsQA;
+    localStorage.setItem('isViewQA', String(newIsQA));
+    if (refetchUser) {
+      await refetchUser(); // Refetch user data to update context
+    }
   } catch (error) {
-    console.error('Error toggling isViewQA in localStorage:', error);
-    // Optionally, provide user feedback
+    console.error('Error toggling isViewQA and refetching user:', error);
   }
 };
   return (
@@ -68,9 +59,22 @@ const toggleIsViewQA = () => {
 
         <section className={styles.userSection}>
           <h2>User Status</h2>
-          {user ? (
-            <div className={styles.userInfo}>
-              <p>Logged in as: {user.email}</p>
+          {loading && <p>Loading user context...</p>}
+          {error && <p>Error loading context: {error.message}</p>}
+          {user && (
+            <div>
+              <p>User Email: {user.email}</p>
+              <p>App Role: {user.appRole}</p>
+              <p>Last Role Used: {user.lastRoleUsed}</p>
+              <p>Is Buyer Mode: {String(user.isBuyerMode)}</p>
+              <p>Is Worker Mode: {String(user.isWorkerMode)}</p>
+              <p>Is Authenticated: {String(user.isAuthenticated)}</p>
+              <p>Is QA Mode: {String(user.isQA)}</p> {/* Added isQA display */}
+            </div>
+          )}
+          {/* User Actions moved into the same section */}
+          {user && user.isAuthenticated ? (
+            <div className={styles.userInfo_actions}> {/* Changed className for potential styling adjustments */}
               <div className={styles.userActions}>
                 <Link href="/select-role" className={styles.primary}>
                   Select Role
@@ -253,7 +257,7 @@ const toggleIsViewQA = () => {
             Clear Local Storage Role
           </button>
           <button onClick={() => toggleIsViewQA()} className={styles.secondary}>
-            Toggle isViewQA (currently {String(isViewQA)})
+            Toggle isViewQA (currently {String(user?.isQA ?? false)})
           </button>
         </section>
       </main>
