@@ -3,7 +3,7 @@ import styles from './AwardDisplayBadge.module.css';
 
 interface AwardDisplayBadgeProps {
   icon: React.ElementType;
-  textLines: string[];
+  textLines: string;
   color?: string;
   border?: string;
 }
@@ -13,11 +13,9 @@ const AwardDisplayBadge: React.FC<AwardDisplayBadgeProps> = ({ icon: Icon, textL
     <div className={styles.awardBadge} style={{ border: `${border}` }}>
       <Icon size={28} className={styles.awardIcon} color= {color} strokeWidth = '3' />
       <div className={styles.awardTextContainer}>
-        {textLines.map((line, index) => (
-          <span key={index} className={styles.awardTextLine}>
-            {line}
+          <span className={styles.awardTextLine}>
+            {textLines}
           </span>
-        ))}
       </div>
     </div>
   );
