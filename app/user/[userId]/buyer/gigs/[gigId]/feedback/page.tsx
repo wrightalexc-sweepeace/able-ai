@@ -1,18 +1,16 @@
 "use client";
 
 import React, { useState, useEffect, FormEvent, ChangeEvent } from "react";
-import { useRouter, useParams } from "next/navigation";
-import { useAppContext } from "@/app/hooks/useAppContext";
+import { useRouter, useParams, usePathname } from "next/navigation";
+import { useUser } from "@/app/context/UserContext";
 import Image from "next/image";
 
 import {
   ArrowLeft,
-  ThumbsUp,
   Send,
   Info,
   Loader2,
   UserCircle,
-  MessageSquare,
   CheckCircle,
   XCircle,
 } from "lucide-react";
@@ -63,10 +61,12 @@ async function fetchGigForBuyerFeedback(
 export default function BuyerFeedbackPage() {
   const router = useRouter();
   const params = useParams();
+  const pathname = usePathname(); // Added pathname
   const pageUserId = params.userId as string;
   const gigId = params.gigId as string;
 
-  const { isLoading: loadingAuth, user, updateUserContext } = useAppContext();
+  const { user, loading: loadingAuth, updateUserContext } = useUser();
+  const authUserId = user?.uid;
 
   const [gigData, setGigData] = useState<GigDataForBuyerFeedback | null>(null);
   const [isLoadingGig, setIsLoadingGig] = useState(true);
@@ -81,26 +81,56 @@ export default function BuyerFeedbackPage() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!loadingAuth && user?.isAuthenticated) {
-      if (user?.canBeBuyer || user?.isQA) {
-        updateUserContext({
-          lastRoleUsed: "BUYER", // Ensure the context reflects the current role
-          lastViewVisited: `/user/${user.uid}/buyer/gigs/${gigId}/rehire`, // Update last view visited
-        });
-      } else {
-        router.replace("/select-role");
-      }
-      if (user?.uid !== pageUserId) {
-        router.replace("/signin");
-      }
+    if (loadingAuth) {
+      return;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.isAuthenticated, loadingAuth]);
+
+    if (!user?.isAuthenticated) {
+      router.push(`/signin?redirect=${encodeURIComponent(pathname)}`);
+      return;
+    }
+
+    // authUserId is derived from user?.uid above
+    if (!authUserId) {
+      console.error("User is authenticated but UID is missing. Redirecting to signin.");
+      router.push(`/signin?redirect=${encodeURIComponent(pathname)}`);
+      return;
+    }
+
+    if (authUserId !== pageUserId) {
+      console.warn(`Authorization Mismatch: User ${authUserId} trying to access feedback page for user ${pageUserId}. Redirecting.`);
+      router.push("/signin?error=unauthorized");
+      return;
+    }
+
+    if (!(user?.canBeBuyer || user?.isQA)) {
+      console.warn(`Role Mismatch: User ${authUserId} is not a Buyer or QA. Redirecting.`);
+      router.push("/select-role");
+      return;
+    }
+
+    // If all checks pass, update context
+    updateUserContext({
+      lastRoleUsed: "BUYER",
+      lastViewVisited: pathname, // Use current pathname
+    }).catch(err => {
+      console.error("Failed to update user context with last visit/role:", err);
+      // Non-critical error
+    });
+
+  }, [user, loadingAuth, authUserId, pageUserId, gigId, router, pathname, updateUserContext]);
 
   useEffect(() => {
-    if (user?.isAuthenticated && user?.uid && gigId) {
+    // Fetch data only if user is loaded, authenticated, and authorized (or is QA)
+    if (loadingAuth) return;
+
+    const shouldFetch = (user?.isQA && gigId) || 
+                        (user?.isAuthenticated && authUserId === pageUserId && gigId);
+
+    if (shouldFetch) {
       setIsLoadingGig(true);
-      fetchGigForBuyerFeedback(user.uid, gigId)
+      // Use authUserId which is confirmed to be user.uid if user is authenticated
+      fetchGigForBuyerFeedback(authUserId!, gigId) // authUserId will be defined if isAuthenticated is true
         .then((data) => {
           if (data) {
             setGigData(data);
@@ -116,7 +146,7 @@ export default function BuyerFeedbackPage() {
         })
         .finally(() => setIsLoadingGig(false));
     }
-  }, [user?.isAuthenticated, user?.uid, gigId]);
+  }, [user, loadingAuth, authUserId, pageUserId, gigId]);
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -164,9 +194,9 @@ export default function BuyerFeedbackPage() {
     }
   };
 
-  //   if (isLoading || isLoadingGig) {
-  //     return <div className={styles.loadingContainer}><Loader2 className="animate-spin" size={32} /> Loading...</div>;
-  //   }
+  if (loadingAuth || isLoadingGig) {
+    return <div className={styles.loadingContainer}><Loader2 className="animate-spin" size={32} /> Loading...</div>;
+  }
   if (
     error &&
     (!gigData || !user?.isAuthenticated || !user?.isBuyerMode) &&

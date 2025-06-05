@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, useParams, usePathname } from 'next/navigation';
-import { useAppContext } from '@/app/hooks/useAppContext';
+import { useUser } from '@/app/context/UserContext';
 import Link from 'next/link';
 
 import GigOfferCard from '@/app/components/shared/GigOfferCard'; // Assuming shared location
@@ -54,8 +54,8 @@ export default function WorkerOffersPage() {
   const params = useParams();
   const pageUserId = params.userId as string;
 
-  
-  const { isLoading: loadingAuth, user, updateUserContext } = useAppContext();
+  const { user, loading: loadingAuth, updateUserContext } = useUser();
+  const authUserId = user?.uid;
 
   const [offers, setOffers] = useState<GigOffer[]>([]);
   const [acceptedGigs, setAcceptedGigs] = useState<GigOffer[]>([]); // New state for accepted gigs
@@ -64,34 +64,68 @@ export default function WorkerOffersPage() {
   const [processingOfferId, setProcessingOfferId] = useState<string | null>(null);
   const [processingAction, setProcessingAction] = useState<'accept' | 'decline' | null>(null);
 
-  // Auth check
+  // Auth check and role validation
   useEffect(() => {
-    if (!loadingAuth && user?.isAuthenticated) {
-      if (user?.canBeGigWorker || user?.isQA) {
-        updateUserContext({ lastRoleUsed: 'GIG_WORKER', lastViewVisited: pathname });
-      } else {
-        router.replace("/select-role");
-      }
+    if (loadingAuth) return;
+
+    if (!user?.isAuthenticated) {
+      router.push(`/signin?redirect=${encodeURIComponent(pathname)}`);
+      return;
     }
-  }, [loadingAuth, user?.isAuthenticated]);
+
+    if (!authUserId) {
+      console.error("User is authenticated but UID is missing. Redirecting to signin.");
+      router.push(`/signin?redirect=${encodeURIComponent(pathname)}`);
+      return;
+    }
+
+    if (authUserId !== pageUserId) {
+      router.push('/signin?error=unauthorized');
+      return;
+    }
+
+    if (!(user.canBeGigWorker || user.isQA)) {
+      router.push('/select-role');
+      return;
+    }
+
+    // If all checks pass, update context
+    updateUserContext({ lastRoleUsed: 'GIG_WORKER', lastViewVisited: pathname });
+
+  }, [user, loadingAuth, authUserId, pageUserId, router, pathname, updateUserContext]);
 
   // Fetch worker data (offers and accepted gigs)
   useEffect(() => {
-    if (user?.isAuthenticated && user?.uid) { // Use user?.uid
-      setIsLoadingData(true); // Use renamed loading state
-      fetchWorkerData(user.uid) // Use user.uid and new function
+    // Ensure user is authenticated, authorized for this page, and has necessary roles before fetching
+    if (!loadingAuth && user?.isAuthenticated && authUserId === pageUserId && (user.canBeGigWorker || user.isQA)) {
+      setIsLoadingData(true);
+      fetchWorkerData(pageUserId, { /* pass filters if any */ })
         .then(data => {
-          setOffers(data.offers); // Set offers
-          setAcceptedGigs(data.acceptedGigs); // Set accepted gigs
+          setOffers(data.offers);
+          setAcceptedGigs(data.acceptedGigs);
           setError(null);
         })
         .catch(err => {
-          console.error("Failed to fetch worker data:", err);
-          setError("Could not load gig data. Please try again."); // Updated error message
+          console.error("Error fetching worker data:", err);
+          setError('Failed to load data. Please try again.');
+          setOffers([]);
+          setAcceptedGigs([]);
         })
-        .finally(() => setIsLoadingData(false)); // Use renamed loading state
+        .finally(() => setIsLoadingData(false));
+    } else if (!loadingAuth && user?.isAuthenticated && authUserId === pageUserId && !(user.canBeGigWorker || user.isQA)){
+      // If user is auth'd for page, but no role, don't attempt fetch, auth useEffect handles redirect
+      setIsLoadingData(false); 
+      setOffers([]);
+      setAcceptedGigs([]);
+      setError("Access denied: You do not have the required role to view offers."); // Optional: set an error message
+    } else if (!loadingAuth && (!user?.isAuthenticated || authUserId !== pageUserId)) {
+      // If not authenticated or not authorized for this page, ensure loading is false and data is clear
+      setIsLoadingData(false);
+      setOffers([]);
+      setAcceptedGigs([]);
+      // Error message or redirect is handled by the primary auth useEffect
     }
-  }, [user?.isAuthenticated, user?.uid]); // Added user?.uid dependency
+  }, [user, loadingAuth, authUserId, pageUserId /* add filter state if any */]);
 
 
   const handleAcceptOffer = async (offerId: string) => {
@@ -212,7 +246,7 @@ export default function WorkerOffersPage() {
         )}
 
         <footer className={styles.footer}> {/* Use styles */}
-          <Link href={`/user/${user?.uid}/worker`} passHref> {/* Use user?.uid */}
+          <Link href={`/user/${pageUserId}/worker`} passHref> {/* Use user?.uid */}
             <button className={styles.homeButton} aria-label="Go to Home"> {/* Use styles */}
                 <Home size={24} />
             </button>

@@ -2,16 +2,13 @@
 
 import React, { useState, useEffect, FormEvent, ChangeEvent } from "react";
 import { useRouter, useParams, usePathname } from "next/navigation";
-import { useAppContext } from "@/app/hooks/useAppContext";
+import { useUser } from "@/app/context/UserContext";
 import styles from "./FeedbackPage.module.css";
 import {
-  ArrowLeft,
   ThumbsUp,
   ThumbsDown,
   Trophy,
   Star,
-  FilePlus,
-  Loader2,
   Send,
 } from "lucide-react";
 
@@ -43,11 +40,11 @@ export default function WorkerFeedbackPage() {
   const router = useRouter();
   const params = useParams();
   const pathname = usePathname();
-  const { userId, gigId } = params;
+  const pageUserId = params.userId as string;
+  const gigId = params.gigId as string;
 
-  const { isLoading: loadingAuth, user, updateUserContext } = useAppContext();
-
-  const [loading, setLoading] = useState(true);
+  const { user, loading: loadingAuth, updateUserContext } = useUser();
+  const authUserId = user?.uid;
 
   const [formData, setFormData] = useState<FormData>({
     feedbackText: "",
@@ -58,15 +55,37 @@ export default function WorkerFeedbackPage() {
   });
 
   useEffect(() => {
-    if (!loadingAuth && user?.isAuthenticated) {
-      if (user?.canBeBuyer || user?.isQA) {
-        updateUserContext({ lastRoleUsed: "GIG_WORKER", lastViewVisited: pathname });
-      } else {
-        router.replace("/select-role");
-      }
+    if (loadingAuth) return;
+
+    if (!user?.isAuthenticated) {
+      router.push(`/signin?redirect=${encodeURIComponent(pathname)}`);
+      return;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loadingAuth, user?.isAuthenticated]);
+
+    if (!authUserId) {
+      console.error("User is authenticated but UID is missing. Redirecting to signin.");
+      router.push(`/signin?redirect=${encodeURIComponent(pathname)}`);
+      return;
+    }
+
+    if (authUserId !== pageUserId) {
+      router.push('/signin?error=unauthorized');
+      return;
+    }
+
+    if (!(user.canBeGigWorker || user.isQA)) {
+      router.push('/select-role');
+      return;
+    }
+
+    updateUserContext({
+      lastRoleUsed: "GIG_WORKER",
+      lastViewVisited: pathname,
+    }).catch(err => {
+      console.error("Failed to update user context for worker feedback page:", err);
+      // Non-critical error
+    });
+  }, [user, loadingAuth, authUserId, pageUserId, router, pathname, updateUserContext]);
 
   const handleThumbsUp = () =>
     setFormData({ ...formData, wouldWorkAgain: true });
@@ -76,7 +95,7 @@ export default function WorkerFeedbackPage() {
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
     console.log("Submitting feedback:", formData);
-    router.push(`/user/${userId}/worker/gigs/${gigId}/earnings`);
+    router.push(`/user/${pageUserId}/worker/gigs/${gigId}/earnings`);
   };
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>

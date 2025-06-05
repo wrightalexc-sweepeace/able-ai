@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter, useParams, usePathname } from 'next/navigation';
-import { useAppContext } from '@/app/hooks/useAppContext';
+import { useUser } from '@/app/context/UserContext';
 import Link from 'next/link';
 
 // Using Lucide Icons
@@ -54,7 +54,12 @@ const getEarningsChartData = (earnings: Earning[]) => {
 };
 
 // Custom tooltip component for the chart
-const CustomTooltip = ({ active, payload, label }: any) => {
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: Array<{ name: string; value: number; stroke: string; fill: string; dataKey: string; payload: any }>;
+  label?: string | number;
+}
+const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
   if (active && payload && payload.length) {
     return (
       <div className={styles.chartTooltip}>
@@ -68,11 +73,12 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 
 export default function WorkerEarningsPage() {
   const router = useRouter();
-  const pathname = usePathname()
+  const params = useParams();
+  const pathname = usePathname();
   const pageUserId = params.userId as string;
   
-  const params = useParams();
-  const { isLoading: loadingAuth, user, updateUserContext } = useAppContext();
+  const { user, loading: loadingAuth, updateUserContext } = useUser();
+  const authUserId = user?.uid;
 
   const [earnings, setEarnings] = useState<Earning[]>([]);
   const [isLoadingEarnings, setIsLoadingEarnings] = useState(true);
@@ -84,33 +90,65 @@ export default function WorkerEarningsPage() {
   // Assuming gig types are similar to buyer's payment screen
   const gigTypes = ['All', 'Bartender', 'Waiter', 'Chef', 'Event Staff'];
 
-  // Auth check and initial data load
+  // Auth check and role validation
   useEffect(() => {
-    if (!loadingAuth && user?.isAuthenticated) {
-      if (user?.canBeGigWorker || user?.isQA) {
-        updateUserContext({ lastRoleUsed: 'GIG_WORKER', lastViewVisited: pathname });
-      } else {
-        router.replace("/select-role");
-      }
+    if (loadingAuth) return;
+
+    if (!user?.isAuthenticated) {
+      router.push(`/signin?redirect=${encodeURIComponent(pathname)}`);
+      return;
     }
-  }, [loadingAuth, user?.isAuthenticated]);
+
+    if (!authUserId) {
+      console.error("User is authenticated but UID is missing. Redirecting to signin.");
+      router.push(`/signin?redirect=${encodeURIComponent(pathname)}`);
+      return;
+    }
+
+    if (authUserId !== pageUserId) {
+      router.push('/signin?error=unauthorized');
+      return;
+    }
+
+    if (!(user.canBeGigWorker || user.isQA)) {
+      router.push('/select-role');
+      return;
+    }
+
+    // If all checks pass, update context
+    updateUserContext({ lastRoleUsed: 'GIG_WORKER', lastViewVisited: pathname });
+
+  }, [user, loadingAuth, authUserId, pageUserId, router, pathname, updateUserContext]);
 
   // Fetch earnings
   useEffect(() => {
-    if (user?.isAuthenticated || user?.isQA) {
+    // Ensure user is authenticated, authorized for this page, and has necessary roles before fetching
+    if (!loadingAuth && user?.isAuthenticated && authUserId === pageUserId && (user.canBeGigWorker || user.isQA)) {
       setIsLoadingEarnings(true);
-      fetchWorkerEarnings(pageUserId, filterGigType)
+      fetchWorkerEarnings(pageUserId, filterGigType) // Fetch earnings for the pageUserId
         .then(data => {
           setEarnings(data);
           setError(null);
         })
-        .catch(err => {
+        .catch((err) => {
           console.error("Failed to fetch earnings:", err);
-          setError("Could not load earnings history. Please try again.");
+          setError('Failed to load earnings. Please try again.');
+          setEarnings([]); // Clear earnings on error
         })
         .finally(() => setIsLoadingEarnings(false));
+    } else if (!loadingAuth && user?.isAuthenticated && authUserId === pageUserId && !(user.canBeGigWorker || user.isQA)){
+      // If user is auth'd for page, but no role, don't attempt fetch, auth useEffect handles redirect
+      // Set loading to false as fetch won't occur.
+      setIsLoadingEarnings(false); 
+      setEarnings([]); // Ensure earnings are cleared if roles are missing
+      setError("Access denied: You do not have the required role to view earnings."); // Optional: set an error message
+    } else if (!loadingAuth && (!user?.isAuthenticated || authUserId !== pageUserId)) {
+      // If not authenticated or not authorized for this page, ensure loading is false and data is clear
+      setIsLoadingEarnings(false);
+      setEarnings([]);
+      // Error message or redirect is handled by the primary auth useEffect
     }
-  }, [user?.isAuthenticated, user?.isQA, pageUserId, filterGigType]);
+  }, [user, loadingAuth, authUserId, pageUserId, filterGigType]);
   
   const chartData = useMemo(() => getEarningsChartData(earnings), [earnings]);
 

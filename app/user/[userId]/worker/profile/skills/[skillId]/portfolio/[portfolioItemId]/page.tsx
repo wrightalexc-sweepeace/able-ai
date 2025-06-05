@@ -1,10 +1,8 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
-// useAppContext is likely needed here to check if the user is authorized
-import { useAppContext } from '@/app/hooks/useAppContext';
+import { useRouter, useParams, usePathname } from 'next/navigation';
+import { useUser } from '@/app/context/UserContext';
 
 // --- SHARED & HELPER COMPONENTS ---
 import PageCloseButton from '@/app/components/shared/PageCloseButton';
@@ -60,11 +58,13 @@ async function fetchPortfolioItem(workerId: string, skillId: string, itemId: str
 export default function EditablePortfolioItemPage() {
   const router = useRouter();
   const params = useParams();
+  const pathname = usePathname();
   const workerId = params.userId as string; // Assuming userId from URL is the workerId
   const skillId = params.skillId as string;
   const portfolioItemId = params.portfolioItemId as string; // 'new' or item ID
 
-  const { user: authUser, isLoading: loadingAuth } = useAppContext();
+  const { user, loading: loadingAuth } = useUser();
+  const authUserId = user?.uid;
   
   const [formData, setFormData] = useState<PortfolioMediaForm>({ 
       type: 'image', // Default type
@@ -77,22 +77,50 @@ export default function EditablePortfolioItemPage() {
   const [error, setError] = useState<string | null>(null);
   const isNewItem = portfolioItemId === 'new';
 
+  // Authentication and Authorization Effect
   useEffect(() => {
-    // Check if user is authenticated and authorized
-    if (!loadingAuth && (!authUser || authUser.uid !== workerId)) {
-        setError("You are not authorized.");
-        setIsLoading(false);
-        return;
+    if (loadingAuth) return;
+
+    if (!user?.isAuthenticated) {
+      router.push(`/signin?redirect=${encodeURIComponent(pathname)}`);
+      return;
     }
 
-    if (!isNewItem && workerId && skillId && portfolioItemId) {
+    if (!authUserId) {
+      console.error("User is authenticated but UID is missing. Redirecting to signin.");
+      router.push(`/signin?redirect=${encodeURIComponent(pathname)}`);
+      return;
+    }
+
+    if (authUserId !== workerId) {
+      // Set error and stop loading, as redirect will occur or user shouldn't see content
+      setError("You are not authorized to edit this portfolio item.");
+      setIsLoading(false); 
+      router.push('/signin?error=unauthorized');
+      return;
+    }
+    // If all auth checks pass, no explicit action needed here, data fetching useEffect will proceed
+  }, [user, loadingAuth, authUserId, workerId, router, pathname]);
+
+  // Data Fetching Effect
+  useEffect(() => {
+    // Proceed only if authentication is not loading, user is authenticated, and authorized
+    if (loadingAuth || !user?.isAuthenticated || !authUserId || authUserId !== workerId) {
+      // If auth conditions are not met (e.g., still loading, or mismatch detected by this hook before auth hook redirects),
+      // ensure isLoading is false if it's not a new item, or if an error isn't already set by auth hook.
+      if (!isNewItem && !error) setIsLoading(false);
+      return;
+    }
+
+    if (!isNewItem) {
       setIsLoading(true);
       fetchPortfolioItem(workerId, skillId, portfolioItemId)
         .then(data => {
           if (data) {
             setFormData(data);
+            setError(null); // Clear previous errors on successful load
           } else {
-             setError("Portfolio item not found.");
+            setError("Portfolio item not found.");
           }
         })
         .catch(err => {
@@ -101,10 +129,12 @@ export default function EditablePortfolioItemPage() {
         })
         .finally(() => setIsLoading(false));
     } else {
-      // For new items, stop loading immediately with default formData
+      // For new items, ensure form is reset and loading is false
+      setFormData({ type: 'image', thumbnailUrl: '', fullUrl: '', caption: '' });
+      setError(null); // Clear any potential errors from previous state
       setIsLoading(false);
     }
-  }, [workerId, skillId, portfolioItemId, isNewItem, loadingAuth, authUser]);
+  }, [user, loadingAuth, authUserId, workerId, skillId, portfolioItemId, isNewItem, error]); // Added error to dependency to avoid re-fetch loops if auth error is set
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -148,12 +178,17 @@ export default function EditablePortfolioItemPage() {
     return <div className={styles.pageLoadingContainer}><Loader2 className="animate-spin" size={48} /> Loading Item...</div>;
   }
   if (error) {
-    return <div className={styles.pageWrapper}><p className={styles.errorMessage}>{error}</p></div>;
+    // If an error is set (e.g., not authorized, item not found), display it.
+    // The auth useEffect should handle redirects for critical auth failures.
+    return (
+      <div className={styles.pageContainer}> {/* Maintain consistent root for layout */} 
+        <PageCloseButton onClick={() => router.back()} />
+        <div className={styles.pageWrapper} style={{paddingTop: '2rem', textAlign: 'center'}}>
+          <p className={styles.errorMessage}>{error}</p>
+        </div>
+      </div>
+    );
   }
-  // Double-check auth after loading, though initial check should cover most cases
-   if (!authUser || authUser.uid !== workerId) {
-      return <div className={styles.pageWrapper}><p className={styles.errorMessage}>You are not authorized.</p></div>;
-   }
 
   return (
     <div className={styles.pageContainer}>

@@ -2,11 +2,11 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, useParams, usePathname } from 'next/navigation';
-import { useAppContext } from '@/app/hooks/useAppContext';
+import { useUser } from '@/app/context/UserContext';
 import Link from 'next/link';
 
 import {
-  ArrowLeft, Home, UserCircle, CalendarDays, Clock, MapPin, PoundSterling, Info, MessageSquare, Edit3, AlertCircle, Share2, FileText, PlayCircle, CheckCircle, XCircle, Loader2
+  ArrowLeft, Home, Info, MessageSquare, Edit3, AlertCircle, FileText, PlayCircle, CheckCircle, XCircle, Loader2
 } from 'lucide-react';
 
 import styles from './GigDetailsPage.module.css';
@@ -86,35 +86,67 @@ const calculateDuration = (startIso: string, endIso: string): string => {
 
 
 export default function WorkerGigDetailsPage() {
-  const pathname = usePathname();
   const router = useRouter();
-  const { isLoading: loadingAuth, user, updateUserContext } = useAppContext();
   const params = useParams();
+  const pathname = usePathname();
+  const pageUserId = params.userId as string; // This is the worker's ID from the URL
   const gigId = params.gigId as string;
 
+  const { user, loading: loadingAuth, updateUserContext } = useUser();
+  const authUserId = user?.uid;
 
   const [gig, setGig] = useState<GigDetails | null>(null);
   const [isLoadingGig, setIsLoadingGig] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isActionLoading, setIsActionLoading] = useState(false);
 
-  // Auth check
-    useEffect(() => {
-      if (!loadingAuth && user?.isAuthenticated) {
-        if (user?.canBeBuyer || user?.isQA) {
-          updateUserContext({ lastRoleUsed: "GIG_WORKER", lastViewVisited: pathname });
-        } else {
-          router.replace("/select-role");
-        }
-      }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [loadingAuth, user?.isAuthenticated]);
-
-  // Fetch gig details
+  // Auth check, role check, and context update
   useEffect(() => {
-    if (user?.isAuthenticated && user?.uid && gigId) {
+    if (loadingAuth) return;
+
+    if (!user?.isAuthenticated) {
+      router.push(`/signin?redirect=${encodeURIComponent(pathname)}`);
+      return;
+    }
+
+    if (!authUserId) {
+      console.error("User is authenticated but UID is missing. Redirecting to signin.");
+      router.push(`/signin?redirect=${encodeURIComponent(pathname)}`);
+      return;
+    }
+
+    // Ensure the user from the URL matches the authenticated user
+    if (authUserId !== pageUserId) {
+      router.push('/signin?error=unauthorized'); // Or a more specific error/redirect
+      return;
+    }
+
+    // Check if the user can be a gig worker
+    if (!(user.canBeGigWorker || user.isQA)) { // Allow QA to bypass role check
+      router.push('/select-role');
+      return;
+    }
+    
+    // If all checks pass, update context
+    updateUserContext({
+      lastRoleUsed: "GIG_WORKER",
+      lastViewVisited: pathname,
+    }).catch(err => {
+      console.error("Failed to update user context for worker gig details:", err);
+      // Non-critical error
+    });
+  }, [user, loadingAuth, authUserId, pageUserId, router, pathname, updateUserContext]);
+
+  // Fetch Gig Details
+  useEffect(() => {
+    if (loadingAuth) return; // Wait for auth state to be clear
+
+    const shouldFetch = (user?.isQA && pageUserId && gigId) || 
+                        (user?.isAuthenticated && authUserId === pageUserId && gigId);
+
+    if (shouldFetch) {
       setIsLoadingGig(true);
-      fetchWorkerGigDetails(user.uid, gigId)
+      fetchWorkerGigDetails(pageUserId, gigId) // pageUserId is correct here (worker's ID from URL)
         .then(data => {
           if (data) {
             setGig(data);
@@ -128,7 +160,7 @@ export default function WorkerGigDetailsPage() {
         })
         .finally(() => setIsLoadingGig(false));
     }
-  }, [user?.isAuthenticated, gigId]);
+  }, [loadingAuth, user, authUserId, pageUserId, gigId, setIsLoadingGig]);
 
   const handleGigAction = async (action: 'start' | 'complete' | 'requestAmendment' | 'reportIssue' | 'delegate') => {
     if (!gig) return;

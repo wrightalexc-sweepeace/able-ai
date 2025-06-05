@@ -2,8 +2,8 @@
 
 import React, { useState, ChangeEvent, FormEvent, useEffect } from 'react';
 import Image from 'next/image';
-import { useRouter, useParams } from 'next/navigation';
-import { useAppContext } from '@/app/hooks/useAppContext';
+import { useRouter, useParams, usePathname } from 'next/navigation';
+import { useUser } from '@/app/context/UserContext';
 
 import InputField from '@/app/components/form/InputField'; // Reusing shared InputField
 import { Star, Send, Loader2 } from 'lucide-react'; // Lucide icons
@@ -34,10 +34,12 @@ async function getWorkerDetails(workerId: string): Promise<{ name: string; prima
 export default function RecommendationPage() {
   const router = useRouter();
   const params = useParams();
+  const pathname = usePathname(); // Added pathname
   const recommenderUserId = params.userId as string; // Logged-in user providing recommendation
   const workerToRecommendId = params.workerId as string;
 
-  const { isAuthenticated, isLoading, user } = useAppContext();
+  const { user, loading: loadingAuth } = useUser(); // Switched to useUser, removed unused updateUserContext
+  const authUserId = user?.uid;
 
   const [workerDetails, setWorkerDetails] = useState<{ name: string; primarySkill: string } | null>(null);
   const [isLoadingWorker, setIsLoadingWorker] = useState(true);
@@ -52,23 +54,35 @@ export default function RecommendationPage() {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  // Auth check and initial data load
+  // Auth check and initial data load for the recommender
   useEffect(() => {
-    // Check if auth loading is complete
-    if (!isLoading) {
-      // Redirect if not authenticated or the authenticated user's ID doesn't match the recommender ID in the URL
-      if (!isAuthenticated || (user && user.uid !== recommenderUserId)) {
-        router.replace('/signin'); // Or an appropriate error/access denied page
-      } else {
-        // Prefill recommender's name and email if available from context user object
-        setFormData(prev => ({
-          ...prev,
-          recommenderName: user?.displayName || '',
-          recommenderEmail: user?.email || ''
-        }));
-      }
+    if (loadingAuth) return;
+
+    if (!user?.isAuthenticated) {
+      router.push(`/signin?redirect=${encodeURIComponent(pathname)}`);
+      return;
     }
-  }, [isAuthenticated, isLoading, user, recommenderUserId, router]); // Added user to dependency array
+
+    if (!authUserId) {
+      console.error("User is authenticated but UID is missing. Redirecting to signin.");
+      router.push(`/signin?redirect=${encodeURIComponent(pathname)}`);
+      return;
+    }
+
+    // Ensure the user from the URL (recommenderUserId) matches the authenticated user
+    if (authUserId !== recommenderUserId) {
+      router.push('/signin?error=unauthorized'); 
+      return;
+    }
+
+    // If all checks pass, prefill recommender's name and email
+    setFormData(prev => ({
+      ...prev,
+      recommenderName: user.displayName || '',
+      recommenderEmail: user.email || ''
+    }));
+
+  }, [user, loadingAuth, authUserId, recommenderUserId, router, pathname]);
 
 
   // Fetch worker details
@@ -83,7 +97,10 @@ export default function RecommendationPage() {
             setError("Could not load worker details to recommend.");
           }
         })
-        .catch(err => setError("Error fetching worker details."))
+        .catch(err => {
+          console.error("Error fetching worker details:", err);
+          setError("Error fetching worker details.");
+        })
         .finally(() => setIsLoadingWorker(false));
     }
   }, [workerToRecommendId]);
@@ -115,47 +132,42 @@ export default function RecommendationPage() {
     };
 
     try {
-      // Replace with your actual API endpoint for submitting recommendations
-      // const response = await fetch('/api/recommendations/submit', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify(submissionPayload),
-      // });
-      // if (!response.ok) {
-      //   const errorData = await response.json();
-      //   throw new Error(errorData.message || 'Failed to submit recommendation.');
-      // }
-      // const result = await response.json();
+      // Replace with your actual API endpoint
+      console.log("Submitting recommendation:", submissionPayload);
+      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate API call
 
-      // MOCK API CALL
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      console.log('Recommendation Submitted:', submissionPayload);
-      
-      setSuccessMessage('Thank you! Your recommendation has been submitted.');
-      // Optionally redirect or clear form
-      // setFormData({ recommendationText: '', relationship: '', recommenderName: '', recommenderEmail: '' });
-
-    } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred.');
+      const success = true; // Assume success for now
+      if (success) {
+        setSuccessMessage("Recommendation submitted successfully! Thank you.");
+        setFormData({
+          recommendationText: '',
+          relationship: '',
+          recommenderName: user?.displayName || '', // Reset with prefill if available
+          recommenderEmail: user?.email || ''
+        });
+        // Optionally redirect or clear form further
+      } else {
+        setError("Failed to submit recommendation. Please try again.");
+      }
+    } catch (error) {
+      console.error("Submission error:", error);
+      if (error instanceof Error) {
+        setError(`An unexpected error occurred: ${error.message}. Please try again.`);
+      } else {
+        setError("An unexpected error occurred. Please try again.");
+      }
     } finally {
       setIsSubmitting(false);
     }
   };
   
-  // Updated loading/error conditions
-  if (isLoading || isLoadingWorker || (!isAuthenticated && !isLoading) || (isAuthenticated && user?.uid !== recommenderUserId)) {
-    // Handle cases where auth is loading, worker details are loading,
-    // or auth is complete but the user is not the recommender.
-    if (!isLoading && !isLoadingWorker && (!isAuthenticated || (isAuthenticated && user?.uid !== recommenderUserId))) {
-        // If loading is complete and auth fails or user ID doesn't match
-        return <div className={styles.container}><p className={styles.errorMessage}>Access Denied or Worker Not Found.</p></div>;
-    }
-    // Show loading spinner while still loading auth or worker details
-    return <div className={styles.loadingContainer}><Loader2 size={32} className="animate-spin" /> Loading Recommendation Form...</div>;
+  // Show loading spinner while worker details are being fetched (after auth checks pass)
+  if (isLoadingWorker) {
+    return <div className={styles.loadingContainer}><Loader2 size={32} className="animate-spin" /> Loading Worker Details...</div>;
   }
 
-  // If we reach here, it means: !isLoading && isAuthenticated && user?.uid === recommenderUserId && !isLoadingWorker
-  // And if workerDetails is null here, it means getWorkerDetails failed after loading.
+  // If we reach here, auth checks have passed and worker details fetching is complete.
+  // If workerDetails is null here, it means getWorkerDetails failed.
   if (!workerDetails) {
      return <div className={styles.container}><p className={styles.errorMessage}>{error || "Worker not found."}</p></div>;
   }
@@ -205,7 +217,7 @@ export default function RecommendationPage() {
             </div>
 
             <div className={styles.inputGroup}>
-              <label className={styles.label}>Your Details (won't be public on their profile) <span style={{color: 'var(--error-color)'}}>*</span></label>
+              <label htmlFor="recommenderName" className={styles.label}>Your Details (won&apos;t be public on their profile) <span style={{color: 'var(--error-color)'}}>*</span></label>
               <div className={styles.nameEmailGroup}>
                 <InputField
                     id="recommenderName"

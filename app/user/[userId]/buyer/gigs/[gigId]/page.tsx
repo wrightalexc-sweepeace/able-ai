@@ -41,7 +41,6 @@ export default function BuyerGigDetailsPage() {
   const params = useParams();
   const pageUserId = params.userId as string;
 
-  // Replace useAppContext with useUser
   const { user, loading: loadingAuth, updateUserContext } = useUser(); 
   const authUserId = user?.uid;
 

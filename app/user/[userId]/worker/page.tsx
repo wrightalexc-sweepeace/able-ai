@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, useParams, usePathname } from "next/navigation";
 import { useUser } from '@/app/context/UserContext';
 import Link from "next/link";
 
@@ -37,30 +37,54 @@ import { Toaster } from "sonner";
 // }
 
 export default function WorkerDashboardPage() {
-  // Renamed for clarity
   const router = useRouter();
+  const params = useParams();
   const pathname = usePathname();
+  const pageUserId = params.userId as string;
+
   const {
-    user: userPublicProfile,
+    user,
     loading: loadingAuth,
     updateUserContext,
     // TODO: Handle authError if necessary
   } = useUser();
+  const authUserId = user?.uid;
 
   useEffect(() => {
-    if (!loadingAuth && userPublicProfile?.isAuthenticated) {
-      if (userPublicProfile?.canBeGigWorker || userPublicProfile?.isQA) {
-        updateUserContext({
-          lastRoleUsed: "GIG_WORKER", // Ensure the context reflects the current role
-          lastViewVisited: pathname, // Update last view visited
-        });
-      } else {
-        router.replace("/select-role");
-      }
-    }
-  }, [userPublicProfile?.isAuthenticated, userPublicProfile?.canBeGigWorker, userPublicProfile?.isQA, loadingAuth, updateUserContext, pathname, router]);
+    if (loadingAuth) return;
 
-  const uid = userPublicProfile?.uid;
+    if (!user?.isAuthenticated) {
+      router.push(`/signin?redirect=${encodeURIComponent(pathname)}`);
+      return;
+    }
+
+    if (!authUserId) {
+      console.error("User is authenticated but UID is missing. Redirecting to signin.");
+      router.push(`/signin?redirect=${encodeURIComponent(pathname)}`);
+      return;
+    }
+
+    if (authUserId !== pageUserId) {
+      router.push('/signin?error=unauthorized');
+      return;
+    }
+
+    if (!(user.canBeGigWorker || user.isQA)) {
+      router.push('/select-role');
+      return;
+    }
+
+    updateUserContext({
+      lastRoleUsed: "GIG_WORKER",
+      lastViewVisited: pathname,
+    }).catch(err => {
+      console.error("Failed to update user context for worker dashboard:", err);
+      // Non-critical error
+    });
+  }, [user, loadingAuth, authUserId, pageUserId, router, pathname, updateUserContext]);
+
+  // Use authUserId for subsequent operations after validation
+  const uid = authUserId;
 
   // AI Suggestion Banner Hook
   const {
@@ -121,7 +145,9 @@ export default function WorkerDashboardPage() {
   //   }
   // }, [isAuthenticated, currentActiveRole, THIS_HOME_ROLE]);
 
-  if (loadingAuth || !userPublicProfile?.isAuthenticated) {
+  // Show loader if auth is loading, or if user is not authenticated (as redirect will happen)
+  // or if pageUserId is not the authenticated user's ID (again, redirect will happen)
+  if (loadingAuth || !user?.isAuthenticated || (user?.isAuthenticated && authUserId !== pageUserId) ) {
     return <Loader />;
   }
 
@@ -184,7 +210,7 @@ export default function WorkerDashboardPage() {
         <ReferralBanner title="Refer a worker and earn £5!" />
 
         <footer className={styles.pageFooter}>
-          <RoleToggle user={userPublicProfile} />
+          <RoleToggle user={user} />
           <SettingsButton />
         </footer>
         <Toaster />
