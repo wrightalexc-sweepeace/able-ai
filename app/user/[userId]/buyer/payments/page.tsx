@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { useAppContext } from '@/app/hooks/useAppContext';
+import { useUser } from '@/app/context/UserContext';
 import Link from 'next/link';
 
 // Using Lucide Icons
@@ -73,7 +73,7 @@ export default function BuyerPaymentsPage() {
   const params = useParams();
   const pageUserId = params.userId as string;
 
-  const { user, isLoading, isAuthenticated, isBuyerMode } = useAppContext();
+  const { user, loading: isLoading, updateUserContext } = useUser();
   const authUserId = user?.uid;
 
   const [payments, setPayments] = useState<Payment[]>([]);
@@ -87,18 +87,28 @@ export default function BuyerPaymentsPage() {
   const gigTypes = ['All', 'Bartender', 'Waiter', 'Chef', 'Event Staff'];
 
 
-  // Auth check and initial data load
+  // Auth check and data load
   useEffect(() => {
-    if (!isLoading) {
-      if (!isAuthenticated || authUserId !== pageUserId || !isBuyerMode) {
-        router.replace('/signin'); // Or to role selection if appropriate
-      }
+    if (isLoading) {
+      return; // Wait for user context to load
     }
-  }, [isAuthenticated, isLoading, authUserId, pageUserId, isBuyerMode, router]);
 
-  // Fetch payments
-  useEffect(() => {
-    if (isAuthenticated && authUserId) {
+    if (!user || !user.isAuthenticated) {
+      router.replace(`/signin?redirect=/user/${pageUserId}/buyer/payments`);
+      return;
+    }
+
+    if (authUserId !== pageUserId) {
+      router.replace('/signin?error=unauthorized');
+      return;
+    }
+
+    if (user.canBeBuyer || user.isQA) {
+      updateUserContext({
+        lastRoleUsed: "BUYER",
+        lastViewVisited: `/user/${pageUserId}/buyer/payments`,
+      });
+
       setIsLoadingPayments(true);
       fetchBuyerPayments(authUserId, filterGigType)
         .then(data => {
@@ -110,8 +120,10 @@ export default function BuyerPaymentsPage() {
           setError("Could not load payment history. Please try again.");
         })
         .finally(() => setIsLoadingPayments(false));
+    } else {
+      router.replace('/select-role');
     }
-  }, [isAuthenticated, authUserId, filterGigType]);
+  }, [isLoading, user, authUserId, pageUserId, filterGigType, router, updateUserContext]);
 
   const handleGenerateInvoice = (paymentId: string) => {
     console.log("Generate invoice for payment ID:", paymentId);
@@ -141,7 +153,7 @@ export default function BuyerPaymentsPage() {
   }
 
 
-  if (isLoading || (!isAuthenticated && !isLoading) || (authUserId && authUserId !== pageUserId) ) {
+  if (isLoading || (!user?.isAuthenticated && !isLoading) || (authUserId && authUserId !== pageUserId) ) {
     return <div className={styles.loadingContainer}><Loader2 className="animate-spin" size={32} /> Loading...</div>;
   }
 
@@ -305,7 +317,7 @@ export default function BuyerPaymentsPage() {
         </div>
 
         <footer className={styles.footer}>
-          <Link href={`/user/${authUserId}/buyer`} passHref>
+          <Link href={`/user/${pageUserId}/buyer`} passHref>
             <button className={styles.homeButton} aria-label="Go to Home">
                 <Home size={24} />
             </button>
