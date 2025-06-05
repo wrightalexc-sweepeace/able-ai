@@ -169,4 +169,22 @@ USER: {step, previousAnswers, userInput here}
      ```
 
 5. **Extend as Needed**
-   - Add support for more fields, richer feedback, or multi-turn conversations as your onboarding evolves. 
+   - Add support for more fields, richer feedback, or multi-turn conversations as your onboarding evolves.
+
+---
+
+## Admin Moderation
+
+Admins will have the ability to view conversations associated with the worker onboarding chat flow via an admin panel. They can review message content and the data extracted by the AI. This helps monitor the AI's effectiveness in collecting accurate information and identify potential issues or areas for improvement in the onboarding process.
+
+## PII Handling
+
+The onboarding process inherently collects significant PII (name, contact, skills, qualifications, etc.). 
+
+- Implement strict PII handling protocols throughout the onboarding chat flow, from frontend input to backend processing and AI prompting.
+- Sensitive PII should be tokenized or redacted before being sent to the AI if the AI does not require the raw data.
+- The chat logs stored in Firestore will contain this PII. The scheduled PII removal utility (detailed in [AI Chat Model and Backend Logic Plan](ai-models-plan.md)) is critical for managing this data according to privacy policies and retention periods.
+
+## Data Deletion and Retention
+
+Chat messages from the worker onboarding flow will be stored in Firestore under the `/users/{userId}/aiChats` collection with `contextType: 'onboarding'`. These messages, including the extracted data points if stored within the chat documents, will be subject to the general chat retention policy defined in the `system_flags` table and enforced by the scheduled data retention utility. 

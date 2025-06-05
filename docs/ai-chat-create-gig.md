@@ -197,4 +197,22 @@ To integrate the AI chat agent into the gig creation page, follow this plan:
 5. **Extend for Other Steps or Summary**
    - Add similar functions for summary or other steps as needed, using the appropriate schema.
 
-This structure keeps your AI logic modular, testable, and easy to update as your flows evolve. 
+This structure keeps your AI logic modular, testable, and easy to update as your flows evolve.
+
+---
+
+## Admin Moderation
+
+Admins will have the ability to view conversations associated with the gig creation chat flow via an admin panel. They can review message content and update the `moderationStatus` field if necessary. This helps monitor the AI's performance and user interactions during the critical gig creation process.
+
+## PII Handling
+
+User input during the gig creation process (e.g., location details, contact info mentioned in descriptions) may contain PII. 
+
+- Implement sanitization or redaction logic in the frontend before sending sensitive data to the AI prompt.
+- Be mindful of the data included in the `metadata` field when storing the chat, ensuring sensitive details are not unnecessarily captured.
+- The scheduled PII removal utility (detailed in [AI Chat Model and Backend Logic Plan](ai-models-plan.md)) will be used to process stored chat data.
+
+## Data Deletion and Retention
+
+Chat messages from the gig creation flow will be stored in Firestore under the `/users/{userId}/aiChats` collection with `contextType: 'create_gig'` (or similar). These messages will be subject to the general chat retention policy defined in the `system_flags` table and enforced by the scheduled data retention utility. 

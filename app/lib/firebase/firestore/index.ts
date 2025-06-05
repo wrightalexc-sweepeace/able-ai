@@ -19,6 +19,44 @@ import { db } from "../clientApp";
 // Types
 export type FirestoreTimestamp = Timestamp;
 
+// Unified Chat Message Interface
+export interface ChatMessage {
+  id?: string; // Firestore document ID
+  senderId: string; // Firebase UID of sender or 'AI'
+  role: 'user' | 'worker' | 'buyer' | 'admin' | 'ai';
+  text: string;
+  timestamp: FirestoreTimestamp;
+  isReadByReceiver: boolean; // Status for the receiver of this specific message
+  moderationStatus: 'PENDING' | 'APPROVED' | 'REJECTED' | 'AUTO_FLAGGED' | 'ESCALATED' | 'RESOLVED';
+  isStreaming?: boolean; // True if the message was streamed (relevant for AI)
+  isChat: boolean; // True for conversational messages
+  contextType: 'onboarding' | 'support' | 'expand_view' | 'edit' | 'gig' | 'admin_support';
+  gigId?: string; // ID of the relevant gig (if contextType is 'gig')
+  sessionId?: string; // Optional ID for grouping related non-gig chats
+  metadata?: any; // Optional JSON object for additional context
+  // Note: senderFirebaseUid from old GigMessage is now senderId
+}
+
+// Parent Chat Document Interfaces (if needed)
+// These are less critical if using subcollections directly, but can store chat-level metadata
+export interface UserAIChat {
+  id?: string; // Firestore document ID (chatId)
+  userId: string; // The owner of this AI chat session
+  contextType: 'onboarding' | 'support' | 'expand_view' | 'edit';
+  createdAt: FirestoreTimestamp;
+  metadata?: any;
+  status?: string; // e.g., 'OPEN', 'CLOSED'
+}
+
+export interface AdminChat {
+  id?: string; // Firestore document ID (chatId)
+  userId: string; // The user being supported in this chat
+  createdAt: FirestoreTimestamp;
+  status?: 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED'; // Status of the admin support case
+  adminUserId?: string; // The admin currently assigned
+  metadata?: any;
+}
+
 export interface UserProfile {
   firebaseUid: string;
   displayName: string;
@@ -72,14 +110,6 @@ export interface Gig {
   workerProfileImageUrl?: string;
 }
 
-export interface GigMessage {
-  senderFirebaseUid: string;
-  text: string;
-  timestamp: FirestoreTimestamp;
-  isReadByReceiver: boolean;
-  moderationStatus: 'PENDING' | 'APPROVED' | 'REJECTED';
-}
-
 export type GigOfferStatus = 'SENT' | 'ACCEPTED' | 'DECLINED';
 
 export interface GigOffer {
@@ -130,7 +160,7 @@ export async function getFirestoreUserByFirebaseUid(firebaseUid: string) {
 
 export async function createUserProfile(
   userId: string,
-  userData: Omit<UserProfile, 'firebaseUid' | 'createdAt' | 'currentActiveRole' | 'canBeBuyer' | 'canBeGigWorker'> // Exclude fields managed by rules/later steps
+  userData: Omit<UserProfile, 'firebaseUid' | 'createdAt' | 'currentActiveRole' | 'lastSeen'> // Exclude fields managed by rules/later steps/backend
 ) {
   const userDoc = doc(db, "users", userId);
   // Set minimal required data for initial creation based on rules
@@ -142,9 +172,10 @@ export async function createUserProfile(
     profileImageUrl: userData.profileImageUrl,
     // Set initial values required by rules, potentially placeholders
     currentActiveRole: 'BUYER', // Placeholder, will be updated during onboarding
-    canBeBuyer: true, // Placeholder, should match token claim
-    canBeGigWorker: false, // Placeholder, should match token claim
+    canBeBuyer: userData.canBeBuyer || false, // Use provided value or default
+    canBeGigWorker: userData.canBeGigWorker || false, // Use provided value or default
     createdAt: Timestamp.now(),
+    //lastSeen: Timestamp.now(), // Consider setting this in backend on auth state change
   }, { merge: true }); // Use merge: true to allow adding other fields later
 }
 
@@ -158,6 +189,8 @@ export async function updateUserProfile(
       | 'workerAverageRating'
       | 'workerTotalGigsCompleted'
       | 'workerResponseRatePercent'
+      | 'firebaseUid' // Cannot update firebaseUid
+      | 'createdAt' // Cannot update createdAt
     >
   >
 ) {
@@ -190,6 +223,48 @@ export async function deleteNotification(userId: string, notificationId: string)
   await deleteDoc(notificationRef);
 }
 
+// User AI Chat Functions (/users/{userId}/aiChats/{chatId}/messages)
+
+// Function to send a message in a user's AI chat
+export async function sendUserAIChatMessage(userId: string, chatId: string, messageData: Omit<ChatMessage, 'timestamp' | 'isReadByReceiver' | 'moderationStatus' | 'id' | 'gigId' | 'sessionId'>) {
+  const messagesRef = collection(db, "users", userId, "aiChats", chatId, "messages");
+  return addDoc(messagesRef, {
+    ...messageData,
+    timestamp: Timestamp.now(),
+    isReadByReceiver: false, // Default as not read by the other party yet
+    moderationStatus: 'PENDING', // Default status
+    // Ensure senderId and role are set correctly in messageData
+  });
+}
+
+// Function to get messages for a user's AI chat
+export async function getUserAIChatMessages(userId: string, chatId: string): Promise<(ChatMessage & { id: string })[]> {
+  const messagesRef = collection(db, "users", userId, "aiChats", chatId, "messages");
+  const q = query(messagesRef, orderBy("timestamp", "asc"));
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as ChatMessage }));
+}
+
+// Function to subscribe to messages for a user's AI chat
+export function subscribeToUserAIChatMessages(userId: string, chatId: string, callback: (messages: (ChatMessage & { id: string })[]) => void) {
+  const messagesRef = collection(db, "users", userId, "aiChats", chatId, "messages");
+  const q = query(messagesRef, orderBy("timestamp", "asc"));
+  return onSnapshot(q, (snapshot) => {
+    const messages = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as ChatMessage }));
+    callback(messages);
+  });
+}
+
+// Optional: Function to create the parent AI chat document if needed (rules might allow creation directly)
+export async function createUserAIChatSession(userId: string, chatId: string, sessionData: Omit<UserAIChat, 'id' | 'createdAt' | 'userId'>) {
+  const sessionRef = doc(db, "users", userId, "aiChats", chatId);
+  await setDoc(sessionRef, {
+    userId: userId, // Explicitly set userId to match path
+    createdAt: Timestamp.now(),
+    ...sessionData
+  });
+}
+
 // Gig Functions
 export async function createGig(gigData: Omit<Gig, 'createdAt' | 'status'>) {
   const gigsRef = collection(db, "gigs");
@@ -220,27 +295,86 @@ export async function deleteGig(gigId: string) {
   await deleteDoc(gigDoc);
 }
 
-// Gig Messages
-export async function sendGigMessage(gigId: string, messageData: Omit<GigMessage, 'timestamp' | 'isReadByReceiver' | 'moderationStatus'>) {
-  const messagesRef = collection(db, "gigs", gigId, "messages");
+// Gig Messages (Updated to use /gigs/{gigId}/chats/{chatId}/messages path)
+// Assuming a default chatId like 'default' for now, or it should be passed as a parameter
+const DEFAULT_GIG_CHAT_ID = 'default'; // Define a constant for the default chat ID within a gig
+
+export async function sendGigMessage(gigId: string, chatId: string = DEFAULT_GIG_CHAT_ID, messageData: Omit<ChatMessage, 'timestamp' | 'isReadByReceiver' | 'moderationStatus' | 'id' | 'gigId' | 'sessionId' | 'contextType' | 'isChat'>) {
+  const messagesRef = collection(db, "gigs", gigId, "chats", chatId, "messages");
   return addDoc(messagesRef, {
     ...messageData,
     timestamp: Timestamp.now(),
     isReadByReceiver: false,
-    moderationStatus: 'PENDING'
+    moderationStatus: 'PENDING',
+    contextType: 'gig', // Set context type
+    isChat: true, // Mark as a chat message
+    gigId: gigId, // Store gigId in message for easier querying
+    // Ensure senderId and role are set correctly in messageData
   });
 }
 
-export async function getGigMessages(gigId: string) {
-  const messagesRef = collection(db, "gigs", gigId, "messages");
+export async function getGigMessages(gigId: string, chatId: string = DEFAULT_GIG_CHAT_ID): Promise<(ChatMessage & { id: string })[]> {
+  const messagesRef = collection(db, "gigs", gigId, "chats", chatId, "messages");
   const q = query(messagesRef, orderBy("timestamp", "asc"));
   const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as ChatMessage }));
 }
 
-export async function deleteGigMessage(gigId: string, messageId: string) {
-  const messageRef = doc(db, "gigs", gigId, "messages", messageId);
+export async function deleteGigMessage(gigId: string, chatId: string = DEFAULT_GIG_CHAT_ID, messageId: string) {
+  const messageRef = doc(db, "gigs", gigId, "chats", chatId, "messages", messageId);
   await deleteDoc(messageRef);
+}
+
+export function subscribeToGigMessages(gigId: string, chatId: string = DEFAULT_GIG_CHAT_ID, callback: (messages: (ChatMessage & { id: string })[]) => void) {
+  const messagesRef = collection(db, "gigs", gigId, "chats", chatId, "messages");
+  const q = query(messagesRef, orderBy("timestamp", "asc"));
+  return onSnapshot(q, (snapshot) => {
+    const messages = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as ChatMessage }));
+    callback(messages);
+  });
+}
+
+// Admin Support Chat Functions (/adminChats/{chatId}/messages)
+
+// Function to send a message in an admin support chat
+export async function sendAdminChatMessage(chatId: string, messageData: Omit<ChatMessage, 'timestamp' | 'isReadByReceiver' | 'moderationStatus' | 'id' | 'gigId' | 'sessionId'>) {
+  const messagesRef = collection(db, "adminChats", chatId, "messages");
+  return addDoc(messagesRef, {
+    ...messageData,
+    timestamp: Timestamp.now(),
+    isReadByReceiver: false, // Default
+    moderationStatus: 'PENDING', // Default
+    contextType: 'admin_support', // Set context type
+    isChat: true, // Mark as chat message
+    // Ensure senderId and role are set correctly in messageData
+  });
+}
+
+// Function to get messages for an admin support chat
+export async function getAdminChatMessages(chatId: string): Promise<(ChatMessage & { id: string })[]> {
+  const messagesRef = collection(db, "adminChats", chatId, "messages");
+  const q = query(messagesRef, orderBy("timestamp", "asc"));
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as ChatMessage }));
+}
+
+// Function to subscribe to messages for an admin support chat
+export function subscribeToAdminChatMessages(chatId: string, callback: (messages: (ChatMessage & { id: string })[]) => void) {
+  const messagesRef = collection(db, "adminChats", chatId, "messages");
+  const q = query(messagesRef, orderBy("timestamp", "asc"));
+  return onSnapshot(q, (snapshot) => {
+    const messages = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as ChatMessage }));
+    callback(messages);
+  });
+}
+
+// Optional: Function to create the parent Admin Chat document
+export async function createAdminChatSession(chatId: string, sessionData: Omit<AdminChat, 'id' | 'createdAt'>) {
+  const sessionRef = doc(db, "adminChats", chatId);
+  await setDoc(sessionRef, {
+    createdAt: Timestamp.now(),
+    ...sessionData
+  });
 }
 
 // Gig Offers
@@ -269,7 +403,7 @@ export async function deleteGigOffer(offerId: string) {
   await deleteDoc(offerDoc);
 }
 
-// Public Reviews (Read-only)
+// Public Reviews (Read-only from client)
 export async function getPublicReviews() {
   const reviewsRef = collection(db, "public_reviews");
   const snapshot = await getDocs(reviewsRef);
@@ -279,10 +413,10 @@ export async function getPublicReviews() {
 export async function getPublicReview(reviewId: string): Promise<PublicReview | null> {
   const reviewDoc = doc(db, "public_reviews", reviewId);
   const reviewSnapshot = await getDoc(reviewDoc);
-  return reviewSnapshot.exists() ? { id: reviewId, ...reviewSnapshot.data() } as PublicReview : null;
+  return reviewSnapshot.exists() ? reviewSnapshot.data() as PublicReview : null;
 }
 
-// Badge Definitions (Read-only)
+// Badge Definitions (Read-only from client)
 export async function getBadgeDefinitions() {
   const badgesRef = collection(db, "badge_definitions");
   const snapshot = await getDocs(badgesRef);
@@ -292,10 +426,10 @@ export async function getBadgeDefinitions() {
 export async function getBadgeDefinition(badgeId: string): Promise<BadgeDefinition | null> {
   const badgeDoc = doc(db, "badge_definitions", badgeId);
   const badgeSnapshot = await getDoc(badgeDoc);
-  return badgeSnapshot.exists() ? { id: badgeId, ...badgeSnapshot.data() } as BadgeDefinition : null;
+  return badgeSnapshot.exists() ? badgeSnapshot.data() as BadgeDefinition : null;
 }
 
-// Realtime Subscriptions
+// Subscriptions (Modified Gig Messages Subscription)
 export function subscribeToGigUpdates(gigId: string, callback: (gig: Gig | null) => void) {
   const gigDoc = doc(db, "gigs", gigId);
   return onSnapshot(gigDoc, (snapshot) => {
@@ -307,19 +441,12 @@ export function subscribeToUserNotifications(userId: string, callback: (notifica
   const notificationsRef = collection(db, "users", userId, "notifications");
   const q = query(notificationsRef, orderBy("timestamp", "desc"));
   return onSnapshot(q, (snapshot) => {
-    callback(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Notification })));
+    const notifications = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Notification }));
+    callback(notifications);
   });
 }
 
-export function subscribeToGigMessages(gigId: string, callback: (messages: Array<GigMessage & { id: string }>) => void) {
-  const messagesRef = collection(db, "gigs", gigId, "messages");
-  const q = query(messagesRef, orderBy("timestamp", "asc"));
-  return onSnapshot(q, (snapshot) => {
-    callback(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as GigMessage })));
-  });
-}
-
-// Query Helpers
+// Other Gig Queries
 export async function getGigsByBuyer(buyerId: string) {
   const gigsRef = collection(db, "gigs");
   const q = query(gigsRef, where("buyerFirebaseUid", "==", buyerId), orderBy("createdAt", "desc"));
@@ -341,6 +468,7 @@ export async function getPendingGigs() {
   return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() as Gig }));
 }
 
+// Gig Offer Queries
 export async function getGigOffersByBuyer(buyerId: string) {
   const offersRef = collection(db, "gigOffers");
   const q = query(offersRef, where("buyerFirebaseUid", "==", buyerId), orderBy("createdAt", "desc"));

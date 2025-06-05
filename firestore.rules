@@ -55,6 +55,13 @@ service cloud.firestore {
                  : true; // If it didn't exist, this rule doesn't restrict its creation
     }
 
+    // Helper to allow writes from the backend (assuming authenticated via service account)
+    // This is a common pattern, but ensure your backend authentication is secure.
+    // Alternatively, use specific service account claims if possible.
+    function isBackendService() {
+      return request.auth == null; // Simplistic check, relies on backend using service account
+      // More secure might involve custom auth tokens or IP whitelisting (not possible in rules)
+    }
 
     // --- Users Collection (`users` -> assumed to be `publicUserProfiles`) ---
     // Document ID is firebaseUid
@@ -89,6 +96,45 @@ service cloud.firestore {
                         && request.resource.data.keys().hasOnly(['isRead'])
                         && request.resource.data.isRead == true
                         && resource.data.isRead == false;
+      }
+
+      // --- AI Chat Collection for User-Specific AI Chats ---
+      match /aiChats/{chatId} {
+        // Rules for the chat session document (e.g., /users/{userId}/aiChats/{chatId})
+        allow read: if isOwner(userId) || hasAppRole('ADMIN') || hasAppRole('SUPER_ADMIN');
+        allow create: if isOwner(userId) // Only owner can create a chat session for themselves
+                        && request.resource.data.userId == userId // Ensure userId in doc matches path
+                        && request.resource.data.createdAt == request.time
+                        && request.resource.data.keys().hasAll(['userId', 'contextType', 'createdAt'])
+                        && request.resource.data.keys().hasOnly(['userId', 'contextType', 'createdAt', 'metadata']); // Allow optional metadata
+
+        allow update: if isOwner(userId) // Only owner can update the chat session metadata or status
+                        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['metadata', 'status']); // Example: allow updating metadata or a 'status' field
+        allow delete: if false; // Prevent users from deleting chat sessions
+
+        // Rules for messages within the AI chat session
+        match /messages/{messageId} {
+          allow read: if get(/databases/$(database)/documents/users/$(userId)/aiChats/$(chatId)).data.userId == request.auth.uid // User can read messages in their chat
+                          || hasAppRole('ADMIN') || hasAppRole('SUPER_ADMIN'); // Admins can read any AI chat messages
+
+          allow create: if (get(/databases/$(database)/documents/users/$(userId)/aiChats/$(chatId)).data.userId == request.auth.uid // User can create their own messages
+                            && request.resource.data.senderId == request.auth.uid
+                            && request.resource.data.keys().hasAll(['senderId', 'text', 'timestamp', 'isChat'])) // Ensure required fields for user messages
+                          || (hasAppRole('ADMIN') || hasAppRole('SUPER_ADMIN') // Admins can create messages (e.g., joining conversation)
+                            && request.resource.data.keys().hasAll(['senderId', 'text', 'timestamp', 'isChat']))
+                          || (isBackendService() // Backend/AI service can create AI messages
+                            && request.resource.data.senderId == 'AI'
+                            && request.resource.data.keys().hasAll(['senderId', 'text', 'timestamp', 'isChat'])); // Ensure required fields for AI messages
+
+          // Allow user to mark messages sent by AI/Admin as read
+          allow update: if get(/databases/$(database)/documents/users/$(userId)/aiChats/$(chatId)).data.userId == request.auth.uid
+                          && request.auth.uid != resource.data.senderId // Ensure user is not marking their own message as read
+                          && request.resource.data.keys().hasOnly(['isReadByReceiver'])
+                          && request.resource.data.isReadByReceiver == true
+                          && resource.data.isReadByReceiver == false; // Only allow changing from false to true
+
+          allow delete: if false; // Prevent deletion of individual messages
+        }
       }
     }
 
@@ -155,26 +201,48 @@ service cloud.firestore {
                       && request.auth.uid == resource.data.buyerFirebaseUid
                       && resource.data.status == 'PENDING_WORKER_ACCEPTANCE';
 
-      match /messages/{messageId} {
-        function getGigDocumentData() { // Renamed to avoid conflict if helper is global
-          return get(/databases/$(database)/documents/gigs/$(gigId)).data;
-        }
+      // --- Gig Chat Collection (Updated Path) ---
+      // The previous rule `match /messages/{messageId}` should be removed or commented out if moving to /gigs/{gigId}/chats/{chatId}/messages
+      match /chats/{chatId} {
+         // Rules for the chat session document (e.g., /gigs/{gigId}/chats/{chatId})
+         // Decide if there's a parent chat document per gig or just subcollection for messages.
+         // Assuming no parent chat document per gig, and messages are directly under /gigs/{gigId}/chats/{chatId}
 
-        allow read: if isGigParticipant(getGigDocumentData());
+         // Rules for messages within the Gig chat session (assuming chatId is the gigId here for simplicity initially)
+         // REVISED: The plan implies a potential chatId separate from gigId for chats within a gig.
+         // Let's assume a structure /gigs/{gigId}/chats/{chatId}/messages/{messageId}
+         // The parent `/gigs/{gigId}/chats/{chatId}` document isn't strictly necessary if chatId is always 'default' or similar constant.
+         // Let's stick to the plan: `/gigs/{gigId}/chats/{chatId}/messages/{messageId}`
 
-        allow create: if isGigParticipant(getGigDocumentData())
-                        && request.resource.data.senderFirebaseUid == request.auth.uid
-                        && request.resource.data.keys().hasAll(['senderFirebaseUid', 'text', 'timestamp'])
-                        && request.resource.data.timestamp == request.time
-                        // Default values that client MUST set on create
-                        && request.resource.data.isReadByReceiver == false
-                        && request.resource.data.moderationStatus == 'PENDING';
+         // We need to get the parent gig document to check participation
+         function getAssociatedGig(currentGigId) {
+             return get(/databases/$(database)/documents/gigs/$(currentGigId));
+         }
 
-        allow update: if false;
-        
-        allow delete: if isAuthenticated()
-                        && request.auth.uid == resource.data.senderFirebaseUid
-                        && resource.data.moderationStatus == 'PENDING';
+         match /messages/{messageId} {
+             // Read access for gig participants and admins
+             allow read: if isGigParticipant(getAssociatedGig(gigId).data) || hasAppRole('ADMIN') || hasAppRole('SUPER_ADMIN');
+
+             // Create access for gig participants (sender is current user)
+             allow create: if isGigParticipant(getAssociatedGig(gigId).data)
+                             && request.resource.data.senderFirebaseUid == request.auth.uid
+                             && request.resource.data.keys().hasAll(['senderFirebaseUid', 'text', 'timestamp'])
+                             && request.resource.data.timestamp == request.time
+                             && request.resource.data.isReadByReceiver == false // Default values
+                             && request.resource.data.moderationStatus == 'PENDING'; // Default values
+
+             // Update access (limited - e.g., mark as read)
+             allow update: if isGigParticipant(getAssociatedGig(gigId).data)
+                             && request.auth.uid != resource.data.senderFirebaseUid // Receiver marking as read
+                             && request.resource.data.keys().hasOnly(['isReadByReceiver'])
+                             && request.resource.data.isReadByReceiver == true
+                             && resource.data.isReadByReceiver == false; // Only allow changing from false to true
+
+             // Delete access (e.g., sender can delete if pending moderation)
+             allow delete: if isAuthenticated()
+                             && request.auth.uid == resource.data.senderFirebaseUid
+                             && resource.data.moderationStatus == 'PENDING';
+         }
       }
     }
 
@@ -220,8 +288,66 @@ service cloud.firestore {
       allow read, delete: if true; // Typically open for creation and one-time read/delete by system
     }
 
+    // --- Admin Support Chat Collection ---
+    // Assumes /adminChats/{chatId} has a userId field linking to the user being supported
+    match /adminChats/{chatId} {
+        allow read: if isAuthenticated() && (request.auth.uid == resource.data.userId // User can read their support chat
+                                            || hasAppRole('ADMIN') || hasAppRole('SUPER_ADMIN') // Admins can read any support chat
+                                            // Add check for assigned admin if adminUserId is stored here:
+                                            // || request.auth.uid == resource.data.adminUserId
+                                           );
+
+        allow create: if isAuthenticated() && (request.auth.uid == request.resource.data.userId // User can initiate support chat for themselves
+                                            || hasAppRole('ADMIN') || hasAppRole('SUPER_ADMIN') // Admins/Backend can initiate
+                                           )
+                         && request.resource.data.createdAt == request.time
+                         && request.resource.data.keys().hasAll(['userId', 'createdAt']); // Ensure required fields
+
+        allow update: if isAuthenticated() && (request.auth.uid == resource.data.userId // User might update metadata (e.g., close chat?)
+                                            || hasAppRole('ADMIN') || hasAppRole('SUPER_ADMIN') // Admins can update status, assigned admin, metadata
+                                           )
+                         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'adminUserId', 'metadata']); // Example updateable fields
+
+        allow delete: if false; // Prevent deletion of admin support chat sessions
+
+        // Rules for messages within the Admin Support chat session
+        match /messages/{messageId} {
+             allow read: if get(/databases/$(database)/documents/adminChats/$(chatId)).data.userId == request.auth.uid // User can read messages in their support chat
+                            || hasAppRole('ADMIN') || hasAppRole('SUPER_ADMIN'); // Admins can read any support chat messages
+
+             allow create: if (get(/databases/$(database)/documents/adminChats/$(chatId)).data.userId == request.auth.uid // User can create their own messages
+                               && request.resource.data.senderId == request.auth.uid
+                               && request.resource.data.keys().hasAll(['senderId', 'text', 'timestamp', 'isChat']))
+                             || (hasAppRole('ADMIN') || hasAppRole('SUPER_ADMIN') // Admins can create messages
+                               && request.resource.data.keys().hasAll(['senderId', 'text', 'timestamp', 'isChat']))
+                             || (isBackendService() // Backend/System can create messages (e.g., auto-responses, admin actions logged as messages)
+                               && request.resource.data.keys().hasAll(['senderId', 'text', 'timestamp', 'isChat']));
+
+            // Allow user/admin participants to mark messages as read
+            allow update: if isAuthenticated() && (
+                                request.auth.uid == get(/databases/$(database)/documents/adminChats/$(chatId)).data.userId // User marking admin/system as read
+                                || hasAppRole('ADMIN') || hasAppRole('SUPER_ADMIN') // Admins marking user/system as read
+                               // Add check for assigned admin if needed:
+                               // || request.auth.uid == get(/databases/$(database)/documents/adminChats/$(chatId)).data.adminUserId
+                            )
+                            && request.auth.uid != resource.data.senderId // Ensure they are not marking their own message
+                            && request.resource.data.keys().hasOnly(['isReadByReceiver'])
+                            && request.resource.data.isReadByReceiver == true
+                            && resource.data.isReadByReceiver == false;
+
+             allow delete: if false; // Prevent deletion of individual messages
+        }
+    }
+
+    // --- Catch-all rule (restrict access by default) ---
+    // Ensure this rule is at the very end
+    // Remove or update the temporary open access rule:
+    // match /{document=**} {
+    //   allow read, write: if request.time < timestamp.date(2025, 6, 24);
+    // }
+    // Consider a stricter default, like denying all unless explicitly allowed above.
     match /{document=**} {
-      allow read, write: if request.time < timestamp.date(2025, 6, 24);
+      allow read, write: if false; // Deny by default
     }
   }
 }
