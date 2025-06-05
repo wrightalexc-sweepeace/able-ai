@@ -5,7 +5,7 @@ import { useRouter, useParams, usePathname } from 'next/navigation';
 import { useUser } from '@/app/context/UserContext';
 import SkillSplashScreen from '@/app/components/profile/SkillSplashScreen';
 import { Loader2, Star, Award, Zap } from 'lucide-react'; // Added Star, Award, Zap for mock icons
-import styles from './SkillDetailPage.module.css';
+import styles from './EditableSkillPage.module.css';
 
 // Define the structure of the skill profile data
 interface SkillProfileData {
