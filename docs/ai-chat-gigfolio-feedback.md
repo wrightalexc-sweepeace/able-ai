@@ -168,4 +168,21 @@ To integrate the AI feedback agent into the worker profile page, follow this pla
 5. **Extend as Needed**
    - Add support for more profile fields, recent gig data, or richer feedback as your product evolves.
 
-This modular approach keeps your AI feedback logic clean, testable, and easy to update. 
+This modular approach keeps your AI feedback logic clean, testable, and easy to update.
+
+---
+
+## Admin Moderation
+
+Admins will have the ability to view conversations associated with the gigfolio feedback chat flow via an admin panel. They can review message content and update the `moderationStatus` field if necessary. This helps monitor the AI's performance in providing helpful and appropriate feedback.
+
+## PII Handling
+
+When providing worker profile data to the AI agent for feedback generation, sensitive PII fields like location or display name should be excluded from the input (as noted in the "Data Inputs" section). 
+
+- The profile data used to generate feedback should be sanitized or redacted *before* being sent to the AI prompt and before being stored as part of the chat history.
+- The scheduled PII removal utility (detailed in [AI Chat Model and Backend Logic Plan](ai-models-plan.md)) will be used to process stored chat data, providing an additional layer of PII protection.
+
+## Data Deletion and Retention
+
+Chat messages from the gigfolio feedback flow will be stored in Firestore under the `/users/{userId}/aiChats` collection with `contextType: 'gigfolio_feedback'` (or similar). These messages will be subject to the general chat retention policy defined in the `system_flags` table and enforced by the scheduled data retention utility. 
