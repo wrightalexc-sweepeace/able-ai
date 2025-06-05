@@ -3,9 +3,9 @@
   background-color: var(--surface-dark);
   border-radius: 1.5rem;
   border: 1px solid #2b2b2b;
-  padding: 0.5rem;
+  padding: 1rem;
   margin-bottom: 1rem; /* Space between reviews */
-  color: var(--text-primary);
+  color: #ffffff;
   font-size: 0.8rem;
 }
 
