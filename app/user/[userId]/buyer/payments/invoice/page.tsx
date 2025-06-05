@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useAppContext } from '@/app/hooks/useAppContext';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { useUser } from '@/app/context/UserContext';
 import { getInvoiceData } from '@/app/actions/invoice';
 import styles from './Invoice.module.css';
 
@@ -34,16 +34,44 @@ interface InvoiceData {
 export default function InvoicePage({ params }: { params: { userId: string } }) {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { isAuthenticated, isLoading: loadingAuth, isQA } = useAppContext();
+  const pathname = usePathname(); // Added pathname
+  const { user, loading: loadingAuth } = useUser(); // Use useUser
+
   const [invoiceData, setInvoiceData] = useState<InvoiceData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true); // This is for data loading, loadingAuth is for user context
 
+  // Authentication and Authorization Effect
   useEffect(() => {
-    if (!loadingAuth && !isAuthenticated && !isQA) {
-      router.replace('/signin');
+    if (loadingAuth) {
+      return; // Wait for user context to load
     }
-  }, [isAuthenticated, loadingAuth, router, isQA]);
 
+    // QA users can bypass standard auth for viewing mock data
+    if (user?.isQA) {
+      return;
+    }
+
+    // For non-QA users
+    if (!user?.isAuthenticated) {
+      router.replace(`/signin?redirect=${encodeURIComponent(pathname)}`);
+      return;
+    }
+
+    const authUserId = user?.uid;
+    if (!authUserId) {
+      console.error("User is authenticated but UID is missing. Redirecting to signin.");
+      router.replace(`/signin?redirect=${encodeURIComponent(pathname)}`);
+      return;
+    }
+
+    if (authUserId !== params.userId) {
+      console.warn(`Authorization Mismatch: User ${authUserId} trying to access invoice for ${params.userId}. Redirecting.`);
+      router.replace("/signin?error=unauthorized");
+      return;
+    }
+  }, [user, loadingAuth, router, params.userId, pathname]);
+
+  // Data Fetching Effect
   useEffect(() => {
     const fetchInvoiceData = async () => {
       try {
@@ -92,16 +120,32 @@ export default function InvoicePage({ params }: { params: { userId: string } }) 
       }
     };
 
-    if (isAuthenticated || !isQA) {
-      fetchInvoiceData();
+    if (loadingAuth) {
+      return; // Wait for user context to be loaded before deciding to fetch data
     }
-  }, [isAuthenticated, isQA, params.userId, searchParams]);
+
+    if (user?.isQA) {
+      // QA users get mock data regardless of their own authUserId vs params.userId
+      fetchInvoiceData(); 
+    } else if (user?.isAuthenticated && user?.uid === params.userId) {
+      // Non-QA users must be authenticated and authorized
+      fetchInvoiceData();
+    } else if (!user?.isQA && !user?.isAuthenticated) {
+      // This case should ideally be caught by the auth useEffect and result in a redirect.
+      // If reached, ensure loading stops.
+      console.warn("Invoice data fetch attempted by non-QA, non-authenticated user.");
+      setIsLoading(false);
+    }
+    // No fetch if authenticated but not authorized (and not QA), as they'd be redirected.
+
+  }, [user, loadingAuth, params.userId, searchParams]);
 
   const handlePrint = () => {
     window.print();
   };
 
-  if (isLoading) {
+  // Show loading if either user context is loading or invoice data is loading
+  if (loadingAuth || isLoading) {
     return <div className={styles.loading}>Loading invoice...</div>;
   }
 
@@ -111,7 +155,7 @@ export default function InvoicePage({ params }: { params: { userId: string } }) 
 
   return (
     <div className={styles.container}>
-      {isQA && (
+      {user?.isQA && (
         <div className={styles.qaIndicator}>
           QA View - Mock Data
         </div>
