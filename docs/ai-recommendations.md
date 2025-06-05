@@ -115,4 +115,21 @@ USER: {skillProfile, feedbackArray, recommendationsArray, rehireStats}
 - Add support for multi-language summaries.
 - Add analytics (e.g., trends in rehire rate).
 - Optionally, allow buyers to see anonymized aggregate feedback.
-- Support richer context as more data becomes available. 
+- Support richer context as more data becomes available.
+
+## Admin Moderation
+
+Admins will not typically moderate the AI-generated review summaries directly, as they are derived from aggregated and anonymized data. However, admins may need to review the underlying raw feedback or recommendations that feed into the summary if moderation concerns arise with the source data itself.
+
+## PII Handling
+
+PII handling is critical for the AI customer reviews summary.
+
+- **Input Data**: Ensure that all data provided to the AI agent (comments, recommendations, event data) is already anonymized or redacted, removing any direct identifiers (names, emails, specific dates/locations if sensitive).
+- **AI Prompt**: The prompt should explicitly instruct the AI *not* to include any PII or identifiers in the generated summary.
+- **Output Summary**: The AI-generated summary should be reviewed to confirm no PII is present before being displayed or stored.
+- **Storage**: If the AI-generated summaries are stored (e.g., cached), they should ideally not contain PII. If intermediate data containing potential PII is stored for processing, it must be subject to the PII removal utility detailed in [AI Chat Model and Backend Logic Plan](ai-models-plan.md).
+
+## Data Deletion and Retention
+
+While the AI-generated summary itself might be cached or stored briefly, the underlying raw data (buyer comments, recommendations) is subject to its own retention policy. The chat logs related to the *generation* of the summary (the prompt and response if stored as a temporary chat) will fall under the general chat retention policy defined in the `system_flags` table and enforced by the scheduled data retention utility. The primary focus for retention here is on the source data feeding the AI. 

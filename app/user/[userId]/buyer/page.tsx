@@ -9,6 +9,7 @@ import Image from "next/image";
 import { Users, CalendarDays, CreditCard, LayoutDashboard } from "lucide-react";
 
 import AiSuggestionBanner from "@/app/components/shared/AiSuggestionBanner";
+import { useAiSuggestionBanner } from "../../../hooks/useAiSuggestionBanner";
 import IconGrid from "@/app/components/shared/IconGrid";
 import ReferralBanner from "@/app/components/shared/ReferralBanner";
 import RoleToggle from "@/app/components/shared/RoleToggle";
@@ -43,6 +44,32 @@ export default function BuyerDashboardPage() {
 
   const uid = userPublicProfile?.uid;
 
+  // AI Suggestion Banner Hook
+  const {
+    suggestions: aiSuggestions,
+    currentIndex,
+    isLoading: isLoadingSuggestions,
+    error: suggestionsError,
+    dismissed: suggestionsDismissed,
+    dismiss: dismissSuggestions,
+    refresh: refreshSuggestions,
+    goToNext,
+    goToPrev,
+  } = useAiSuggestionBanner({
+    role: "buyer",
+    userId: uid || "", // Ensure userId is not undefined
+    context: {
+      // Example context, replace with actual data
+      lastGigPosted: "2 days ago",
+      activeGigs: 3,
+      platformTrends: [
+        "increased demand for catering",
+        "more remote work options",
+      ],
+    },
+    enabled: !!uid, // Only enable if uid is available
+  });
+
   // Define actionItems specific to the role (Buyer)
   const actionItems = [
     {
@@ -72,6 +99,20 @@ export default function BuyerDashboardPage() {
       <div className={styles.card}>
         <header className={styles.pageHeader}>
           <Logo width={60} height={60} />
+          {uid && (
+            <AiSuggestionBanner
+              suggestions={aiSuggestions}
+              currentIndex={currentIndex}
+              isLoading={isLoadingSuggestions}
+              error={suggestionsError}
+              dismissed={suggestionsDismissed}
+              onDismiss={dismissSuggestions}
+              onRefresh={refreshSuggestions}
+              goToNext={goToNext}
+              goToPrev={goToPrev}
+              userId={uid}
+            />
+          )}
           {/* Notification Icon */}
           {userPublicProfile?.uid && (
             <Link
@@ -85,17 +126,13 @@ export default function BuyerDashboardPage() {
                 <Image
                   src="/images/notifications.svg"
                   alt="Notifications"
-                  width={45}
-                  height={45}
+                  width={40}
+                  height={40}
                 />
               </button>
             </Link>
           )}
         </header>
-
-        <AiSuggestionBanner
-          message="We have 10 new bartenders who joined within 5 miles of you - would you like to see their profiles?"
-        />
 
         <IconGrid items={actionItems} color={"#7eeef9"} />
 
@@ -105,7 +142,7 @@ export default function BuyerDashboardPage() {
         />
 
         <footer className={styles.pageFooter}>
-          <RoleToggle user={userPublicProfile}/>
+          <RoleToggle user={userPublicProfile} />
           <SettingsButton />
         </footer>
       </div>

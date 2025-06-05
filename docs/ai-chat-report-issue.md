@@ -352,4 +352,20 @@ To ensure robust, auditable, and actionable escalation of user issues from AI ch
 - **Postgres**: Stores permanent escalation records, status, and links to chat.
 - **Notifications**: Bridge between systems for real-time admin alerting and user updates.
 
-This integration ensures every escalated user request is tracked, actionable, and auditable across both systems. 
+This integration ensures every escalated user request is tracked, actionable, and auditable across both systems.
+
+## Admin Moderation
+
+Admins will have the ability to view conversations associated with the issue reporting chat flow via an admin panel. They can review message content, including the initial report details and AI interactions, and update the `moderationStatus` field. This allows for oversight of the issue reporting process and helps in identifying trends or problematic interactions.
+
+## PII Handling
+
+Issue reports often contain sensitive information and PII related to the user, gig, or other parties involved. 
+
+- User input and attached files must be handled securely. Frontend and backend logic should minimize the exposure of sensitive PII when processing or displaying this information, especially when involving the AI.
+- While the AI may help structure the report, the raw, potentially sensitive input should be stored securely and accessed only by authorized personnel.
+- The scheduled PII removal utility (detailed in [AI Chat Model and Backend Logic Plan](ai-models-plan.md)) will be crucial for managing PII in stored issue report chat data, ensuring compliance with data retention and privacy policies.
+
+## Data Deletion and Retention
+
+Chat messages from the issue reporting flow will be stored in Firestore under the `/users/{userId}/aiChats` collection with `contextType: 'report_issue'` (or similar). These messages, including the initial report details if stored as part of the chat, will be subject to the general chat retention policy defined in the `system_flags` table and enforced by the scheduled data retention utility. Longer retention for critical issues might be considered but should be explicitly planned and documented. 
