@@ -2,18 +2,15 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter, useParams, usePathname } from "next/navigation";
-import { useAppContext } from "@/app/hooks/useAppContext";
+import { useUser } from '@/app/context/UserContext';
 import Link from "next/link"; // For Home button
 import Image from "next/image"; // For notification icons
 
 // Using Lucide Icons
 import {
   AlertTriangle,
-  Home,
   ChevronRight,
-  ArrowLeft,
   Info,
-  Loader2,
   ChevronLeft,
 } from "lucide-react";
 
@@ -149,9 +146,12 @@ export default function NotificationsPage() {
   const pathname = usePathname();
   const pageUserId = params.userId as string;
 
-  const { isLoading: loadingAuth, user, updateUserContext } = useAppContext();
+  const {
+    user,
+    loading: loadingAuth,
+    updateUserContext,
+  } = useUser();
   const authUserId = user?.uid; // Access uid from the user object
-  const currentActiveRole = user?.lastRoleUsed; // Access lastRoleUsed from the user object
 
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoadingNotifications, setIsLoadingNotifications] = useState(true);
@@ -168,8 +168,7 @@ export default function NotificationsPage() {
         router.replace("/signin");
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.isAuthenticated, loadingAuth]);
+  }, [user?.isAuthenticated, loadingAuth, updateUserContext, pathname, authUserId, pageUserId, router, user?.lastRoleUsed]);
 
   // Fetch notifications
   useEffect(() => {
@@ -203,13 +202,19 @@ export default function NotificationsPage() {
   };
 
   const handleGoBack = () => {
-    // Navigate to appropriate dashboard based on currentActiveRole
-    if (currentActiveRole === "BUYER") {
+    // Navigate to appropriate dashboard based on user.lastRoleUsed
+    if (user?.lastRoleUsed === "BUYER") {
       router.push(`/user/${authUserId}/buyer`); // Assuming buyer dashboard path
-    } else if (currentActiveRole === "GIG_WORKER") {
+    } else if (user?.lastRoleUsed === "GIG_WORKER") {
       router.push(`/user/${authUserId}/worker`); // Assuming worker dashboard path
     } else {
-      router.back(); // Fallback
+      // If lastRoleUsed is not set, or user is not available, fallback to previous page or a default
+      // For now, let's try to go to select-role if user exists but no role, else back.
+      if (user) {
+        router.push('/select-role');
+      } else {
+        router.back();
+      }
     }
   };
 
@@ -280,9 +285,11 @@ export default function NotificationsPage() {
           <footer className={styles.footer}>
             <Link
               href={
-                currentActiveRole === "BUYER"
+                user?.lastRoleUsed === "BUYER"
                   ? `/user/${authUserId}/buyer`
-                  : `/user/${authUserId}/worker`
+                  : user?.lastRoleUsed === "GIG_WORKER"
+                  ? `/user/${authUserId}/worker`
+                  : `/select-role` // Fallback if role is unknown
               }
               passHref
             >
