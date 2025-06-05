@@ -1,10 +1,10 @@
 "use client";
 
-import React, { ReactElement, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter, useParams, usePathname } from "next/navigation";
-import { useAppContext } from "@/app/hooks/useAppContext";
+import { useUser } from '@/app/context/UserContext';
 import Image from "next/image";
-import { ThumbsUp, MessageSquareText, Users, Award, Film, Video, Loader2, Sparkles, MessageCircleCode } from "lucide-react";
+import { ThumbsUp, Award, Film, Video, Loader2, Sparkles, MessageCircleCode } from "lucide-react";
 import styles from "./BuyerProfilePage.module.css";
 import StatisticItemDisplay from "@/app/components/profile/StatisticItemDisplay";
 import AwardDisplayBadge from "@/app/components/profile/AwardDisplayBadge";
@@ -95,13 +95,32 @@ export default function BuyerProfilePage() {
     const router = useRouter();
     const params = useParams();
     const pathname = usePathname();
-    const { user, isLoading: loadingAuth, updateUserContext } = useAppContext();
+    const pageUserId = params.userId as string;
+    const { user, loading: loadingAuth, updateUserContext } = useUser();
+    const authUserId = user?.uid;
     const [dashboardData, setDashboardData] = useState<DashboardData | null>(null);
     const [isLoadingData, setIsLoadingData] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const [error, 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    setError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (!loadingAuth && user?.isAuthenticated) {
+        if (loadingAuth) {
+            return; // Wait for user data to load
+        }
+
+        if (!user || !user.isAuthenticated) {
+            router.push(`/signin?redirect=${pathname}`);
+            return;
+        }
+
+        if (authUserId !== pageUserId) {
+            router.push(`/signin?error=unauthorized`); // Or user's own profile, or a generic error page
+            return;
+        }
+
+        // At this point, user is authenticated and authorized for this pageUserId
+        if (user?.isAuthenticated) { // This check is somewhat redundant due to above, but keeps structure similar
             if (user?.isQA) {
                 setDashboardData(mockDashboardData);
                 setIsLoadingData(false);
@@ -121,11 +140,8 @@ export default function BuyerProfilePage() {
                 router.replace("/select-role");
             }
         }
-    }, [user?.isAuthenticated, loadingAuth]);
+    }, [loadingAuth, user, authUserId, pageUserId, updateUserContext, pathname, router]);
 
-    const handleAddTeamMember = () => {
-        alert("Add team member functionality to be implemented.");
-    };
 
     const handlePlayIntroVideo = () => {
         if (dashboardData?.introVideoUrl) {
