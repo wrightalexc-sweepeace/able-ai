@@ -16,7 +16,7 @@ interface Statistic {
 interface Award {
     id: string;
     icon: React.ElementType;
-    textLines: string[];
+    textLines: string;
 }
 
 export default interface PublicWorkerProfile {

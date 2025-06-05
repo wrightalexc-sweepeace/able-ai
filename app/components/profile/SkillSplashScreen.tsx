@@ -26,7 +26,7 @@ type Profile = {
   badges: {
     id: string | number;
     icon: React.ElementType;
-    textLines: string[];
+    textLines: string;
   }[];
   qualifications: string[];
   buyerReviews: {
