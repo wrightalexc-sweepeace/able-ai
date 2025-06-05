@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { Info, MessageSquare, Star, FileText, AlertCircle } from "lucide-react";
 import styles from "@/app/user/[userId]/worker/gigs/[gigId]/GigDetailsPage.module.css";
-import { useAppContext } from "@/app/hooks/useAppContext";
+import { useUser } from "@/app/context/UserContext";
+import { useParams } from "next/navigation"; // Added useParams
 
 // Placeholder for gig and worker data
 const gig = {
@@ -37,21 +38,50 @@ const stepLabels = [
 export default function BuyerGigDetailsPage() {
   const router = useRouter();
   const pathname = usePathname();
-  const { isLoading: loadingAuth, user, updateUserContext } = useAppContext();
+  const params = useParams();
+  const pageUserId = params.userId as string;
+
+  // Replace useAppContext with useUser
+  const { user, loading: loadingAuth, updateUserContext } = useUser(); 
+  const authUserId = user?.uid;
 
   useEffect(() => {
-    if (!loadingAuth && user?.isAuthenticated) {
-      if (user?.canBeBuyer || user?.isQA) {
-        updateUserContext({
-          lastRoleUsed: "BUYER", // Ensure the context reflects the current role
-          lastViewVisited: pathname, // Update last view visited
-        });
-      } else {
-        router.replace("/select-role");
-      }
+    if (loadingAuth) {
+      return; // Wait for user context to load
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.isAuthenticated, loadingAuth]);
+
+    if (!user?.isAuthenticated) {
+      router.push(`/signin?redirect=${encodeURIComponent(pathname)}`);
+      return;
+    }
+
+    if (!authUserId) {
+      console.error("User is authenticated but UID is missing. Redirecting to signin.");
+      router.push(`/signin?redirect=${encodeURIComponent(pathname)}`);
+      return;
+    }
+
+    // Authorization check: Ensure the authenticated user is accessing their own data
+    if (authUserId !== pageUserId) {
+      console.warn(`Authorization Mismatch: Authenticated user ${authUserId} attempting to access page for ${pageUserId}. Redirecting.`);
+      router.push("/signin?error=unauthorized");
+      return;
+    }
+
+    // Role check and context update
+    if (user?.canBeBuyer || user?.isQA) { // Assuming QA users might also access buyer pages
+      updateUserContext({
+        lastRoleUsed: "BUYER",
+        lastViewVisited: pathname,
+      }).catch(err => {
+        console.error("Failed to update user context with last visit/role:", err);
+        // Non-critical error
+      });
+    } else {
+      console.warn(`Role Mismatch: User ${authUserId} is not a Buyer or QA. Redirecting.`);
+      router.push("/select-role");
+    }
+  }, [user, loadingAuth, authUserId, pageUserId, router, pathname, updateUserContext]);
 
   return (
     <div className={styles.container}>
