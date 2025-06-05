@@ -21,14 +21,14 @@
 }
 
 .statValue {
-  font-size: 1.3rem;
+  font-size: 1.15rem;
   font-weight: 700;
   color: #ffffff;
   line-height: 1.2;
 }
 
 .statLabel {
-  font-size: 0.85rem;
-  color: #c2c2c2;
-  line-height: 1.4;
+  font-size: 1.1rem;
+  color: #ffffff;
+  line-height: 1.2;
 } 

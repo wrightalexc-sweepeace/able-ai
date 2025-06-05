@@ -12,7 +12,7 @@ const StatisticItemDisplay: React.FC<StatisticItemDisplayProps> = ({
   icon: Icon,
   value,
   label,
-  iconColor = '#007AFF'
+  iconColor= '#7eeef9'
 }) => {
   return (
     <div className={styles.statItem}>
