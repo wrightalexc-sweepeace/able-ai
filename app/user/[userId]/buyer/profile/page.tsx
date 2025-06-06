@@ -9,6 +9,8 @@ import styles from "./BuyerProfilePage.module.css";
 import StatisticItemDisplay from "@/app/components/profile/StatisticItemDisplay";
 import AwardDisplayBadge from "@/app/components/profile/AwardDisplayBadge";
 import ReviewCardItem from "@/app/components/shared/ReviewCardItem";
+import PieChartComponent from "@/app/components/shared/PiChart";
+import BarChartComponent from "@/app/components/shared/BarChart";
 
 // Types
 interface Badge {
@@ -259,14 +261,8 @@ export default function BuyerProfilePage() {
                 <section className={styles.section}>
                     <h2 className={styles.sectionTitle}>Workforce Analytics</h2>
                     <div className={styles.analyticsChartsContainer}>
-                        <div className={styles.chartPlaceholder}>
-                            {/* Pie Chart would go here */}
-                            Pie Chart: Spend by Role (Placeholder)
-                        </div>
-                        <div className={styles.chartPlaceholder}>
-                            {/* Bar Chart would go here */}
-                            Bar Chart: Hires per Month (Placeholder)
-                        </div>
+                        <PieChartComponent />
+                        <BarChartComponent />
                     </div>
                 </section>
 
