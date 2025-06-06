@@ -2,7 +2,7 @@
 
 import React, { useEffect } from "react";
 import { useRouter, useParams, usePathname } from "next/navigation";
-import { useUser } from '@/app/context/UserContext';
+import { useUser } from "@/app/context/UserContext";
 import Link from "next/link";
 
 // Import shared components
@@ -51,37 +51,41 @@ export default function WorkerDashboardPage() {
   const authUserId = user?.uid;
 
   useEffect(() => {
-    if (loadingAuth) return;
+    if (!loadingAuth && user?.isAuthenticated) {
+      if (user?.canBeGigWorker || user?.isQA) {
+        updateUserContext({
+          lastRoleUsed: "GIG_WORKER", // Ensure the context reflects the current role
 
-    if (!user?.isAuthenticated) {
-      router.push(`/signin?redirect=${encodeURIComponent(pathname)}`);
-      return;
+          lastViewVisited: pathname, // Update last view visited
+        }).catch((err) => {
+          console.error(
+            "Failed to update user context for worker dashboard:",
+            err
+          );
+          // Non-critical error
+        });
+      } else {
+        router.replace("/select-role");
+      }
     }
 
-    if (!authUserId) {
-      console.error("User is authenticated but UID is missing. Redirecting to signin.");
-      router.push(`/signin?redirect=${encodeURIComponent(pathname)}`);
-      return;
-    }
+    // if (!user?.isAuthenticated) {
+    //   router.push(`/signin?redirect=${encodeURIComponent(pathname)}`);
+    //   return;
+    // }
 
-    if (authUserId !== pageUserId) {
-      router.push('/signin?error=unauthorized');
-      return;
-    }
+    // if (!authUserId) {
+    //   console.error("User is authenticated but UID is missing. Redirecting to signin.");
+    //   router.push(`/signin?redirect=${encodeURIComponent(pathname)}`);
+    //   return;
+    // }
 
-    if (!(user.canBeGigWorker || user.isQA)) {
-      router.push('/select-role');
-      return;
-    }
-
-    updateUserContext({
-      lastRoleUsed: "GIG_WORKER",
-      lastViewVisited: pathname,
-    }).catch(err => {
-      console.error("Failed to update user context for worker dashboard:", err);
-      // Non-critical error
-    });
-  }, [user, loadingAuth, authUserId, pageUserId, router, pathname, updateUserContext]);
+    // if (authUserId !== pageUserId) {
+    //   router.push('/signin?error=unauthorized');
+    //   return;
+    // }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.isAuthenticated, loadingAuth]);
 
   // Use authUserId for subsequent operations after validation
   const uid = authUserId;
@@ -147,7 +151,11 @@ export default function WorkerDashboardPage() {
 
   // Show loader if auth is loading, or if user is not authenticated (as redirect will happen)
   // or if pageUserId is not the authenticated user's ID (again, redirect will happen)
-  if (loadingAuth || !user?.isAuthenticated || (user?.isAuthenticated && authUserId !== pageUserId) ) {
+  if (
+    loadingAuth ||
+    !user?.isAuthenticated ||
+    (user?.isAuthenticated && authUserId !== pageUserId)
+  ) {
     return <Loader />;
   }
 
