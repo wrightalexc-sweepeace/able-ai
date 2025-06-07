@@ -41,8 +41,8 @@ async function fetchPublicWorkerProfile(workerIdToView: string): Promise<PublicW
         { name: "Graphic Designer", ableGigs: 1, experience: "7 years", eph: 22 }
       ],
       awards: [
-        { id: "a1", icon: AwardIconLucide, textLines: ["Always on", "time"] },
-        { id: "a2", icon: UserCircle, textLines: ["Able", "Professional"] },
+        { id: "a1", icon: AwardIconLucide, textLines: "Always on time" },
+        { id: "a2", icon: UserCircle, textLines: "Able Professional" },
       ],
       feedbackSummary: "Professional, charming and lively",
       qualifications: [
