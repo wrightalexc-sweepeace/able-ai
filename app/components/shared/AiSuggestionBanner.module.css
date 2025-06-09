@@ -98,7 +98,7 @@
   transition: box-shadow 0.2s ease;
   flex-shrink: 0; /* Prevent shrinking */
   box-shadow: 0 2px 4px rgba(0,0,0,0.2); /* Consider variables for shadow if used elsewhere */
-  transform: translateY(-25%) translateX(50%);
+  transform: translateY(-25%);
   padding: .25rem;
 }
 
