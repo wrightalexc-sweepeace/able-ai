@@ -51,7 +51,7 @@ export default function WorkerDashboardPage() {
   const authUserId = user?.uid;
 
   useEffect(() => {
-    if (!loadingAuth && user?.isAuthenticated) {
+    if (!loadingAuth && user?.isAuthenticated) { // firebase loading
       if (user?.canBeGigWorker || user?.isQA) {
         updateUserContext({
           lastRoleUsed: "GIG_WORKER", // Ensure the context reflects the current role
@@ -152,7 +152,6 @@ export default function WorkerDashboardPage() {
   // Show loader if auth is loading, or if user is not authenticated (as redirect will happen)
   // or if pageUserId is not the authenticated user's ID (again, redirect will happen)
   if (
-    loadingAuth ||
     !user?.isAuthenticated ||
     (user?.isAuthenticated && authUserId !== pageUserId)
   ) {

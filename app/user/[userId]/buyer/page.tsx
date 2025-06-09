@@ -90,7 +90,7 @@ export default function BuyerDashboardPage() {
     },
   ];
 
-  if (loadingAuth || !userPublicProfile?.isAuthenticated) {
+  if (!userPublicProfile?.isAuthenticated) {
     return <Loader />;
   }
 
