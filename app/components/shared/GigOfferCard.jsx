@@ -56,7 +56,15 @@ const GigOfferCard = ({
 
   return (
     <div className={`${styles.card} ${isExpired ? styles.expired : ''}`}>
-      <h3 className={styles.role}>{offer.role}</h3>
+      <div className={styles.cardHeader}>
+        <h3 className={styles.role}>{offer.role}</h3>
+        {timeLeft && !isExpired && (
+            <div className={styles.timerContainer}>
+              <Clock size={30} color="#fff" className={styles.timerIcon} />
+              <span className={styles.timerText}>{timeLeft} <br/> to accept</span>
+            </div>
+        )}
+      </div>
       <div className={styles.gigDetails}>
           <p className={styles.gigLocation}>
             <span className={styles.detailIcon}><MapPin size={12} /></span>
@@ -74,24 +82,19 @@ const GigOfferCard = ({
             <span className={styles.detailIcon}><DollarSign size={12} /></span>
             {totalPayDisplay ? totalPayDisplay : `£${offer.hourlyRate.toFixed(2)}/hr + tips`}
           </p>
-        {timeLeft && !isExpired && (
-            <div className={styles.timerContainer}>
-              <Clock size={12} className={styles.timerIcon} />
-              <span className={styles.timerText}>{timeLeft} to accept</span>
-            </div>
-          )}
+        
       </div>
       <div className={styles.buttons}>
         <button
           onClick={() => onAccept(offer.id)}
-          className={`${styles.acceptButton} ${isProcessingAccept ? styles.processing : ''}`}
+          className={`${styles.button} ${styles.acceptButton} ${isProcessingAccept ? styles.processing : ''}`}
           disabled={isProcessingAccept || isProcessingDecline || isExpired}
         >
              {isProcessingAccept ? <Loader2 size={16} className="animate-spin"/> : 'Accept'}
         </button>
         <button
           onClick={() => onDecline(offer.id)}
-          className={`${styles.declineButton} ${isProcessingDecline ? styles.processing : ''}`}
+          className={`${styles.button} ${styles.declineButton} ${isProcessingDecline ? styles.processing : ''}`}
           disabled={isProcessingDecline || isProcessingAccept || isExpired}
         >
             {isProcessingDecline ? <Loader2 size={16} className="animate-spin"/> : 'Decline'}

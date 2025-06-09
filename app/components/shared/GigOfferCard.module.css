@@ -1,28 +1,36 @@
 /* app/components/shared/GigOfferCard.module.css */
 
 .card {
-  background-color: #121212;
-  border-radius: 8px;
+  border-radius: 1.5rem;
+  border: 1px solid #2b2b2b;
   padding: 16px;
-  margin-bottom: 16px;
+  margin-bottom: 1.25rem;
   position: relative;
-  overflow: hidden; /* Hide overflow for rounded corners on absolute elements */
+  overflow: hidden;
 }
 
 .expired {
   opacity: 0.6;
 }
 
-.role {
-  font-size: 1.1rem;
-  font-weight: bold;
-  color: #fff;
-  margin-bottom: 8px;
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
 }
 
-.gigDetails {
-    margin-bottom: 12px;
+.role {
+  font-size: 1.25rem;
+  margin-bottom: 8px;
+  color: #ffffff;
+  font-family: var(--font-family);
+  font-weight: 700;
 }
+
+/* .gigDetails {
+    margin-bottom: 12px;
+} */
 
 .gigDetails p {
     margin-bottom: 4px;
@@ -54,45 +62,43 @@
 
 .timerContainer {
     display: flex;
-    align-items: center;
-    color: #f59e0b;
-    font-size: 0.75rem;
-    margin-top: 8px;
   }
 
 .timerIcon {
-    margin-right: 4px;
+  margin-right: 0.5rem;
 }
 .timerText {
-    color: #f59e0b;
+  color: #ffffff;
+  font-family: var(--font-family);
+  line-height: 16px;
+  font-size: 0.8rem;
 }
 
 .buttons {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 8px;
+}
+
+.button {
+  padding: 0.5rem 1rem;
+  border: 0;
+  border-radius: 1.5rem;
+  color: #0f0f0f;
+  font-size: 14px;
+  font-family: var(--font-family);
+  outline: none; 
+  cursor: pointer; 
+  width: 77px;  
 }
 
 .acceptButton {
   background-color: #5bc0de; /* Light blue from the image */
-  color: #fff;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.85rem;
-  width: 48%;
 }
 
 .declineButton {
   background-color: #fff;
-  color: #000;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 0.85rem;
-  width: 48%;
+  
 }
 
 .acceptButton:disabled,
