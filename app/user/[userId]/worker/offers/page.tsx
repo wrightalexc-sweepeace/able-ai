@@ -8,8 +8,11 @@ import Link from 'next/link';
 import GigOfferCard from '@/app/components/shared/GigOfferCard'; // Assuming shared location
 import AcceptedGigCard from '@/app/components/shared/AcceptedGigCard'; // Import new component
 import AiSuggestionBanner from '@/app/components/shared/AiSuggestionBanner';
-import { Home, ArrowLeft, Filter, Loader2, Inbox } from 'lucide-react';
+import { Home, ArrowLeft, Filter, Loader2, Inbox, Calendar } from 'lucide-react';
 import styles from './OffersPage.module.css'; // Import styles
+import Logo from '@/app/components/brand/Logo';
+import { useAiSuggestionBanner } from '@/app/hooks/useAiSuggestionBanner';
+import Image from 'next/image';
 
 interface GigOffer {
   id: string;
@@ -63,6 +66,34 @@ export default function WorkerOffersPage() {
   const [error, setError] = useState<string | null>(null);
   const [processingOfferId, setProcessingOfferId] = useState<string | null>(null);
   const [processingAction, setProcessingAction] = useState<'accept' | 'decline' | null>(null);
+  const uid = authUserId;
+
+  // AI Suggestion Banner Hook
+    const {
+      suggestions: aiSuggestions,
+      currentIndex,
+      isLoading: isLoadingSuggestions,
+      error: suggestionsError,
+      dismissed: suggestionsDismissed,
+      dismiss: dismissSuggestions,
+      refresh: refreshSuggestions,
+      goToNext,
+      goToPrev,
+    } = useAiSuggestionBanner({
+      role: "worker",
+      userId: uid || "", // Provide fallback for undefined uid
+      // enabled: true, // Removed duplicate enabled property
+      context: {
+        // Example context for worker, replace with actual relevant data
+        profileCompletion: 0.7,
+        recentActivity: "applied for 2 gigs",
+        platformTrends: [
+          "high demand for photographers",
+          "weekend shifts available",
+        ],
+      },
+      enabled: !!uid, // Only enable if uid is available
+    });
 
   // Auth check and role validation
   useEffect(() => {
@@ -176,6 +207,9 @@ export default function WorkerOffersPage() {
       // Or open a modal with more info if data is present in offer object
     }
   };
+  const handleGoToHome = () => {
+    router.push(`/user/${pageUserId}/worker`);
+  };
 
   if (loadingAuth || (!user?.isAuthenticated && !loadingAuth) || (user?.uid && user.uid !== pageUserId) ) { // Use isLoading and user?.uid
     return <div className={styles.loadingContainer}><Loader2 className="animate-spin" size={32} /> Loading...</div>;
@@ -184,20 +218,26 @@ export default function WorkerOffersPage() {
   return (
     <div className={styles.container}> {/* Use styles */}
       <div className={styles.pageWrapper}> {/* Use styles */}
-        <header className={styles.header}> {/* Use styles */}
-          {/*<button onClick={() => router.back()} className={styles.backButton} aria-label="Go back">
-            <ArrowLeft size={24} />
-          </button>*/}
-          <h1 className={styles.pageTitle}>Gig Offers</h1> {/* Use styles */}
-          {/*<button onClick={() => alert("Filter functionality to be implemented")} className={styles.filterButton}>
-            <Filter size={16} /> Filter
-          </button>*/}
-        </header>
-
         <div className={styles.infoBanner}> {/* Use styles */}
-          <img src="/avatar.png" alt="Avatar" className={styles.avatar} /> {/* Use styles */}
-          <p>Accept these gigs within the time shown or we will offer them to someone else!</p>
+          <Logo width={70} height={70} /> 
+          {/* <p>Accept these gigs within the time shown or we will offer them to someone else!</p> */}
+          {uid && (
+            <AiSuggestionBanner
+              suggestions={aiSuggestions}
+              currentIndex={currentIndex}
+              isLoading={isLoadingSuggestions}
+              error={suggestionsError}
+              dismissed={suggestionsDismissed} // Pass the dismissed state
+              onDismiss={dismissSuggestions}
+              onRefresh={refreshSuggestions}
+              goToNext={goToNext}
+              goToPrev={goToPrev}
+              userId={uid}
+            />
+          )}
         </div>
+
+         <h1 className={styles.pageTitle}>Gig Offers</h1>
 
         {isLoadingData ? ( // Use renamed loading state
           <div className={styles.loadingContainer}><Loader2 className="animate-spin" size={28}/> Loading offers...</div> // Use styles
@@ -213,7 +253,6 @@ export default function WorkerOffersPage() {
             {/* Pending Offers Section */}
             {offers.filter(o => o.status !== 'expired').length > 0 && (
                 <div className={styles.offersSection}> {/* New div for offers section */}
-                    <h2 className={styles.sectionTitle}>New Gig Offers</h2> {/* Title for offers */}
                     {offers.filter(o => o.status !== 'expired').map(offer => (
                     <GigOfferCard
                         key={offer.id}
@@ -230,16 +269,19 @@ export default function WorkerOffersPage() {
 
             {/* Accepted Upcoming Gigs Section */}
             {acceptedGigs.length > 0 && (
-                <div className={styles.acceptedSection}> {/* New div for accepted section */}
+                <div className={styles.acceptedSection}>
+                  <div className={styles.sectionHeader}>
                     <h2 className={styles.sectionTitle}>Accepted Upcoming Gigs</h2> {/* Title for accepted */}
-                    {acceptedGigs.map(gig => (
-                        <AcceptedGigCard // Use the new component
-                            key={gig.id}
-                            gig={gig} // Pass the gig data
-                            onViewDetails={handleViewDetails} // Only view details for accepted
-                            // Removed onAccept and onDecline as they are not needed here
-                        />
-                    ))}
+                    <Calendar size={32} color='#ffffff' />
+                  </div>
+                  {acceptedGigs.map(gig => (
+                      <AcceptedGigCard // Use the new component
+                          key={gig.id}
+                          gig={gig} // Pass the gig data
+                          onViewDetails={handleViewDetails} // Only view details for accepted
+                          // Removed onAccept and onDecline as they are not needed here
+                      />
+                  ))}
                 </div>
             )}
           </div>
@@ -247,8 +289,8 @@ export default function WorkerOffersPage() {
 
         <footer className={styles.footer}> {/* Use styles */}
           <Link href={`/user/${pageUserId}/worker`} passHref> {/* Use user?.uid */}
-            <button className={styles.homeButton} aria-label="Go to Home"> {/* Use styles */}
-                <Home size={24} />
+            <button className={styles.homeButton} aria-label="Go to Home" onClick={handleGoToHome}> {/* Use styles */}
+                <Image src="/images/home.svg" alt="Home" width={50} height={50} />
             </button>
           </Link>
         </footer>
