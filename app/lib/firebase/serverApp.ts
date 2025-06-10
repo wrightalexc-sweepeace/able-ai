@@ -1,4 +1,3 @@
-import { cookies } from "next/headers";
 import { initializeServerApp } from "firebase/app";
 
 import { getAuth } from "firebase/auth";

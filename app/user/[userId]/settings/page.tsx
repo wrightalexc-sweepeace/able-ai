@@ -120,39 +120,17 @@ export default function SettingsPage() {
 
   // Authentication, Authorization, and initial context update
   useEffect(() => {
-    if (isLoading) {
-      return; // Wait for user context to load
+    if (!isLoading && user?.isAuthenticated) {
+      updateUserContext({
+        lastRoleUsed: user?.lastRoleUsed || "BUYER", // Default to BUYER if not set
+        lastViewVisited: pathname,
+      }).catch(err => {
+        console.error("Failed to update user context with last visit/role:", err);
+        // Non-critical error, so don't block UI or redirect
+      });
+
+      console.log("Updated user context with last visit/role:", user?.lastRoleUsed, pathname);
     }
-
-    if (!user?.isAuthenticated) {
-      router.push(`/signin?redirect=${encodeURIComponent(pathname)}`);
-      return;
-    }
-
-    // authUserId is already derived from user?.uid at the top
-    if (!authUserId) {
-      // This case should ideally not happen if user.isAuthenticated is true and not loading
-      console.error("User is authenticated but UID is missing. Redirecting to signin.");
-      router.push(`/signin?redirect=${encodeURIComponent(pathname)}`);
-      return;
-    }
-
-    if (authUserId !== pageUserId) {
-      console.warn(`Authorization Mismatch: Authenticated user ${authUserId} attempting to access settings for ${pageUserId}. Redirecting.`);
-      router.push("/signin?error=unauthorized"); // Or a more appropriate page like '/' or '/dashboard'
-      return;
-    }
-
-    // If all checks pass, update context with last visited page and role (if necessary)
-    // This is kept from original logic but ensured to run only for authorized user viewing their own page.
-    updateUserContext({
-      lastRoleUsed: user?.lastRoleUsed || "BUYER", // Default to BUYER if not set
-      lastViewVisited: pathname,
-    }).catch(err => {
-      console.error("Failed to update user context with last visit/role:", err);
-      // Non-critical error, so don't block UI or redirect
-    });
-
   }, [isLoading, user, authUserId, pageUserId, router, pathname, updateUserContext]);
 
   // Fetch user settings from backend API
