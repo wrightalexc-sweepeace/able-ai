@@ -5,10 +5,6 @@ import { User } from "firebase/auth";
 import { useFirebaseAuth } from "./useFirebaseAuth";
 import { updateUserAppContext } from "@/app/actions/update-user-app-context";
 import { useEffect, useState, useMemo } from "react";
-import {
-  getFirestoreUserByFirebaseUid,
-  updateUserProfile,
-} from "../lib/firebase/firestore";
 import { getUserByFirebaseUid } from "../actions/userActions";
 
 export interface ExtendedUser extends User {
@@ -43,10 +39,6 @@ export function useAppContext(): AppContextValue {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const getFirestoreUser = async (firebaseUser: User) => {
-      const userData = await getFirestoreUserByFirebaseUid(firebaseUser?.uid);
-      return userData;
-    };
     const fetchUser = async (firebaseUser: User, idToken: string) => {
       const { value: userData, error } = await getUserByFirebaseUid(
         firebaseUser?.uid,
@@ -60,55 +52,44 @@ export function useAppContext(): AppContextValue {
     };
 
     if (firebaseUser?.uid && idToken) {
-      getFirestoreUser(firebaseUser)
-        .then((firestoreUser) => {
-          fetchUser(firebaseUser, idToken)
-            .then(({ value: userData }) => {
-              const lastRoleUsed =
-                (localStorage.getItem("lastRoleUsed") as
-                  | "BUYER"
-                  | "GIG_WORKER"
-                  | null) ||
-                firestoreUser?.currentActiveRole ||
-                userData?.appRole;
-              const lastViewVisitedBuyer =
-                (localStorage.getItem("lastViewVisitedBuyer") as
-                  | string
-                  | null) || userData?.lastViewVisitedBuyer;
-              const lastViewVisitedWorker =
-                (localStorage.getItem("lastViewVisitedWorker") as
-                  | string
-                  | null) || userData?.lastViewVisitedWorker;
-              const isQA =
-                localStorage.getItem("isViewQA") === "true" ||
-                userData?.appRole === "QA";
-              const extendedUser = {
-                appRole: userData?.appRole,
-                lastRoleUsed: userData?.lastRoleUsed,
-                uid: firebaseUser.uid,
-                displayName: firebaseUser.displayName,
-                email: firebaseUser.email,
-                photoURL: firebaseUser.photoURL,
-                isAuthenticated: true,
-                isAdmin: userData?.appRole === "ADMIN",
-                isSuperAdmin: userData?.appRole === "SUPER_ADMIN",
-                isQA,
-                isBuyerMode: lastRoleUsed === "BUYER",
-                isWorkerMode: lastRoleUsed === "GIG_WORKER",
-                canBeBuyer: userData?.isBuyer,
-                canBeGigWorker: userData?.isGigWorker,
-                lastViewVisitedBuyer,
-                lastViewVisitedWorker,
-              };
-              setUser(extendedUser as ExtendedUser);
-            })
-            .catch((error) => {
-              console.error("Error fetching user by firebaseUid:", error);
-              setIsLoading(false);
-            });
+      fetchUser(firebaseUser, idToken)
+        .then(({ value: userData }) => {
+          const lastRoleUsed =
+            (localStorage.getItem("lastRoleUsed") as
+              | "BUYER"
+              | "GIG_WORKER"
+              | null) || userData?.appRole;
+          const lastViewVisitedBuyer =
+            (localStorage.getItem("lastViewVisitedBuyer") as string | null) ||
+            userData?.lastViewVisitedBuyer;
+          const lastViewVisitedWorker =
+            (localStorage.getItem("lastViewVisitedWorker") as string | null) ||
+            userData?.lastViewVisitedWorker;
+          const isQA =
+            localStorage.getItem("isViewQA") === "true" ||
+            userData?.appRole === "QA";
+          const extendedUser = {
+            appRole: userData?.appRole,
+            lastRoleUsed: userData?.lastRoleUsed,
+            uid: firebaseUser.uid,
+            displayName: firebaseUser.displayName,
+            email: firebaseUser.email,
+            photoURL: firebaseUser.photoURL,
+            isAuthenticated: true,
+            isAdmin: userData?.appRole === "ADMIN",
+            isSuperAdmin: userData?.appRole === "SUPER_ADMIN",
+            isQA,
+            isBuyerMode: lastRoleUsed === "BUYER",
+            isWorkerMode: lastRoleUsed === "GIG_WORKER",
+            canBeBuyer: userData?.isBuyer,
+            canBeGigWorker: userData?.isGigWorker,
+            lastViewVisitedBuyer,
+            lastViewVisitedWorker,
+          };
+          setUser(extendedUser as ExtendedUser);
         })
         .catch((error) => {
-          console.error("Error fetching firestore user by firebaseUid:", error);
+          console.error("Error fetching user by firebaseUid:", error);
           setIsLoading(false);
         });
     }
@@ -148,10 +129,6 @@ export function useAppContext(): AppContextValue {
         updates,
         idToken
       );
-
-      await updateUserProfile(user?.uid, {
-        currentActiveRole: updates.lastRoleUsed,
-      });
 
       if (error) {
         console.error("Error updating user context:", error);
@@ -202,11 +179,14 @@ export function useAppContext(): AppContextValue {
   };
 
   // Add memoization for better performance
-  const userValue = useMemo(() => ({
-    user,
-    isLoading,
-    updateUserContext
-  }), [user, isLoading]);
+  const userValue = useMemo(
+    () => ({
+      user,
+      isLoading,
+      updateUserContext,
+    }),
+    [user, isLoading]
+  );
 
   return userValue;
 }

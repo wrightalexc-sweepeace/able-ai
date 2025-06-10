@@ -8,7 +8,6 @@ import {
   validatePassword,
 } from "firebase/auth";
 import { auth, auth as firebaseAuthClient } from "@/app/lib/firebase/clientApp";
-import { createUserProfile } from "@/app/lib/firebase/firestore";
 
 interface SignInResult {
   success: boolean;
@@ -86,20 +85,6 @@ export async function registerWithEmailPassword(email: string, password: string,
             password
         );
         await updateProfile(userCredential.user, { displayName: name });
-
-        const firebaseUser = userCredential.user;
-        // Create user document in Firestore
-        if (firebaseUser) {
-            // Pass minimal initial data required by Firestore rules
-            // Other fields like roles and capabilities will be set during onboarding
-            await createUserProfile(firebaseUser.uid, {
-                displayName: name,
-                profileImageUrl: firebaseUser.photoURL || '', // Use actual photoURL if available, otherwise empty string
-                // currentActiveRole, canBeBuyer, canBeGigWorker are set with placeholders in createUserProfile
-                // createdAt is set in createUserProfile
-                // fcmToken can be added later if available
-            });
-        }
 
         // The role will be passed to NextAuth's authorize callback via handleFirebaseSignIn
         const idToken = await getIdToken(userCredential.user, true);

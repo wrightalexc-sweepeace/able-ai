@@ -72,12 +72,12 @@ const removeLocalItem = (key: string): void => {
   localStorage.removeItem(key);
 };
 
-export const getLastRoleUsed = (): "BUYER" | "GIG_WORKER" | null => {
+export const getLastRoleUsed = (): "BUYER" | "GIG_WORKER" => {
   const role = getLocalItem(LOCAL_STORAGE_LAST_ROLE_USED);
   if (role === "BUYER" || role === "GIG_WORKER") {
     return role;
   }
-  return null;
+  return "BUYER";
 };
 
 export const setLastRoleUsed = (role: "BUYER" | "GIG_WORKER"): void => {

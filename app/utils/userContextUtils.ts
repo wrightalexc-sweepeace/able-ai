@@ -70,11 +70,11 @@ export const handleUpdateUserContextLogic = async (
     }
 
     // 2. Update Firestore (if lastRoleUsed changed)
-    if (updates.lastRoleUsed && currentUser?.uid) {
-      await updateUserProfileFn(currentUser.uid, {
-        currentActiveRole: updates.lastRoleUsed,
-      });
-    }
+    // if (updates.lastRoleUsed && currentUser?.uid) {
+    //   await updateUserProfileFn(currentUser.uid, {
+    //     currentActiveRole: updates.lastRoleUsed,
+    //   });
+    // }
 
     // 3. Update local storage preferences
     if (updatedPgData?.lastRoleUsed) {

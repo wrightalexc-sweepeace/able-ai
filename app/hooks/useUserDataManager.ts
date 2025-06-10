@@ -71,13 +71,7 @@ export const useUserDataManager = ({
     setError(null);
 
     try {
-      const firestoreUserPromise = getFirestoreUserByFirebaseUid(firebaseUser.uid);
-      const backendUserPromise = getUserByFirebaseUid(firebaseUser.uid, idToken);
-
-      const [firestoreUserData, backendUserResult] = await Promise.all([
-        firestoreUserPromise,
-        backendUserPromise,
-      ]);
+      const backendUserResult = await getUserByFirebaseUid(firebaseUser.uid, idToken);
 
       if (backendUserResult.error) {
         console.error("useUserDataManager: Error fetching user by firebaseUid:", backendUserResult.error);
@@ -85,7 +79,7 @@ export const useUserDataManager = ({
       }
       const backendUserData = backendUserResult.value;
 
-      const lastRoleUsed = getLastRoleUsed() || firestoreUserData?.currentActiveRole || backendUserData?.appRole;
+      const lastRoleUsed = getLastRoleUsed();
       const lastViewVisitedBuyer = getLastViewVisitedBuyer() || backendUserData?.lastViewVisitedBuyer || null;
       const lastViewVisitedWorker = getLastViewVisitedWorker() || backendUserData?.lastViewVisitedWorker || null;
       const isQA = getIsQAView() || backendUserData?.appRole === "QA";
