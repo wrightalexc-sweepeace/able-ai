@@ -7,6 +7,9 @@
   margin-bottom: 1.25rem;
   position: relative;
   overflow: hidden;
+  outline: none;
+  width: 100%;
+  background-color: transparent;
 }
 
 .expired {

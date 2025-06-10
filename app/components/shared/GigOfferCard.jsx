@@ -55,7 +55,7 @@ const GigOfferCard = ({
   const isExpired = timeLeft === "Expired" || offer.status === 'expired';
 
   return (
-    <div className={`${styles.card} ${isExpired ? styles.expired : ''}`}>
+    <div role="button"tabIndex={0} className={`${styles.card} ${isExpired ? styles.expired : ''}`} onClick={() => onViewDetails(offer.id)}>
       <div className={styles.cardHeader}>
         <h3 className={styles.role}>{offer.role}</h3>
         {timeLeft && !isExpired && (
