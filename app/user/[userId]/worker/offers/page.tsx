@@ -8,7 +8,7 @@ import Link from 'next/link';
 import GigOfferCard from '@/app/components/shared/GigOfferCard'; // Assuming shared location
 import AcceptedGigCard from '@/app/components/shared/AcceptedGigCard'; // Import new component
 import AiSuggestionBanner from '@/app/components/shared/AiSuggestionBanner';
-import { Home, ArrowLeft, Filter, Loader2, Inbox, Calendar } from 'lucide-react';
+import { Loader2, Inbox, Calendar } from 'lucide-react';
 import styles from './OffersPage.module.css'; // Import styles
 import Logo from '@/app/components/brand/Logo';
 import { useAiSuggestionBanner } from '@/app/hooks/useAiSuggestionBanner';
@@ -36,13 +36,13 @@ async function fetchWorkerData(userId: string, filters?: any): Promise<{ offers:
   await new Promise(resolve => setTimeout(resolve, 700));
 
   const mockOffers: GigOffer[] = [
-    { id: 'offer1', role: 'Bartender', buyerName: 'Central Park Bar', locationSnippet: 'Central Park, Beaumont Place', dateString: '14/07/25', timeString: '3:00 PM - 7:00 PM', hourlyRate: 20, totalPay: 80, tipsExpected: true, expiresAt: new Date(Date.now() + 1000 * 60 * 34).toISOString(), status: 'pending', fullDescriptionLink: '/gigs/offer1-details' },
+    { id: 'gig456-inprogress', role: 'Bartender', buyerName: 'Central Park Bar', locationSnippet: 'Central Park, Beaumont Place', dateString: '14/07/25', timeString: '3:00 PM - 7:00 PM', hourlyRate: 20, totalPay: 80, tipsExpected: true, expiresAt: new Date(Date.now() + 1000 * 60 * 34).toISOString(), status: 'pending', fullDescriptionLink: '/gigs/offer1-details' },
     { id: 'offer2', role: 'Waiter', buyerName: 'Downtown Soho', locationSnippet: 'Downtown, Soho', dateString: '15/07/25', timeString: '5:00 PM - 7:00 PM', hourlyRate: 15, totalPay: 30, expiresAt: new Date(Date.now() + 1000 * 87).toISOString(), status: 'pending' },
     // Add more pending offers if needed
   ].sort((a,b) => (a.expiresAt && b.expiresAt) ? new Date(a.expiresAt).getTime() - new Date(b.expiresAt).getTime() : (a.expiresAt ? -1 : 1) ); // Sort by soonest to expire
 
   const mockAcceptedGigs: GigOffer[] = [
-    { id: 'accepted1', role: 'Security Guard', buyerName: 'Event X', locationSnippet: 'Event Hall, City Center', dateString: '20/07/25', timeString: '8:00 PM - 11:00 PM', hourlyRate: 25, estimatedHours: 3, status: 'accepted' },
+    { id: 'gig123-accepted', role: 'Security Guard', buyerName: 'Event X', locationSnippet: 'Event Hall, City Center', dateString: '20/07/25', timeString: '8:00 PM - 11:00 PM', hourlyRate: 25, estimatedHours: 3, status: 'accepted' },
     { id: 'accepted2', role: 'Usher', buyerName: 'Concert Y', locationSnippet: 'Arena, Suburb', dateString: '21/07/25', timeString: '7:00 PM - 10:00 PM', hourlyRate: 18, estimatedHours: 3, status: 'accepted' },
     // Add more accepted gigs if needed
   ].sort((a, b) => new Date(a.dateString + ' ' + a.timeString.split(' - ')[0]).getTime() - new Date(b.dateString + ' ' + b.timeString.split(' - ')[0]).getTime()); // Sort accepted by date/time
@@ -159,7 +159,8 @@ export default function WorkerOffersPage() {
   }, [user, loadingAuth, authUserId, pageUserId /* add filter state if any */]);
 
 
-  const handleAcceptOffer = async (offerId: string) => {
+  const handleAcceptOffer = async (e: React.MouseEvent<HTMLButtonElement>, offerId: string) => {
+    e.stopPropagation();
     setProcessingOfferId(offerId);
     setProcessingAction('accept');
     console.log("Accepting offer:", offerId);
@@ -179,7 +180,8 @@ export default function WorkerOffersPage() {
     }
   };
 
-  const handleDeclineOffer = async (offerId: string) => {
+  const handleDeclineOffer = async (e: React.MouseEvent<HTMLButtonElement>,offerId: string) => {
+    e.stopPropagation();
     setProcessingOfferId(offerId);
     setProcessingAction('decline');
     console.log("Declining offer:", offerId);
@@ -199,19 +201,20 @@ export default function WorkerOffersPage() {
   };
 
   const handleViewDetails = (offerId: string) => {
-    const offer = offers.find(o => o.id === offerId);
-    if (offer?.fullDescriptionLink) {
-      router.push(offer.fullDescriptionLink);
-    } else {
-      alert("Full details view not available for this offer yet.");
-      // Or open a modal with more info if data is present in offer object
-    }
+    // const offer = offers.find(o => o.id === offerId);
+    router.push(`/user/${pageUserId}/worker/gigs/${offerId}`); // Navigate to offer details page
+    // if (offer?.fullDescriptionLink) {
+    //   router.push(offer.fullDescriptionLink);
+    // } else {
+    //   alert("Full details view not available for this offer yet.");
+    //   // Or open a modal with more info if data is present in offer object
+    // }
   };
   const handleGoToHome = () => {
     router.push(`/user/${pageUserId}/worker`);
   };
 
-  if (loadingAuth || (!user?.isAuthenticated && !loadingAuth) || (user?.uid && user.uid !== pageUserId) ) { // Use isLoading and user?.uid
+  if (!user?.isAuthenticated || (user?.uid && user.uid !== pageUserId)) { // Use isLoading and user?.uid
     return <div className={styles.loadingContainer}><Loader2 className="animate-spin" size={32} /> Loading...</div>;
   }
 
@@ -254,15 +257,15 @@ export default function WorkerOffersPage() {
             {offers.filter(o => o.status !== 'expired').length > 0 && (
                 <div className={styles.offersSection}> {/* New div for offers section */}
                     {offers.filter(o => o.status !== 'expired').map(offer => (
-                    <GigOfferCard
-                        key={offer.id}
-                        offer={offer}
-                        onAccept={handleAcceptOffer}
-                        onDecline={handleDeclineOffer}
-                        onViewDetails={handleViewDetails}
-                        isProcessingAccept={processingOfferId === offer.id && processingAction === 'accept'}
-                        isProcessingDecline={processingOfferId === offer.id && processingAction === 'decline'}
-                    />
+                      <GigOfferCard
+                          key={offer.id}
+                          offer={offer}
+                          onAccept={handleAcceptOffer}
+                          onDecline={handleDeclineOffer}
+                          onViewDetails={handleViewDetails}
+                          isProcessingAccept={processingOfferId === offer.id && processingAction === 'accept'}
+                          isProcessingDecline={processingOfferId === offer.id && processingAction === 'decline'}
+                      />
                     ))}
                 </div>
             )}
@@ -297,4 +300,4 @@ export default function WorkerOffersPage() {
       </div>
     </div>
   );
-} 
+}
