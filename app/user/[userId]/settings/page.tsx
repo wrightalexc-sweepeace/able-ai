@@ -131,11 +131,13 @@ export default function SettingsPage() {
 
       console.log("Updated user context with last visit/role:", user?.lastRoleUsed, pathname);
     }
-  }, [isLoading, user, authUserId, pageUserId, router, pathname, updateUserContext]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading, user?.isAuthenticated]);
 
   // Fetch user settings from backend API
   useEffect(() => {
-    if (user?.isAuthenticated && authUserId === pageUserId) {
+    if (user?.isAuthenticated) {
+      console.log("Fetching user settings for user:", authUserId);
       // authUserId is now derived from user?.uid
       setIsLoadingSettings(true);
       // Replace with your actual API call
@@ -187,7 +189,8 @@ export default function SettingsPage() {
       };
       fetchSettings();
     }
-  }, [user?.isAuthenticated, authUserId, pageUserId, user]); // Update dependency array
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.isAuthenticated]); // Update dependency array
 
   const clearMessages = () => {
     setError(null);
@@ -381,7 +384,8 @@ export default function SettingsPage() {
     }
   };
 
-  if (isLoading || isLoadingSettings) {
+  if (isLoadingSettings) {
+    console.error({isLoading, isLoadingSettings, user, userSettings});
     // Use isLoading
     return <Loader />;
   }

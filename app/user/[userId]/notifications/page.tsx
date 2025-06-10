@@ -219,8 +219,7 @@ export default function NotificationsPage() {
   };
 
   if (
-    loadingAuth ||
-    (!user?.isAuthenticated && !loadingAuth) ||
+    (!user?.isAuthenticated) ||
     (authUserId && authUserId !== pageUserId)
   ) {
     return <Loader />; // Show loader while checking auth

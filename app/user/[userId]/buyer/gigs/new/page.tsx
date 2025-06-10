@@ -550,7 +550,7 @@ export default function OnboardBuyerPage() {
     router.push(`/user/${user?.uid || "this_user"}/buyer`); // Redirect to buyer home
   };
 
-  if (loadingAuth) {
+  if (!user?.isAuthenticated) {
     return <Loader />;
   }
 

@@ -153,7 +153,7 @@ export default function BuyerProfilePage() {
         }
     };
 
-    if (loadingAuth || isLoadingData) {
+    if (!user?.isAuthenticated || isLoadingData) {
         return (
             <div className={styles.loadingContainer}>
                 <Loader2 className="animate-spin" size={32} /> Loading Dashboard...
