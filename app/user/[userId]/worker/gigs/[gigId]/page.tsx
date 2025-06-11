@@ -73,7 +73,7 @@ async function fetchWorkerGigDetails(userId: string, gigId: string): Promise<Gig
       location: "The Manor House, Countryside Lane, GU21 5ZZ",
       hourlyRate: 18, estimatedEarnings: 108,
       specialInstructions: "Silver service required. Liaise with the event coordinator Sarah upon arrival.",
-      status: "ACCEPTED", // Initially completed
+      status: "IN_PROGRESS", // Initially completed
       hiringManager: "Sarah Johnson",
       hiringManagerUsername: "@sarahjohnson",
     };
@@ -115,6 +115,8 @@ export default function WorkerGigDetailsPage() {
   const [isActionLoading, setIsActionLoading] = useState(false);
 
   // Auth check, role check, and context update
+
+  console.log(gig?.status);
   useEffect(() => {
     if (loadingAuth) return;
 
@@ -195,7 +197,8 @@ export default function WorkerGigDetailsPage() {
         // Show success message
       } else if (action === 'complete' && gig) {
         setGig({ ...gig, status: 'COMPLETED' });
-        // Potentially navigate to feedback screen: router.push(`/user/${user?.uid}/worker/gigs/${gig.id}/feedback`);
+        // Potentially navigate to feedback screen:
+        router.push(`/user/${user?.uid}/worker/gigs/${gig.id}/feedback`);
       }
       else if (action === 'awaiting') {
         if (user?.isWorkerMode) {
@@ -323,7 +326,7 @@ export default function WorkerGigDetailsPage() {
 
        {/* Negotiation Button - Kept from new structure */}
        {/* Added a check to only show if gig is accepted */}
-       {gig.status === 'PENDING' || gig.status === 'ACCEPTED' || gig.status === 'IN_PROGRESS' && (
+       {(gig.status === 'PENDING' || gig.status === 'IN_PROGRESS' || gig.status === 'ACCEPTED') && (
         <button className={styles.negotiationButton} onClick={() => handleGigAction('requestAmendment')}>
           Negotiate, cancel or change gig details
         </button>
