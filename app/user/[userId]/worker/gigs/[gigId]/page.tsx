@@ -30,7 +30,7 @@ interface GigDetails {
   hourlyRate: number;
   estimatedEarnings: number;
   specialInstructions?: string;
-  status: 'PENDING' | 'ACCEPTED' | 'IN_PROGRESS' | 'AWAITING_BUYER_CONFIRMATION' | 'COMPLETED' | 'CANCELLED'; // From Prisma enum
+  status: 'PENDING' | 'ACCEPTED' | 'IN_PROGRESS' | 'AWAITING_BUYER_CONFIRMATION' | 'COMPLETED' | 'CANCELLED' | 'CONFIRMED' | 'REQUESTED'; // From Prisma enum
   hiringManager?: string; // Optional, if available
   hiringManagerUsername?: string; // Optional, if available
   // Add other relevant fields
@@ -56,7 +56,7 @@ async function fetchWorkerGigDetails(userId: string, gigId: string): Promise<Gig
       location: "123 Business Rd, Tech Park, London, EC1A 1BB",
       hourlyRate: 25, estimatedEarnings: 125,
       specialInstructions: "Focus on high-quality cocktails. Dress code: smart black. Setup starts 30 mins prior. Contact person on site: Jane (07xxxxxxxxx).",
-      status: "ACCEPTED",
+      status: "PENDING", // Initially pending
       hiringManager: "Jane Smith",
       hiringManagerUsername: "@janesmith",
     };
@@ -73,7 +73,7 @@ async function fetchWorkerGigDetails(userId: string, gigId: string): Promise<Gig
       location: "The Manor House, Countryside Lane, GU21 5ZZ",
       hourlyRate: 18, estimatedEarnings: 108,
       specialInstructions: "Silver service required. Liaise with the event coordinator Sarah upon arrival.",
-      status: "IN_PROGRESS",
+      status: "ACCEPTED", // Initially completed
       hiringManager: "Sarah Johnson",
       hiringManagerUsername: "@sarahjohnson",
     };
@@ -176,7 +176,7 @@ export default function WorkerGigDetailsPage() {
     }
   }, [loadingAuth, user, authUserId, pageUserId, gigId, setIsLoadingGig]);
 
-  const handleGigAction = async (action: 'accept' | 'start' | 'complete' | 'requestAmendment' | 'reportIssue' | 'awaiting') => {
+  const handleGigAction = async (action: 'accept' | 'start' | 'complete' | 'requestAmendment' | 'reportIssue' | 'awaiting' | 'confirmed' | 'requested') => {
     if (!gig) return;
     setIsActionLoading(true);
     setError(null);
@@ -194,8 +194,18 @@ export default function WorkerGigDetailsPage() {
         setGig({ ...gig, status: 'IN_PROGRESS' });
         // Show success message
       } else if (action === 'complete' && gig) {
-        setGig({ ...gig, status: 'AWAITING_BUYER_CONFIRMATION' });
+        setGig({ ...gig, status: 'COMPLETED' });
         // Potentially navigate to feedback screen: router.push(`/user/${user?.uid}/worker/gigs/${gig.id}/feedback`);
+      }
+      else if (action === 'awaiting') {
+        if (user?.isWorkerMode) {
+          setGig({ ...gig, status: 'REQUESTED' });
+          // Show success message
+        }
+      }
+      else if (action === 'confirmed') {
+        setGig({ ...gig, status: 'CONFIRMED' });
+        // Show success message
       }
       // Handle other actions
     } catch (err: any) {
@@ -229,6 +239,30 @@ export default function WorkerGigDetailsPage() {
   }
 
   const gigDuration = calculateDuration(gig.startTime, gig.endTime);
+
+  const getButtonLabel = (action: string) => {
+    const status = gig.status;
+    switch (action) {
+      case 'accept':
+        return status === 'PENDING' ? 'Accept Gig' : 'Gig Accepted';
+      case 'start':
+        return status === 'PENDING' || status === 'ACCEPTED'  ? 'Mark as started' : 'Gig Started';
+      case 'complete':
+        return status === 'PENDING' || status === 'ACCEPTED' || status === 'IN_PROGRESS' ? 'Mark as complete' : 'Gig Completed';
+      case 'awaiting':
+        if (user?.isWorkerMode) {
+          return status === 'PENDING' || status === 'ACCEPTED' || status === 'IN_PROGRESS' || status === 'COMPLETED' ? 'Request payment' : 'Payment requested';
+        }
+        return status === 'PENDING' || status === 'ACCEPTED' || status === 'IN_PROGRESS' || status === 'COMPLETED' ? 'Pay' : 'Payment done';
+      case 'requested':
+        return 'Payment requested';
+      case 'confirmed':
+        return 'Payment done'; 
+      default:
+        return '';
+    }
+  };
+
 
   return (
     <div className={styles.container}>
@@ -306,7 +340,7 @@ export default function WorkerGigDetailsPage() {
       {/* Primary Actions Section - Adapted to new structure */}
       <section className={styles.actionSection}>
         <GigActionButton
-          label="Accept gig"
+          label={getButtonLabel('accept')}
           handleGigAction={() => handleGigAction('accept')}
           isActive={gig.status === 'PENDING'}
           isDisabled={gig.status !== 'PENDING'}
@@ -314,7 +348,7 @@ export default function WorkerGigDetailsPage() {
 
         {/* 2. Start Gig */}
         <GigActionButton
-          label="Mark as started"
+          label={getButtonLabel('start')}
           handleGigAction={() => handleGigAction('start')}
           isActive={gig.status === 'ACCEPTED'}
           isDisabled={gig.status !== 'ACCEPTED'}
@@ -322,7 +356,7 @@ export default function WorkerGigDetailsPage() {
 
         {/* 3. Complete Gig */}
         <GigActionButton
-          label="Mark as completed"
+          label={getButtonLabel('complete')}
           handleGigAction={() => handleGigAction('complete')}
           isActive={gig.status === 'IN_PROGRESS'}
           isDisabled={gig.status !== 'IN_PROGRESS'}
@@ -330,7 +364,7 @@ export default function WorkerGigDetailsPage() {
 
         {/* 4. Awaiting Buyer Confirmation */}
         <GigActionButton
-          label="Pay"
+          label={getButtonLabel('awaiting')}
           handleGigAction={() => handleGigAction('awaiting')}
           isActive={gig.status === 'COMPLETED'}
           isDisabled={gig.status !== 'COMPLETED'}
@@ -353,19 +387,18 @@ export default function WorkerGigDetailsPage() {
       </section>
 
       {/* Secondary Actions Section - Adapted to new structure */}
-      {(gig.status === 'ACCEPTED' || gig.status === 'IN_PROGRESS') && ( /* Only show if gig is not completed or cancelled */
-          <section className={`${styles.secondaryActionsSection}`}> {/* Using secondaryActionsSection class */}
-              <Link href="/terms-of-service" target="_blank" rel="noopener noreferrer" className={styles.secondaryActionButton}>
-                  Terms of agreement
-              </Link>
-              <button onClick={() => handleGigAction('reportIssue')} className={styles.secondaryActionButton} disabled={isActionLoading}>
-                Report an Issue
-              </button>
-              {/* <button onClick={() => handleGigAction('delegate')} className={styles.secondaryActionButton} disabled={isActionLoading}>
-                  <Share2 size={16} style={{marginRight: '8px'}}/> Delegate Gig
-              </button> */}
-          </section>
-      )}
+      <section className={`${styles.secondaryActionsSection}`}> {/* Using secondaryActionsSection class */}
+          <Link href="/terms-of-service" target="_blank" rel="noopener noreferrer" className={styles.secondaryActionButton}>
+              Terms of agreement
+          </Link>
+          <button onClick={() => handleGigAction('reportIssue')} className={styles.secondaryActionButton} disabled={isActionLoading}>
+              Report an Issue
+            </button>
+            {/* <button onClick={() => handleGigAction('delegate')} className={styles.secondaryActionButton} disabled={isActionLoading}>
+                <Share2 size={16} style={{marginRight: '8px'}}/> Delegate Gig
+            </button> */}
+        </section>
+     
        
 
       {/* Footer (Home Button) */}
