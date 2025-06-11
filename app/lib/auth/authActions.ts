@@ -6,6 +6,7 @@ import {
   getIdToken,
   User,
   validatePassword,
+  sendEmailVerification
 } from "firebase/auth";
 import { auth, auth as firebaseAuthClient } from "@/app/lib/firebase/clientApp";
 
@@ -89,6 +90,11 @@ export async function registerWithEmailPassword(email: string, password: string,
         // The role will be passed to NextAuth's authorize callback via handleFirebaseSignIn
         const idToken = await getIdToken(userCredential.user, true);
         const signInResult = await handleFirebaseSignInWithNextAuth(idToken, phone, 'BUYER');
+
+        await sendEmailVerification(userCredential.user, {
+            url: window.location.href + "/signin",
+            handleCodeInApp: true
+        });
 
         return { ...signInResult, user: userCredential.user };
 
