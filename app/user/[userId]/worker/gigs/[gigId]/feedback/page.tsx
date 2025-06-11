@@ -10,7 +10,10 @@ import {
   Trophy,
   Star,
   Send,
+  Paperclip,
 } from "lucide-react";
+import AwardDisplayBadge from "@/app/components/profile/AwardDisplayBadge";
+
 
 interface GigDetails {
   id: string;
@@ -110,6 +113,13 @@ export default function WorkerFeedbackPage() {
     }));
   };
 
+  const handleGigAmend = () => {
+    console.log("Amending gig timing or adding tips...");
+    // Implement the logic to handle gig amendments here
+    // For now, just redirecting to the earnings page
+    
+  }
+
   // if (loading) {
   //     return <div className={styles.loadingContainer}>Loading...</div>;
   // }
@@ -119,32 +129,29 @@ export default function WorkerFeedbackPage() {
       <div className={styles.pageWrapper}>
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>
-            Confirm Hours Worked & Feedback
+            Confirm Hours Worked & <span>Feedback</span>
           </h2>
           <div className={styles.gigSummaryCard}>
             <p>
               <strong>{MockGigDetails.role}</strong>
             </p>
+            <p className={styles.duration}>Duration: {MockGigDetails.duration}</p>
             <p>{MockGigDetails.details}</p>
-            <p>Duration: {MockGigDetails.duration}</p>
           </div>
-          <p className={styles.earnings}>
-            Earnings: £{MockGigDetails.earnings.toFixed(2)}
-          </p>
+          <div className={styles.earnings}>
+            <span>Earnings:</span>
+            <span>£{MockGigDetails.earnings.toFixed(2)}</span>
+          </div>
         </section>
 
         <form onSubmit={handleSubmit}>
           <section className={styles.section}>
-            <div className={styles.actionButtonWithNumber}>
-              <div className={styles.actionNumber}>1</div>
-              <label htmlFor="feedbackText" className={styles.sectionTitle}>
-                Share your experience...Provide feedback to earn awards
-              </label>
+            <div className={styles.textareaContainer}>
               <textarea
                 id="feedbackText"
                 name="feedbackText"
                 className={styles.feedbackTextarea}
-                placeholder="Share your experience..."
+                placeholder="Share your experience...Provide feedback to earn awards"
                 value={formData.feedbackText}
                 onChange={handleChange}
               />
@@ -152,9 +159,9 @@ export default function WorkerFeedbackPage() {
           </section>
 
           <section className={styles.section}>
-            <div className={styles.actionButtonWithNumber}>
-              <div className={styles.actionNumber}>2</div>
-              <h3 className={styles.sectionTitle}>
+            <div className={styles.workAgainContainer}>
+              {/* <div className={styles.actionNumber}>2</div> */}
+              <h3 className={styles.workAgainText}>
                 Would you work with this buyer again?
               </h3>
               <div className={styles.thumbsContainer}>
@@ -164,7 +171,7 @@ export default function WorkerFeedbackPage() {
                   }`}
                   onClick={handleThumbsUp}
                 >
-                  <ThumbsUp size={30} />
+                  <ThumbsUp size={31} color="#272100" />
                 </button>
                 <button
                   className={`${styles.thumbButton} ${
@@ -172,7 +179,7 @@ export default function WorkerFeedbackPage() {
                   }`}
                   onClick={handleThumbsDown}
                 >
-                  <ThumbsDown size={30} />
+                  <ThumbsDown size={31} color="#272100" />
                 </button>
               </div>
             </div>
@@ -180,8 +187,8 @@ export default function WorkerFeedbackPage() {
 
           <section className={styles.section}>
             <div className={styles.actionButtonWithNumber}>
-              <div className={styles.actionNumber}>3</div>
-              <h3 className={styles.sectionTitle}>
+              {/* <div className={styles.actionNumber}>3</div> */}
+              <h3 className={styles.awardTitle}>
                 Would you like to award the buyer?
               </h3>
               <div className={styles.badgeContainer}>
@@ -196,8 +203,7 @@ export default function WorkerFeedbackPage() {
                     })
                   }
                 >
-                  <Trophy size={24} className={styles.badgeIcon} />
-                  Top communicator
+                  <AwardDisplayBadge icon={Trophy} textLines="Top communicator"/>
                 </button>
                 <button
                   className={`${styles.badgeButton} ${
@@ -210,8 +216,7 @@ export default function WorkerFeedbackPage() {
                     })
                   }
                 >
-                  <Star size={24} className={styles.badgeIcon} />
-                  Team builder
+                  <AwardDisplayBadge icon={Star} textLines="Team builder"/>
                 </button>
               </div>
             </div>
@@ -219,10 +224,14 @@ export default function WorkerFeedbackPage() {
 
           <section className={styles.section}>
             <div className={styles.actionButtonWithNumber}>
-              <div className={styles.actionNumber}>4</div>
-              <h3 className={styles.sectionTitle}>
-                Log any expenses you incurred here
-              </h3>
+              {/* <div className={styles.actionNumber}>4</div> */}
+
+              <div className={styles.expensesContainer}>
+                <h3 className={styles.expensesTitle}>
+                  Log any expenses you incurred here
+                </h3>
+                <Paperclip size={24} color="#ffffff" />
+              </div>
               <textarea
                 id="expensesText"
                 name="expensesText"
@@ -233,20 +242,20 @@ export default function WorkerFeedbackPage() {
               />
             </div>
           </section>
+        
 
-          <section className={styles.section}>
+          <section className={styles.buttonWrapper}>
             <button className={styles.negotiationButton}>
               Ammend gig timing or add tips
             </button>
           </section>
 
-          <section className={styles.section}>
-            <div className={styles.actionButtonWithNumber}>
-              <div className={styles.actionNumber}>5</div>
+          <section className={styles.buttonWrapper}>
+            {/* <div className={styles.actionButtonWithNumber}> */}
               <button className={styles.submitButton} type="submit">
-                <Send size={18} /> Submit for payment
+                <Send size={14} /> Submit for payment
               </button>
-            </div>
+            {/* </div> */}
           </section>
         </form>
       </div>

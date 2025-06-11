@@ -2,9 +2,9 @@
 
 .container {
   min-height: 100vh;
-  background-color: #121212;
-  color: #e0e0e0;
-  padding: 1.5rem;
+  background-color: var(--foreground);
+  color: rgba(256, 256, 256, 0.7);
+  /* padding: 1.5rem; */
   font-family: var(--font-family);
 }
 
@@ -17,63 +17,111 @@
   gap: 1rem;
 }
 
-.section {
-  background-color: #1f1f1f;
-  padding: 1.25rem;
-  border-radius: 0.75rem;
-  border: 1px solid #2b2b2b;
+.buttonWrapper {
+  padding: 0 1rem;
 }
 
 .sectionTitle {
   font-size: 1.2rem;
-  font-weight: 600;
+  font-weight: 700;
   color: #ffffff;
-  margin-bottom: 1rem;
+  background-color: #2b2b2b;
+  line-height: 26px;
+  padding: 1rem;
+}
+
+.sectionTitle span {
+  display: block;
 }
 
 .gigSummaryCard {
-    background-color: #333;
-    padding: 1rem;
-    border-radius: 0.5rem;
-    margin-bottom: 1rem;
-    font-size: 0.9rem;
+  padding: 1rem;
+  font-size: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
 }
 
-.gigSummaryCard p {
-    margin: 0;
-    color: #e0e0e0;
+.duration {
+  color: #ffffff;
+  font-weight: 700;
+  line-height: 18px;
 }
 
 .gigSummaryCard strong {
-    color: #fff;
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 23px;
+}
+
+.earnings {
+  width: 85%;
+  color: #ffffff;
+  font-weight: 700;
+  line-height: 18px;
+  margin: 0 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-top: 1px solid #2b2b2b;
+  padding-top: 0.4rem;
+}
+
+.textareaContainer {
+  display: flex;
+  justify-content: center;
 }
 
 .feedbackTextarea {
-    background-color: #333;
-    color: #e0e0e0;
-    border: none;
-    border-radius: 0.5rem;
-    padding: 0.75rem;
-    font-size: 0.9rem;
-    width: 100%;
+    width: 80%;
     resize: vertical;
-    min-height: 80px;
+    min-height: 105px;
+    padding: 1rem;
+    border: 0;
+    border-radius: 1.5rem;
+    background-color: #2b2b2b;
+    color: #c2c2c2;
+    font-size: 0.87rem;
+    line-height: 16px;
+    outline: none;
+}
+
+.workAgainContainer {
+  padding: 1rem;
+  display: flex;
+}
+
+.workAgainText, .awardTitle, .expensesTitle {
+  color: #ffffff;
+  font-size: 1.2rem;
+  font-weight: 700;
+  line-height: 23px;
 }
 
 .thumbsContainer {
-    display: flex;
-    gap: 1rem;
-    align-items: center;
-    margin-top: 0.5rem;
+  display: flex;
+  gap: 1rem;
+  align-items: center;
 }
 
 .thumbButton {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    cursor: pointer;
-    color: #a0a0a0;
-    transition: color 0.2s ease;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 40px;
+  height: 40px;
+  border: 0;
+  border-radius: 50%;
+  color: #0f0f0f;
+  background-color: #ffffff;
+  outline: none;
+  transition: color 0.2s ease;
+}
+
+.thumbButton svg {
+  height: 22px
 }
 
 .thumbButton:hover,
@@ -88,20 +136,12 @@
 }
 
 .badgeButton {
-    background-color: #444;
-    color: #e0e0e0;
     border: none;
-    border-radius: 0.5rem;
-    padding: 0.5rem 0.75rem;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    font-size: 0.8rem;
+    background: none;
     transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.badgeButton:hover,
+/* .badgeButton:hover,
 .badgeButton.selected {
     background-color: #5dade2;
     color: #fff;
@@ -110,25 +150,30 @@
 .badgeIcon {
     font-size: 1.2rem;
     margin-bottom: 0.25rem;
+} */
+.expensesContainer {
+    display: flex;
+    gap: 0.5rem;
 }
 
 .expensesInput {
-    background-color: #333;
-    color: #e0e0e0;
-    border: none;
-    border-radius: 0.5rem;
-    padding: 0.75rem;
-    font-size: 0.9rem;
-    width: 100%;
+  padding: 0.75rem;
+  border: 0;
+  border-radius: 1.5rem;
+  background-color: #2b2b2b;
+  color: #c2c2c2;
+  font-size: 0.87rem;
+  line-height: 16px;
+  outline: none;
 }
 
 .submitButton {
-    background-color: #5dade2;
+    background-color: var(--primary-color);
     color: #fff;
     border: none;
     border-radius: 9999px;
     padding: 0.85rem 1.5rem;
-    font-size: 1rem;
+    font-size: 0.87rem;
     font-weight: 600;
     cursor: pointer;
     transition: background-color 0.2s ease;
@@ -137,6 +182,7 @@
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
+    margin-bottom: 1rem;
 }
 
 .submitButton:hover {
@@ -145,23 +191,27 @@
 
 /* Style for the amend gig timing or add tips */
 .negotiationButton {
-  background-color: #444;
-  color: #fff;
-  border: none;
-  border-radius: 5px;
-  padding: 10px 15px;
-  cursor: pointer;
   width: 100%;
-  margin-bottom: 15px;
   text-align: center;
+  cursor: pointer;
+  padding: 0.85rem 1.5rem;
+  border: 0;
+  border-radius: 24px;
+  background-color: #808080;
+  color: #ffffff;
+  font-size: 0.87rem;
+  line-height: 16px;
+  outline: none;
+  margin-bottom: 0.5rem;
 }
 
 /* Style for the numbered circles */
 .actionButtonWithNumber {
   position: relative;
-  padding-left: 2.5rem;
-  /* Space for the number */
-  margin-bottom: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 1rem;
 }
 
 .actionNumber {
