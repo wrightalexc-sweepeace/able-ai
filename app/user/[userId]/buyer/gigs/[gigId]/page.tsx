@@ -3,10 +3,13 @@
 import React, { useEffect } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { Info, MessageSquare, Star, FileText, AlertCircle } from "lucide-react";
+import { Info, MessageSquare, Star, FileText, AlertCircle, Calendar } from "lucide-react";
 import styles from "@/app/user/[userId]/worker/gigs/[gigId]/GigDetailsPage.module.css";
+import pageStyles from "./GigDetails.module.css";
 import { useUser } from "@/app/context/UserContext";
 import { useParams } from "next/navigation"; // Added useParams
+import Logo from "@/app/components/brand/Logo";
+import Image from "next/image";
 
 // Placeholder for gig and worker data
 const gig = {
@@ -49,23 +52,23 @@ export default function BuyerGigDetailsPage() {
       return; // Wait for user context to load
     }
 
-    if (!user?.isAuthenticated) {
-      router.push(`/signin?redirect=${encodeURIComponent(pathname)}`);
-      return;
-    }
+    // if (!user?.isAuthenticated) {
+    //   router.push(`/signin?redirect=${encodeURIComponent(pathname)}`);
+    //   return;
+    // }
 
-    if (!authUserId) {
-      console.error("User is authenticated but UID is missing. Redirecting to signin.");
-      router.push(`/signin?redirect=${encodeURIComponent(pathname)}`);
-      return;
-    }
+    // if (!authUserId) {
+    //   console.error("User is authenticated but UID is missing. Redirecting to signin.");
+    //   router.push(`/signin?redirect=${encodeURIComponent(pathname)}`);
+    //   return;
+    // }
 
-    // Authorization check: Ensure the authenticated user is accessing their own data
-    if (authUserId !== pageUserId) {
-      console.warn(`Authorization Mismatch: Authenticated user ${authUserId} attempting to access page for ${pageUserId}. Redirecting.`);
-      router.push("/signin?error=unauthorized");
-      return;
-    }
+    // // Authorization check: Ensure the authenticated user is accessing their own data
+    // if (authUserId !== pageUserId) {
+    //   console.warn(`Authorization Mismatch: Authenticated user ${authUserId} attempting to access page for ${pageUserId}. Redirecting.`);
+    //   router.push("/signin?error=unauthorized");
+    //   return;
+    // }
 
     // Role check and context update
     if (user?.canBeBuyer || user?.isQA) { // Assuming QA users might also access buyer pages
@@ -78,7 +81,7 @@ export default function BuyerGigDetailsPage() {
       });
     } else {
       console.warn(`Role Mismatch: User ${authUserId} is not a Buyer or QA. Redirecting.`);
-      router.push("/select-role");
+      // router.push("/select-role");
     }
   }, [user, loadingAuth, authUserId, pageUserId, router, pathname, updateUserContext]);
 
@@ -87,36 +90,20 @@ export default function BuyerGigDetailsPage() {
       {/* Header */}
       <header className={styles.header}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <div
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: "50%",
-              background: "#222",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 24,
-              marginRight: 12,
-            }}
-          >
-            <span role="img" aria-label="gig">
-              🧑‍🎤
-            </span>
-          </div>
+          <Logo width={50} height={50} />
           <h1 className={styles.pageTitle}>{gig.title}</h1>
         </div>
         <button className={styles.chatButton} aria-label="Chat">
-          <MessageSquare size={22} className={styles.icon} />
+          <MessageSquare size={40} className={styles.icon} fill="#ffffff"/>
         </button>
       </header>
 
       {/* Gig Details Card */}
       <section className={styles.gigDetailsSection}>
-        <h2 className={styles.sectionTitle}>
-          <Info size={18} />
-          Gig Details
-        </h2>
+        <div className={styles.gigDetailsHeader}>
+           <h2 className={styles.sectionTitle}>Gig Details</h2>
+           <Calendar size={26} color='#ffffff'/>
+        </div>
         <div className={styles.gigDetailsRow}>
           <span className={styles.label}>Location:</span>
           <span className={styles.detailValue}>{gig.location}</span>
@@ -153,30 +140,23 @@ export default function BuyerGigDetailsPage() {
 
       {/* Worker Card */}
       <section
-        className={styles.gigDetailsSection}
-        style={{ display: "flex", alignItems: "center", gap: 16 }}
+        className={`${styles.gigDetailsSection} ${pageStyles.workerSection}`}
       >
-        <img
+        <Image
           src={worker.avatarUrl}
+          className={pageStyles.workerAvatar}
           alt={worker.name}
-          style={{
-            width: 56,
-            height: 56,
-            borderRadius: "50%",
-            objectFit: "cover",
-            marginRight: 12,
-          }}
+          width={56}
+          height={56}
         />
-        <div style={{ flex: 1 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontWeight: 600, fontSize: "1.1rem" }}>
+        <div className={pageStyles.workerDetailsContainer}>
+          <div className={pageStyles.workerDetails}>
+            <span className={pageStyles.workerName}>
               {worker.name}
             </span>
-            {worker.isStar && <Star size={20} color="#5dade2" fill="#5dade2" />}
+             {worker.gigs} Able gigs, {worker.experience} years experience
           </div>
-          <div style={{ color: "#a0a0a0", fontSize: 14 }}>
-            {worker.gigs} Able gigs, {worker.experience} years experience
-          </div>
+          {worker.isStar && <Image src="/images/star.svg" alt="Star" width={56} height={50} />}
         </div>
       </section>
 
