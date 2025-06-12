@@ -68,8 +68,8 @@ async function fetchWorkerGigDetails(userId: string, gigId: string): Promise<Gig
       gigTitle: "Wedding Reception",
       buyerName: "Alice & Bob",
       date: new Date().toISOString(), // Today
-      startTime: new Date().setHours(16,0,0,0).toString(),
-      endTime: new Date().setHours(22,0,0,0).toString(),
+      startTime: new Date(new Date().setHours(16, 0, 0, 0)).toISOString(),
+      endTime: new Date(new Date().setHours(22, 0, 0, 0)).toISOString(),
       location: "The Manor House, Countryside Lane, GU21 5ZZ",
       hourlyRate: 18, estimatedEarnings: 108,
       specialInstructions: "Silver service required. Liaise with the event coordinator Sarah upon arrival.",
