@@ -7,7 +7,7 @@ import {
   IdTokenResult,
   User as FirebaseUser,
 } from "firebase/auth";
-import { authClient } from "@/lib/firebase/firebase-client";
+import { authClient } from "@/lib/firebase/clientApp";
 
 type Claims = {
   name: string;

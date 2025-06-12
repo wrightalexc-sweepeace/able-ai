@@ -1,7 +1,7 @@
 'use server'
 import { db } from "@/app/lib/drizzle/db";
 import { UsersTable } from "@/app/lib/drizzle/schema";
-import admin, { authServer } from "@/lib/firebase/firebase-server";
+import admin from "@/lib/firebase/firebase-server";
 import { ERROR_CODES } from "@/lib/responses/errors";
 import { CODES_SUCCESS } from "@/lib/responses/success";
 import { eq } from "drizzle-orm";
@@ -14,10 +14,12 @@ export async function signInWithFirebase(uid: string) {
 
     const customClaims = {
       name: pgUser?.fullName,
+      email: pgUser?.email,
       role: pgUser?.appRole,
+      roleUsed: pgUser?.lastRoleUsed,
+      isBuyerMode: pgUser?.isBuyer,
+      isWorkerMode: pgUser?.isGigWorker,
     };
-
-    if (pgUser?.email) return { error: "User not found", ...ERROR_CODES.BAD_REQUEST };
 
     await admin.auth().setCustomUserClaims(uid, customClaims);
 

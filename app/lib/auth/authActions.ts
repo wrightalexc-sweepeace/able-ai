@@ -1,3 +1,4 @@
+"use server"
 import { signIn } from "next-auth/react";
 import {
   signInWithEmailAndPassword,
@@ -7,7 +8,7 @@ import {
   User,
   validatePassword,
 } from "firebase/auth";
-import { auth, auth as firebaseAuthClient } from "@/app/lib/firebase/clientApp";
+import { auth, auth as firebaseAuthClient } from '@/lib/firebase/clientApp';
 import { findOrCreatePgUserAndUpdateRole } from "../user.server";
 
 interface SignInResult {
@@ -116,7 +117,7 @@ export async function registerWithEmailPassword(
     const pgUser = await findOrCreatePgUserAndUpdateRole({
       // This function MUST return these new fields
       firebaseUid: userCredential.user.uid || "46897",
-      email: userCredential.user.email,
+      email: userCredential.user?.email,
       displayName: userCredential.user.displayName,
       photoURL: userCredential.user.photoURL,
       phone,

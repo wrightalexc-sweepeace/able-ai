@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState } from "react";
 import InputField from "@/app/components/form/InputField";
 import SubmitButton from "@/app/components/form/SubmitButton";
 import styles from "@/app/signin/SignInPage.module.css";
-import { signInWithEmailPassword, validateClientPassword } from "@/app/lib/auth/authActions";
 import { useRouter } from 'next/navigation';
+import { authClient } from "@/lib/firebase/firebase-client";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithFirebase } from "@/actions/auth/singin";
 
 interface SignInViewProps {
   onToggleRegister: () => void;
@@ -18,40 +20,35 @@ const SignInView: React.FC<SignInViewProps> = ({ onToggleRegister, onError }) =>
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const handleSubmit = async (event: FormEvent) => {
-    event.preventDefault();
-    onError(null); // Clear previous errors
-    setLoading(true);
-    const validationResult = await validateClientPassword(password);
-    if (!validationResult.success) {
-        onError(validationResult.error);
-        setLoading(false);
-        return;
-    }
-    const result = await signInWithEmailPassword(email, password);
-    setLoading(false);
-
-    if (!result.success) {
-      onError(
-        result.error ? (
-          <>
-            {result.error}
-            <a href="/reset-password" className={styles.errorLink}>
-              Reset password?
-            </a>
-          </>
-        ) : (
-          <>
-            Email or password is incorrect.{" "}
-            <a href="/reset-password" className={styles.errorLink}>
-              Reset password?
-            </a>
-          </>
-        )
+  const handleSubmit = async (e: { preventDefault: () => void }) => {
+    e.preventDefault();
+  
+    try {
+      const userCredential = await signInWithEmailAndPassword(
+        authClient,
+        email,
+        password
       );
-    } else {
-      // Assuming successful sign-in should redirect
-      router.push("/select-role"); // Or your desired post-signin page
+  
+      const user = userCredential.user;
+  
+      if (!user?.uid) {
+        throw new Error("User UID not found");
+      }
+  
+      const response = await signInWithFirebase(user.uid);
+  
+      if (response?.error) {
+        throw new Error(response.error);
+      }
+  
+      // Force refresh of ID token and claims
+      await user.getIdToken(true);
+      await user.getIdTokenResult();
+  
+      router.push("/dashboard");
+    } catch (err) {
+      console.error("Login failed:", err);
     }
   };
 

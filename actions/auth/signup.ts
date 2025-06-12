@@ -5,9 +5,8 @@ import { authServer } from "@/lib/firebase/firebase-server";
 type RegisterUserData = {
   email: string;
   password: string;
-  confirmPassword: string;
-  dni: string;
-  dniTramite: string;
+  name: string;
+  phone: string
 };
 
 export async function registerUserAction(data: RegisterUserData) {
@@ -19,13 +18,16 @@ export async function registerUserAction(data: RegisterUserData) {
       //displayName: data.name,
     });
 
-    const user = await findOrCreatePgUserAndUpdateRole({
+    console.log(firebaseUser);
+
+    await findOrCreatePgUserAndUpdateRole({
       // This function MUST return these new fields
       firebaseUid: firebaseUser.uid,
       email: data.email,
-      displayName: firebaseUser?.displayName || "",
+      displayName: firebaseUser?.displayName || data.name,
       photoURL: firebaseUser?.photoURL,
       initialRoleContext: "BUYER" as "BUYER" | "GIG_WORKER" | undefined,
+      phone: data.phone,
     });
 
     return { ok: true };

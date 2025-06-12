@@ -1,5 +1,5 @@
+import { AuthProvider } from "@/context/AuthContext";
 import "./globals.css";
-import { UserProvider } from './context/UserContext';
 
 export const metadata = {
   title: "AbleAI",
@@ -21,9 +21,9 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body>
-        <UserProvider>
+        <AuthProvider>
           {children}
-        </UserProvider>
+        </AuthProvider>
       </body>
     </html>
   );

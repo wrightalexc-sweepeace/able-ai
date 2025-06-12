@@ -4,7 +4,6 @@ import { Toaster } from 'sonner'
 import styles from "./page.module.css";
 import { useState } from "react";
 import Link from "next/link";
-import { useUser } from "./context/UserContext";
 
 export default function Home() {
   const { user, loading, error, signOutUser, refetchUser } = useUser();

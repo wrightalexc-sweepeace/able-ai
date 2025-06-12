@@ -49,9 +49,11 @@ export const useUserDataManager = ({
         setLoading(false);
         setDidLoadFromCache(true);
         servedFromCache = true;
+        console.log(cachedData.user)
         console.log('useUserDataManager: Loaded user from session cache.');
       } else if (cachedData) {
         clearUserCache();
+        console.log(cachedData.user)
         console.log('useUserDataManager: Cleared stale user session cache.');
       }
     }
