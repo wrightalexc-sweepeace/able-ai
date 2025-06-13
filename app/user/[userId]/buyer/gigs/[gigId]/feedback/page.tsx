@@ -15,6 +15,7 @@ import {
   XCircle,
 } from "lucide-react";
 import styles from "./FeedbackPage.module.css";
+import Feedback from "@/app/components/gigs/Feedback";
 
 interface GigDataForBuyerFeedback {
   id: string;
@@ -41,7 +42,7 @@ async function fetchGigForBuyerFeedback(
 ): Promise<GigDataForBuyerFeedback | null> {
   console.log("Fetching gig for buyer feedback:", buyerUserId, gigId);
   await new Promise((resolve) => setTimeout(resolve, 500));
-  if (gigId === "gig789-buyer-awaiting") {
+  if (gigId === "gig123-accepted") {
     return {
       id: gigId,
       role: "Bartender",
@@ -80,45 +81,45 @@ export default function BuyerFeedbackPage() {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (loadingAuth) {
-      return;
-    }
+  // useEffect(() => {
+  //   if (loadingAuth) {
+  //     return;
+  //   }
 
-    if (!user?.isAuthenticated) {
-      router.push(`/signin?redirect=${encodeURIComponent(pathname)}`);
-      return;
-    }
+  //   if (!user?.isAuthenticated) {
+  //     router.push(`/signin?redirect=${encodeURIComponent(pathname)}`);
+  //     return;
+  //   }
 
-    // authUserId is derived from user?.uid above
-    if (!authUserId) {
-      console.error("User is authenticated but UID is missing. Redirecting to signin.");
-      router.push(`/signin?redirect=${encodeURIComponent(pathname)}`);
-      return;
-    }
+  //   // authUserId is derived from user?.uid above
+  //   if (!authUserId) {
+  //     console.error("User is authenticated but UID is missing. Redirecting to signin.");
+  //     router.push(`/signin?redirect=${encodeURIComponent(pathname)}`);
+  //     return;
+  //   }
 
-    if (authUserId !== pageUserId) {
-      console.warn(`Authorization Mismatch: User ${authUserId} trying to access feedback page for user ${pageUserId}. Redirecting.`);
-      router.push("/signin?error=unauthorized");
-      return;
-    }
+  //   if (authUserId !== pageUserId) {
+  //     console.warn(`Authorization Mismatch: User ${authUserId} trying to access feedback page for user ${pageUserId}. Redirecting.`);
+  //     router.push("/signin?error=unauthorized");
+  //     return;
+  //   }
 
-    if (!(user?.canBeBuyer || user?.isQA)) {
-      console.warn(`Role Mismatch: User ${authUserId} is not a Buyer or QA. Redirecting.`);
-      router.push("/select-role");
-      return;
-    }
+  //   if (!(user?.canBeBuyer || user?.isQA)) {
+  //     console.warn(`Role Mismatch: User ${authUserId} is not a Buyer or QA. Redirecting.`);
+  //     router.push("/select-role");
+  //     return;
+  //   }
 
-    // If all checks pass, update context
-    updateUserContext({
-      lastRoleUsed: "BUYER",
-      lastViewVisited: pathname, // Use current pathname
-    }).catch(err => {
-      console.error("Failed to update user context with last visit/role:", err);
-      // Non-critical error
-    });
+  //   // If all checks pass, update context
+  //   updateUserContext({
+  //     lastRoleUsed: "BUYER",
+  //     lastViewVisited: pathname, // Use current pathname
+  //   }).catch(err => {
+  //     console.error("Failed to update user context with last visit/role:", err);
+  //     // Non-critical error
+  //   });
 
-  }, [user, loadingAuth, authUserId, pageUserId, gigId, router, pathname, updateUserContext]);
+  // }, [user, loadingAuth, authUserId, pageUserId, gigId, router, pathname, updateUserContext]);
 
   useEffect(() => {
     // Fetch data only if user is loaded, authenticated, and authorized (or is QA)
@@ -243,226 +244,227 @@ export default function BuyerFeedbackPage() {
   }
 
   return (
-    <div className={styles.container}>
-      <div className={styles.pageWrapper}>
-        <header className={styles.header}>
-          <button
-            onClick={() => router.back()}
-            className={styles.backButton}
-            aria-label="Go back"
-          >
-            <ArrowLeft size={24} />
-          </button>
-          <h1 className={styles.pageTitle}>Confirm Hours Worked & Feedback</h1>
-        </header>
+    // <div className={styles.container}>
+    //   <div className={styles.pageWrapper}>
+    //     <header className={styles.header}>
+    //       <button
+    //         onClick={() => router.back()}
+    //         className={styles.backButton}
+    //         aria-label="Go back"
+    //       >
+    //         <ArrowLeft size={24} />
+    //       </button>
+    //       <h1 className={styles.pageTitle}>Confirm Hours Worked & Feedback</h1>
+    //     </header>
 
-        {gigData && (
-          <section className={`${styles.section} ${styles.gigSummarySection}`}>
-            <div className={styles.gigSummaryCard}>
-              {gigData.workerAvatarUrl ? (
-                <Image
-                  src={gigData.workerAvatarUrl}
-                  alt={gigData.workerName}
-                  width={48}
-                  height={48}
-                  className={styles.workerAvatar}
-                />
-              ) : (
-                <UserCircle
-                  size={48}
-                  className={styles.workerAvatar}
-                  style={{ color: "#525252" }}
-                />
-              )}
-              <div className={styles.summaryTextContainer}>
-                <p>
-                  <strong>Worker:</strong> {gigData.workerName}
-                </p>
-                <p>
-                  <strong>Role:</strong> {gigData.role} - {gigData.gigTitle}
-                </p>
-                <p>
-                  <strong>Date:</strong>{" "}
-                  {new Date(gigData.date).toLocaleDateString()}
-                </p>
-              </div>
-            </div>
-          </section>
-        )}
+    //     {gigData && (
+    //       <section className={`${styles.section} ${styles.gigSummarySection}`}>
+    //         <div className={styles.gigSummaryCard}>
+    //           {gigData.workerAvatarUrl ? (
+    //             <Image
+    //               src={gigData.workerAvatarUrl}
+    //               alt={gigData.workerName}
+    //               width={48}
+    //               height={48}
+    //               className={styles.workerAvatar}
+    //             />
+    //           ) : (
+    //             <UserCircle
+    //               size={48}
+    //               className={styles.workerAvatar}
+    //               style={{ color: "#525252" }}
+    //             />
+    //           )}
+    //           <div className={styles.summaryTextContainer}>
+    //             <p>
+    //               <strong>Worker:</strong> {gigData.workerName}
+    //             </p>
+    //             <p>
+    //               <strong>Role:</strong> {gigData.role} - {gigData.gigTitle}
+    //             </p>
+    //             <p>
+    //               <strong>Date:</strong>{" "}
+    //               {new Date(gigData.date).toLocaleDateString()}
+    //             </p>
+    //           </div>
+    //         </div>
+    //       </section>
+    //     )}
 
-        {gigData && (
-          <section
-            className={`${styles.section} ${styles.paymentSectionPlaceholder}`}
-          >
-            <h2 className={styles.sectionTitle}>
-              <Info size={18} />
-              Payment Details
-            </h2>
-            <div className={styles.paymentDetailsContent}>
-              <p>
-                <strong>Hourly Rate:</strong> ${gigData.hourlyRate.toFixed(2)}
-              </p>
-              <p>
-                <strong>Hours Worked:</strong> {gigData.hoursWorked} hours
-              </p>
-              <p>
-                <strong>Total Payment:</strong> $
-                {gigData.totalPayment.toFixed(2)}
-              </p>
-            </div>
-          </section>
-        )}
+    //     {gigData && (
+    //       <section
+    //         className={`${styles.section} ${styles.paymentSectionPlaceholder}`}
+    //       >
+    //         <h2 className={styles.sectionTitle}>
+    //           <Info size={18} />
+    //           Payment Details
+    //         </h2>
+    //         <div className={styles.paymentDetailsContent}>
+    //           <p>
+    //             <strong>Hourly Rate:</strong> ${gigData.hourlyRate.toFixed(2)}
+    //           </p>
+    //           <p>
+    //             <strong>Hours Worked:</strong> {gigData.hoursWorked} hours
+    //           </p>
+    //           <p>
+    //             <strong>Total Payment:</strong> $
+    //             {gigData.totalPayment.toFixed(2)}
+    //           </p>
+    //         </div>
+    //       </section>
+    //     )}
 
-        {successMessage && (
-          <p className={styles.successMessage}>
-            <CheckCircle size={20} /> {successMessage}
-          </p>
-        )}
-        {error && !successMessage && (
-          <p className={styles.errorMessage}>
-            <XCircle size={20} /> {error}
-          </p>
-        )}
+    //     {successMessage && (
+    //       <p className={styles.successMessage}>
+    //         <CheckCircle size={20} /> {successMessage}
+    //       </p>
+    //     )}
+    //     {error && !successMessage && (
+    //       <p className={styles.errorMessage}>
+    //         <XCircle size={20} /> {error}
+    //       </p>
+    //     )}
 
-        {!successMessage && gigData && (
-          <form onSubmit={handleSubmit} className={styles.feedbackForm}>
-            <div className={styles.stepperContainer}>
-              <div className={styles.stepItem}>
-                <div className={styles.stepIndicator}>1</div>
-                <div className={styles.stepContent}>
-                  <div className={styles.inputGroup}>
-                    <label htmlFor="publicComment" className={styles.label}>
-                      Public Comment (visible on{" "}
-                      {gigData.workerName.split(" ")[0]}&apos;s profile):
-                    </label>
-                    <textarea
-                      id="publicComment"
-                      name="publicComment"
-                      value={formData.publicComment}
-                      onChange={handleChange}
-                      rows={5}
-                      placeholder="e.g., Punctual, professional, great skills..."
-                      className={styles.input}
-                    />
-                  </div>
-                </div>
-              </div>
+    //     {!successMessage && gigData && (
+    //       <form onSubmit={handleSubmit} className={styles.feedbackForm}>
+    //         <div className={styles.stepperContainer}>
+    //           <div className={styles.stepItem}>
+    //             <div className={styles.stepIndicator}>1</div>
+    //             <div className={styles.stepContent}>
+    //               <div className={styles.inputGroup}>
+    //                 <label htmlFor="publicComment" className={styles.label}>
+    //                   Public Comment (visible on{" "}
+    //                   {gigData.workerName.split(" ")[0]}&apos;s profile):
+    //                 </label>
+    //                 <textarea
+    //                   id="publicComment"
+    //                   name="publicComment"
+    //                   value={formData.publicComment}
+    //                   onChange={handleChange}
+    //                   rows={5}
+    //                   placeholder="e.g., Punctual, professional, great skills..."
+    //                   className={styles.input}
+    //                 />
+    //               </div>
+    //             </div>
+    //           </div>
 
-              <div className={styles.stepItem}>
-                <div className={styles.stepIndicator}>2</div>
-                <div className={styles.stepContent}>
-                  <div className={styles.inputGroup}>
-                    <label htmlFor="privateNotes" className={styles.label}>
-                      Private Notes for Able AI (optional):
-                    </label>
-                    <textarea
-                      id="privateNotes"
-                      name="privateNotes"
-                      value={formData.privateNotes}
-                      onChange={handleChange}
-                      rows={4}
-                      placeholder="Any internal notes about this worker or gig?"
-                      className={styles.input}
-                    />
-                  </div>
-                </div>
-              </div>
+    //           <div className={styles.stepItem}>
+    //             <div className={styles.stepIndicator}>2</div>
+    //             <div className={styles.stepContent}>
+    //               <div className={styles.inputGroup}>
+    //                 <label htmlFor="privateNotes" className={styles.label}>
+    //                   Private Notes for Able AI (optional):
+    //                 </label>
+    //                 <textarea
+    //                   id="privateNotes"
+    //                   name="privateNotes"
+    //                   value={formData.privateNotes}
+    //                   onChange={handleChange}
+    //                   rows={4}
+    //                   placeholder="Any internal notes about this worker or gig?"
+    //                   className={styles.input}
+    //                 />
+    //               </div>
+    //             </div>
+    //           </div>
 
-              <div className={styles.stepItem}>
-                <div className={styles.stepIndicator}>3</div>
-                <div className={styles.stepContent}>
-                  <div className={styles.inputGroup}>
-                    <label className={styles.label}>
-                      Would you hire {gigData.workerName.split(" ")[0]} again?{" "}
-                      <span style={{ color: "var(--primary-accent-color)" }}>
-                        *
-                      </span>
-                    </label>
-                    <div className={styles.hireAgainOptions}>
-                      <input
-                        type="radio"
-                        id="hireYes"
-                        name="wouldHireAgain"
-                        value="yes"
-                        checked={formData.wouldHireAgain === "yes"}
-                        onChange={handleChange}
-                      />
-                      <label
-                        htmlFor="hireYes"
-                        className={`${styles.hireAgainOptionLabel} ${
-                          formData.wouldHireAgain === "yes"
-                            ? styles.hireAgainOptionLabelChecked
-                            : ""
-                        }`}
-                      >
-                        Yes, definitely!
-                      </label>
+    //           <div className={styles.stepItem}>
+    //             <div className={styles.stepIndicator}>3</div>
+    //             <div className={styles.stepContent}>
+    //               <div className={styles.inputGroup}>
+    //                 <label className={styles.label}>
+    //                   Would you hire {gigData.workerName.split(" ")[0]} again?{" "}
+    //                   <span style={{ color: "var(--primary-accent-color)" }}>
+    //                     *
+    //                   </span>
+    //                 </label>
+    //                 <div className={styles.hireAgainOptions}>
+    //                   <input
+    //                     type="radio"
+    //                     id="hireYes"
+    //                     name="wouldHireAgain"
+    //                     value="yes"
+    //                     checked={formData.wouldHireAgain === "yes"}
+    //                     onChange={handleChange}
+    //                   />
+    //                   <label
+    //                     htmlFor="hireYes"
+    //                     className={`${styles.hireAgainOptionLabel} ${
+    //                       formData.wouldHireAgain === "yes"
+    //                         ? styles.hireAgainOptionLabelChecked
+    //                         : ""
+    //                     }`}
+    //                   >
+    //                     Yes, definitely!
+    //                   </label>
 
-                      <input
-                        type="radio"
-                        id="hireMaybe"
-                        name="wouldHireAgain"
-                        value="maybe"
-                        checked={formData.wouldHireAgain === "maybe"}
-                        onChange={handleChange}
-                      />
-                      <label
-                        htmlFor="hireMaybe"
-                        className={`${styles.hireAgainOptionLabel} ${
-                          formData.wouldHireAgain === "maybe"
-                            ? styles.hireAgainOptionLabelChecked
-                            : ""
-                        }`}
-                      >
-                        Maybe
-                      </label>
+    //                   <input
+    //                     type="radio"
+    //                     id="hireMaybe"
+    //                     name="wouldHireAgain"
+    //                     value="maybe"
+    //                     checked={formData.wouldHireAgain === "maybe"}
+    //                     onChange={handleChange}
+    //                   />
+    //                   <label
+    //                     htmlFor="hireMaybe"
+    //                     className={`${styles.hireAgainOptionLabel} ${
+    //                       formData.wouldHireAgain === "maybe"
+    //                         ? styles.hireAgainOptionLabelChecked
+    //                         : ""
+    //                     }`}
+    //                   >
+    //                     Maybe
+    //                   </label>
 
-                      <input
-                        type="radio"
-                        id="hireNo"
-                        name="wouldHireAgain"
-                        value="no"
-                        checked={formData.wouldHireAgain === "no"}
-                        onChange={handleChange}
-                      />
-                      <label
-                        htmlFor="hireNo"
-                        className={`${styles.hireAgainOptionLabel} ${
-                          formData.wouldHireAgain === "no"
-                            ? styles.hireAgainOptionLabelChecked
-                            : ""
-                        }`}
-                      >
-                        No
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              </div>
+    //                   <input
+    //                     type="radio"
+    //                     id="hireNo"
+    //                     name="wouldHireAgain"
+    //                     value="no"
+    //                     checked={formData.wouldHireAgain === "no"}
+    //                     onChange={handleChange}
+    //                   />
+    //                   <label
+    //                     htmlFor="hireNo"
+    //                     className={`${styles.hireAgainOptionLabel} ${
+    //                       formData.wouldHireAgain === "no"
+    //                         ? styles.hireAgainOptionLabelChecked
+    //                         : ""
+    //                     }`}
+    //                   >
+    //                     No
+    //                   </label>
+    //                 </div>
+    //               </div>
+    //             </div>
+    //           </div>
 
-              <div className={styles.stepItem}>
-                <div className={styles.stepIndicator}>4</div>
-                <div className={styles.stepContent}>
-                  <div className={styles.submitButtonContainer}>
-                    <button
-                      type="submit"
-                      className={styles.submitButton}
-                      disabled={isSubmitting || !formData.wouldHireAgain}
-                    >
-                      {isSubmitting ? (
-                        <Loader2 className="animate-spin" size={20} />
-                      ) : (
-                        <Send size={18} />
-                      )}
-                      {isSubmitting ? "Submitting..." : "Submit Feedback"}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </form>
-        )}
-      </div>
-    </div>
+    //           <div className={styles.stepItem}>
+    //             <div className={styles.stepIndicator}>4</div>
+    //             <div className={styles.stepContent}>
+    //               <div className={styles.submitButtonContainer}>
+    //                 <button
+    //                   type="submit"
+    //                   className={styles.submitButton}
+    //                   disabled={isSubmitting || !formData.wouldHireAgain}
+    //                 >
+    //                   {isSubmitting ? (
+    //                     <Loader2 className="animate-spin" size={20} />
+    //                   ) : (
+    //                     <Send size={18} />
+    //                   )}
+    //                   {isSubmitting ? "Submitting..." : "Submit Feedback"}
+    //                 </button>
+    //               </div>
+    //             </div>
+    //           </div>
+    //         </div>
+    //       </form>
+    //     )}
+    //   </div>
+    // </div>
+    <Feedback gig={gigData} />
   );
 }
