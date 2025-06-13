@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { Info, MessageSquare, Star, FileText, AlertCircle } from "lucide-react";
-import styles from "@/app/user/[userId]/worker/gigs/[gigId]/GigDetailsPage.module.css";
+import styles from "@/app/(web-client)/user/[userId]/worker/gigs/[gigId]/GigDetailsPage.module.css";
 
 // Placeholder for gig and worker data
 const gig = {

@@ -56,7 +56,7 @@ export default function SelectRolePage() {
       // Save rute initial in the localstorage
       if (role === "BUYER") {
           const path = `user/${user.uid || "this_user"}/buyer/gigs/new`;
-          localStorage.setItem("lastPath_BUYER", path);
+          localStorage.setItem("lastPathBuyer", path);
           
           router.push(path);
       } else if (role === "GIG_WORKER") {
@@ -65,7 +65,7 @@ export default function SelectRolePage() {
           ? `user/${user.uid || "this_user"}/worker`
           : `user/${user.uid || "this_user"}/worker/onboarding`;
   
-        localStorage.setItem("lastPath_GIG_WORKER", path);
+        localStorage.setItem("lastPathGigWorker", path);
       }
     } catch (err) {
       console.error("Error setting role:", err);

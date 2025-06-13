@@ -12,8 +12,11 @@ const RouteTracker = () => {
     if (!user?.claims?.lastRoleUsed) return;
 
     const role = user.claims.lastRoleUsed;
-    if (role === "GIG_WORKER" || role === "BUYER") {
-      localStorage.setItem(`lastPath_${role}`, pathname);
+    if (role === "GIG_WORKER" ) {
+      localStorage.setItem(`lastPathGigWorker`, pathname);
+    } 
+    if (role === "BUYER") {
+        localStorage.setItem(`lastPathBuyer`, pathname);
     }
   }, [pathname, user?.claims?.lastRoleUsed]);
 

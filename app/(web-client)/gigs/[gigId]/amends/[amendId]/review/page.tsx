@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { AlertCircle, Bot, MessageSquare, Edit3 } from 'lucide-react';
 import styles from './ConfirmAmendedGigDetailsPage.module.css';
-import { useAppContext } from '@/app/hooks/useAppContext';
+
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 
 // Mock data for Buyer view
 const buyerGigDetailsData = {
@@ -39,18 +40,11 @@ const workerNotificationMessage = {
 
 export default function ConfirmAmendedGigDetailsPage() {
   const pathname = usePathname()
-  const { isLoading: loadingAuth, updateUserContext, user } = useAppContext();
-
-  useEffect(() => {
-    if (!loadingAuth && user?.isAuthenticated) {
-      updateUserContext({ lastRoleUsed: user?.lastRoleUsed || "BUYER", lastViewVisited: pathname });
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loadingAuth, user?.isAuthenticated]);
+  const { loading: loadingAuth, user } = useAuth();
 
   // Determine which data and UI elements to use based on role
-  const gigDetailsData = user?.canBeBuyer ? buyerGigDetailsData : workerGigDetailsData;
-  const notificationMessage = user?.canBeBuyer ? buyerNotificationMessage : workerNotificationMessage;
+  const gigDetailsData = user?.claims.lastRoleUsed == "BUYER" ? buyerGigDetailsData : workerGigDetailsData;
+  const notificationMessage = user?.claims.lastRoleUsed == "BUYER" ? buyerNotificationMessage : workerNotificationMessage;
 
   const handleEditDetails = () => {
     console.log("Edit details clicked");
@@ -90,7 +84,7 @@ export default function ConfirmAmendedGigDetailsPage() {
               {notificationMessage.user} has {notificationMessage.change}, the update details are below. {notificationMessage.prompt}
             </p>
           </div>
-          {user?.canBeBuyer && (
+          {user?.claims.lastRoleUsed == "BUYER" && (
             <MessageSquare className={styles.chatIcon} strokeWidth={1.5} onClick={() => console.log("Chat icon clicked")} />
           )}
         </section>
@@ -99,7 +93,7 @@ export default function ConfirmAmendedGigDetailsPage() {
         <section className={styles.card}>
           <div className={styles.detailsHeader}>
             <h2 className={styles.detailsTitle}>Updated gig details:</h2>
-            {user?.canBeBuyer && (
+            {user?.claims.lastRoleUsed == "BUYER" && (
               <Edit3 className={styles.editIcon} onClick={handleEditDetails} />
             )}
           </div>
@@ -118,11 +112,11 @@ export default function ConfirmAmendedGigDetailsPage() {
             </div>
             <div className={styles.detailItem}>
               <span className={styles.detailItemLabel}>Pay per hour:</span>
-              <span className={`${styles.detailItemValue} ${user?.canBeBuyer ? styles.highlightedValue : ''}`}>
+              <span className={`${styles.detailItemValue} ${user?.claims.lastRoleUsed == "BUYER" ? styles.highlightedValue : ''}`}>
                 {gigDetailsData.payPerHour}
               </span>
             </div>
-            {user?.canBeBuyer ? (
+            {user?.claims.lastRoleUsed == "BUYER" ? (
               <div className={styles.detailItem}>
                 <span className={styles.detailItemLabel}>Total cost:</span>
                 <span className={styles.detailItemValue}>
@@ -143,12 +137,12 @@ export default function ConfirmAmendedGigDetailsPage() {
       <footer className={styles.actionsFooter}>
         <button
           type="button"
-          className={`${styles.actionButton} ${user?.canBeBuyer ? styles.confirmButton : styles.suggestButton /* Using suggestButton style for worker confirm */}`}
+          className={`${styles.actionButton} ${user?.claims.lastRoleUsed == "BUYER" ? styles.confirmButton : styles.suggestButton /* Using suggestButton style for worker confirm */}`}
           onClick={handleConfirm}
         >
           Confirm changes
         </button>
-        {user?.canBeBuyer && (
+        {user?.claims.lastRoleUsed == "BUYER" && (
           <>
             <button
               type="button"

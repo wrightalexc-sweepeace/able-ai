@@ -3,8 +3,8 @@
 import React, { useEffect, useState } from "react";
 import { Bot, Edit3 } from "lucide-react"; // Icons: Bot for friendly face, Edit3 for pencil
 import styles from "./CancelOrAmendGigDetailsPage.module.css";
-import { useAppContext } from "@/app/hooks/useAppContext"; // Import the hook
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
 // Mock data - replace with actual props or state
 const gigDetailsData = {
@@ -19,20 +19,10 @@ const gigDetailsData = {
 
 export default function CancelOrAmendGigDetailsPage() {
   const pathname = usePathname();
-  const { isLoading: loadingAuth, updateUserContext, user } = useAppContext();
+  const {loading: loadingAuth, user } = useAuth();
   const [userMessage, setUserMessage] = useState("");
   const [isEditingDetails, setIsEditingDetails] = useState(false); // Add state for edit mode
   const [editedGigDetails, setEditedGigDetails] = useState(gigDetailsData); // State for edited details
-
-  useEffect(() => {
-    if (!loadingAuth && user?.isAuthenticated) {
-      updateUserContext({
-        lastRoleUsed: user?.lastRoleUsed || "BUYER",
-        lastViewVisited: pathname,
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [loadingAuth, user?.isAuthenticated]);
 
   const handleEditDetails = () => {
     // Logic for editing gig details - perhaps opens a modal or navigates
