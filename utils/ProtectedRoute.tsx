@@ -12,7 +12,7 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     if (!loading && !user?.claims.role) {
       router.push("/signin");
     }
-  }, [loading, user?.claims.role]);
+  }, [loading, user?.claims]);
 
   if (loading || !user) {
     return <div className="p-4">Loading...</div>;

@@ -15,6 +15,7 @@ type Claims = {
   companyId: string;
   companyName: string;
   plan: string;
+  lastRoleUsed: string
 };
 
 type User = FirebaseUser & {

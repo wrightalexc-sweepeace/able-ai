@@ -2,13 +2,11 @@
 
 import React, { useState, useEffect, FormEvent } from "react";
 import { useRouter, useParams, usePathname } from "next/navigation";
-import { auth as firebaseAuthClient } from "@/app/lib/firebase/clientApp"; // Corrected path
 import {
   updatePassword,
   sendPasswordResetEmail,
   signOut as firebaseSignOut,
 } from "firebase/auth";
-import { signOut as nextAuthSignOut } from "next-auth/react"; // If using NextAuth
 
 // Assuming shared components are structured like this
 import InputField from "@/app/components/form/InputField"; // Corrected path
@@ -33,6 +31,7 @@ import {
 } from "lucide-react"; // Added new icons
 import Loader from "@/app/components/shared/Loader";
 import { useAuth } from "@/context/AuthContext";
+import { authClient } from "@/lib/firebase/clientApp";
 
 // Define a type for user settings fetched from backend
 interface UserSettingsData {
@@ -247,7 +246,7 @@ export default function SettingsPage() {
       return;
     }
     try {
-      await sendPasswordResetEmail(firebaseAuthClient, userSettings.email);
+      await sendPasswordResetEmail(authClient, userSettings.email);
       setSuccessMessage("Password reset email sent. Please check your inbox.");
     } catch (err: any) {
       setError(err.message || "Failed to send password reset email.");
@@ -280,8 +279,7 @@ export default function SettingsPage() {
   const handleLogout = async () => {
     clearMessages();
     try {
-      await firebaseSignOut(firebaseAuthClient);
-      await nextAuthSignOut({ redirect: false }); // If using NextAuth
+      await firebaseSignOut(authClient);
       router.push("/signin");
     } catch (err: any) {
       setError(err.message || "Logout failed.");
@@ -337,8 +335,7 @@ export default function SettingsPage() {
       await new Promise((res) => setTimeout(res, 2000));
       setSuccessMessage("Account deleted successfully. Redirecting...");
       // On success, logout and redirect
-      await firebaseSignOut(firebaseAuthClient);
-      await nextAuthSignOut({ redirect: false }); // If using NextAuth
+      await firebaseSignOut(authClient);
       router.push("/signin"); // Or home page
     } catch (err: any) {
       setError(err.message || "Failed to delete account.");

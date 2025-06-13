@@ -1,15 +1,31 @@
 "use client";
 
-import { useState } from "react";
-import { Toaster } from 'sonner';
+import { useEffect, useState } from "react";
+import { toast, Toaster } from 'sonner';
 import Logo from "@/app/components/brand/Logo";
 import styles from "./SignInPage.module.css";
 import SignInView from "@/app/signin/SignInView";
 import RegisterView from "@/app/signin/RegisterView";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
 export default function SignInPage() {
+  const router = useRouter();
+  const { user, loading: loadingAuth} = useAuth();
   const [isRegistering, setIsRegistering] = useState(false);
   const [error, setError] = useState<React.ReactNode | null>(null);
+
+  useEffect(() => {
+    if (!loadingAuth && user) {
+      toast.success(`Welcome back ${user?.displayName || user?.email || 'user'}!`);
+      router.push("/select-role");
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, loadingAuth]);
+
+  const handleCloseError = () => {
+    setError(null);
+  };
 
   const handleToggleRegister = () => {
     setIsRegistering(!isRegistering);
@@ -51,7 +67,8 @@ export default function SignInPage() {
 
         {error && (
           <div className={styles.errorMessage}>
-            <span className={styles.errorCloseBtn} /*onClick={handleCloseError}*/>
+            <p>{error}</p>
+            <span className={styles.errorCloseBtn} onClick={handleCloseError}>
               X
             </span>
           </div>

@@ -5,9 +5,9 @@ import InputField from "@/app/components/form/InputField";
 import SubmitButton from "@/app/components/form/SubmitButton";
 import styles from "@/app/signin/SignInPage.module.css";
 import { useRouter } from 'next/navigation';
-import { authClient } from "@/lib/firebase/firebase-client";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { signInWithFirebase } from "@/actions/auth/singin";
+import { signInWithFirebaseAction } from "@/actions/auth/singin";
+import { authClient } from "@/lib/firebase/clientApp";
 
 interface SignInViewProps {
   onToggleRegister: () => void;
@@ -20,35 +20,46 @@ const SignInView: React.FC<SignInViewProps> = ({ onToggleRegister, onError }) =>
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const handleSubmit = async (e: { preventDefault: () => void }) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-  
+    setLoading(true);
+    onError(null); // Limpiar errores anteriores
+
     try {
-      const userCredential = await signInWithEmailAndPassword(
-        authClient,
-        email,
-        password
-      );
-  
+      const userCredential = await signInWithEmailAndPassword(authClient, email, password);
       const user = userCredential.user;
-  
-      if (!user?.uid) {
-        throw new Error("User UID not found");
-      }
-  
-      const response = await signInWithFirebase(user.uid);
-  
+
+      if (!user?.uid) throw new Error("User UID not found");
+
+      const response = await signInWithFirebaseAction(user.uid);
+
       if (response?.error) {
-        throw new Error(response.error);
+        onError(
+          <>
+            {response.error || "Email or password is incorrect."}
+            <a href="/reset-password" className={styles.errorLink}>
+              Reset password?
+            </a>
+          </>
+        );
+      } else {
+        await user.getIdToken(true);
+        await user.getIdTokenResult();
+
+        router.push("/select-role");
       }
-  
-      // Force refresh of ID token and claims
-      await user.getIdToken(true);
-      await user.getIdTokenResult();
-  
-      router.push("/dashboard");
-    } catch (err) {
+    } catch (err: any) {
       console.error("Login failed:", err);
+      onError(
+        <>
+          {err?.message || "An unexpected error occurred."}
+          <a href="/reset-password" className={styles.errorLink}>
+            Reset password?
+          </a>
+        </>
+      );
+    } finally {
+      setLoading(false);
     }
   };
 

@@ -3,9 +3,9 @@ import type { NextAuthOptions } from "next-auth";
 import { FirestoreAdapter } from "@auth/firebase-adapter";
 import CredentialsProvider from "next-auth/providers/credentials";
 
-import firebaseAdmin from "@/lib/firebase-admin";
 import { firestore } from "@/lib/firestore-admin";
 import { findOrCreatePgUserAndUpdateRole } from "@/app/lib/user.server";
+import admin from "./lib/firebase/firebase-server";
 
 interface AppUser extends NextAuthUser {
   uid?: string; // From Firebase, will be in NextAuth token
@@ -50,7 +50,7 @@ export const authOptions = {
 
         if (idToken) {
           try {
-            const decodedToken = await firebaseAdmin
+            const decodedToken = await admin
               .auth()
               .verifyIdToken(idToken);
             

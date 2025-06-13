@@ -8,6 +8,9 @@ import styles from "./SelectRolePage.module.css";
 import Loader from "@/app/components/shared/Loader";
 import { toast } from "sonner";
 import { useAuth } from '@/context/AuthContext';
+import { getIdTokenResult } from "firebase/auth";
+import { updateLastRoleUsedFirebaseAction } from "@/actions/auth/singin";
+import { getLastPathByRole } from "@/lib/redirect";
 
 export default function SelectRolePage() {
   const router = useRouter();
@@ -15,66 +18,54 @@ export default function SelectRolePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Redirect if not authenticated or auth state is still loading
   useEffect(() => {
-    if (!loadingAuth && !user) {
-      router.push("/signin");
+    if (loadingAuth) return;
+
+    const lastRoleUsed = user?.claims?.lastRoleUsed;
+    const lastPath = getLastPathByRole(lastRoleUsed);
+
+    if (lastRoleUsed && lastPath) {
+      router.push(lastPath);
     }
-    if (!loadingAuth && user && user?.claims.role !== "QA") {
-      /*
-      if (user?.isBuyerMode) {
-        if (user?.lastViewVisitedBuyer) {
-          router.push(user?.lastViewVisitedBuyer);
-        } else {
-          router.push(`user/${user?.uid || 'this_user'}/buyer`);
-        }
-      }
-      if (user?.canBeGigWorker && user?.isWorkerMode) {
-        if (user?.lastViewVisitedWorker) {
-          router.push(user?.lastViewVisitedWorker);
-        } else {
-          router.push(`user/${user?.uid || 'this_user'}/worker`);
-        }
-      }
-      */
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, loadingAuth, router]);
 
-  const updateUserContext = false
-
   const handleRoleSelection = async (role: "BUYER" | "GIG_WORKER") => {
-    if (!updateUserContext) {
+    if (!user) {
       setError("User context is not available. Please try again.");
-      console.error(
-        "updateUserContext function is not available from useAppContext."
-      );
       return;
     }
-
+  
     setIsLoading(true);
     setError(null);
+  
     try {
-      //await updateUserContext({ lastRoleUsed: role });
+      
+      const response = await updateLastRoleUsedFirebaseAction(user.uid, role);
+  
+      if (response?.error) {
+        toast.error("Failed to update role: " + response.error);
+        setIsLoading(false);
+        return;
+      }
+  
+      // Force refresh of token to get new claims
+      const refreshedToken = await getIdTokenResult(user, true);
+      const newClaims = refreshedToken.claims;
 
+      
+      // Save rute initial in the localstorage
       if (role === "BUYER") {
-        if (user?.claims.role === "BUYER") {
-          if (user?.lastViewVisitedBuyer) {
-            router.push(user?.lastViewVisitedBuyer);
-          }
-          router.push(`user/${user?.uid || 'this_user'}/buyer/gigs/new`);
-        } else {
-          toast.error(
-            "You are not eligible to be a buyer. Please contact support."
-          );
-          setIsLoading(false);
-        }
+          const path = `user/${user.uid || "this_user"}/buyer/gigs/new`;
+          localStorage.setItem("lastPath_BUYER", path);
+          
+          router.push(path);
       } else if (role === "GIG_WORKER") {
-        if (user?.claims.role === "GIG_WORKER" || user?.claims.role === "QA") {
-          router.push(`user/${user?.uid || 'this_user'}/worker`);
-        } else {
-          router.push(`user/${user?.uid || 'this_user'}/worker/onboarding`);
-        }
+        const isWorker = ["GIG_WORKER", "QA"].includes(newClaims.role);
+        const path = isWorker
+          ? `user/${user.uid || "this_user"}/worker`
+          : `user/${user.uid || "this_user"}/worker/onboarding`;
+  
+        localStorage.setItem("lastPath_GIG_WORKER", path);
       }
     } catch (err) {
       console.error("Error setting role:", err);
@@ -82,10 +73,11 @@ export default function SelectRolePage() {
       setIsLoading(false);
     }
   };
-
+  
   if (isLoading) {
     return <Loader />;
   }
+
   return (
     <div className={styles.container}>
       <div className={styles.card}>
@@ -104,14 +96,14 @@ export default function SelectRolePage() {
 
         <div className={styles.actions}>
           <ActionButton
-            bgColor="#7eeef9" // Light blue for "Hire"
+            bgColor="#7eeef9"
             onClick={() => handleRoleSelection("BUYER")}
             disabled={isLoading}
           >
             Hire a Gig Worker
           </ActionButton>
           <ActionButton
-            bgColor="#41a1e8" // Darker blue for "Find Work"
+            bgColor="#41a1e8"
             onClick={() => handleRoleSelection("GIG_WORKER")}
             disabled={isLoading}
           >
