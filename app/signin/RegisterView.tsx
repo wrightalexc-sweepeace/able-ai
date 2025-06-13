@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, FormEvent } from "react";
+import { StepInputConfig } from "../types/form";
 import InputField from "@/app/components/form/InputField";
 import SubmitButton from "@/app/components/form/SubmitButton";
 import styles from "@/app/signin/SignInPage.module.css";
@@ -13,18 +14,56 @@ interface RegisterViewProps {
     onError: (error: React.ReactNode | null) => void;
 }
 
+const registrationInputs: StepInputConfig[] = [
+    {
+      type: 'text',
+      name: 'name',
+      label: 'Name',
+      placeholder: 'Enter your name',
+    },
+    {
+      type: 'text',
+      name: 'phone',
+      label: 'Phone Number',
+      placeholder: 'Enter your phone number',
+    },
+    {
+      type: 'email',
+      name: 'email',
+      label: 'Email Address',
+      placeholder: 'Enter your email',
+      required: true,
+    },
+    {
+      type: 'password',
+      name: 'password',
+      label: 'Password',
+      placeholder: 'Make it secure...',
+      required: true,
+    },
+];
+
 const RegisterView: React.FC<RegisterViewProps> = ({ onToggleRegister, onError }) => {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [name, setName] = useState("");
-    const [phone, setPhone] = useState("");
+    const [formData, setFormData] = useState({
+        name: "",
+        phone: "",
+        email: "",
+        password: "",
+    });
     const [loading, setLoading] = useState(false);
     const router = useRouter();
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+    };
 
     const handleSubmit = async (event: FormEvent) => {
         event.preventDefault();
         onError(null); // Clear previous errors
         setLoading(true);
+
+        const { name, phone, email, password } = formData;
 
         // Validate email with RFC 5322 standard complaint regex
         const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -59,68 +98,22 @@ const RegisterView: React.FC<RegisterViewProps> = ({ onToggleRegister, onError }
 
     return (
         <form className={styles.form} onSubmit={handleSubmit}>
-            <div className={styles.inputGroup}>
-                <label htmlFor="name" className={styles.label}>
-                    Name
-                </label>
-                <InputField
-                    type="text"
-                    id="name-register"
-                    name="name-register"
-                    placeholder="Enter your name"
-                    value={name}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        setName(e.target.value)
-                    }
-                />
-            </div>
-            <div className={styles.inputGroup}>
-                <label htmlFor="phone" className={styles.label}>
-                    Phone Number
-                </label>
-                <InputField
-                    type="text"
-                    id="phone-register"
-                    name="phone-register"
-                    placeholder="Enter your phone number"
-                    value={phone}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        setPhone(e.target.value)
-                    }
-                />
-            </div>
-            <div className={styles.inputGroup}>
-                <label htmlFor="email" className={styles.label}>
-                    Email Address
-                </label>
-                <InputField
-                    type="email"
-                    id="email-register"
-                    name="email-register"
-                    placeholder="Enter your email"
-                    value={email}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        setEmail(e.target.value)
-                    }
-                    required
-                />
-            </div>
-            <div className={styles.inputGroup}>
-                <label htmlFor="password" className={styles.label}>
-                    Password
-                </label>
-                <InputField
-                    type="password"
-                    id="password-register"
-                    name="password-register"
-                    placeholder="Make it secure..."
-                    value={password}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        setPassword(e.target.value)
-                    }
-                    required
-                />
-            </div>
+            {registrationInputs.map(input => (
+                <div className={styles.inputGroup} key={input.name}>
+                    <label htmlFor={`${input.name}-register`} className={styles.label}>
+                        {input.label}
+                    </label>
+                    <InputField
+                        type={input.type as string}
+                        id={`${input.name}-register`}
+                        name={input.name}
+                        placeholder={input.placeholder}
+                        value={formData[input.name as keyof typeof formData]}
+                        onChange={handleInputChange}
+                        required={input.required}
+                    />
+                </div>
+            ))}
 
             <div className={styles.submitWrapper}>
                 <SubmitButton loading={loading} disabled={loading}>

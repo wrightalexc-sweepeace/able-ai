@@ -1,20 +1,4 @@
-import { WorkerData } from '@/app/components/onboarding/WorkerCard';
-export interface OnboardingStep {
-    id: number;
-    type: 'botMessage' | 'userInput' | 'userResponseDisplay' | 'workerCard' | 'terms' | 'fileUpload' | 'datePicker' | 'discountCode' | 'recordVideo' | 'shareLink';
-    senderType?: 'bot' | 'user';
-    content?: string | React.ReactNode;
-    inputType?: 'text' | 'email' | 'number' | 'textarea' | 'file' | 'date';
-    inputName?: string;
-    inputPlaceholder?: string;
-    inputLabel?: string;
-    isComplete?: boolean;
-    dependsOn?: number;
-    value?: any;
-    fileLabel?: string;
-    fileMultiple?: boolean;
-    workerData?: WorkerData; // Added workerData to step
-  }
+import { OnboardingStep } from './OnboardingSteps';
 
 const baseInitialSteps: OnboardingStep[] = [
     { id: 1, type: 'botMessage', content: "Tell me about yourself and your work experience" },
