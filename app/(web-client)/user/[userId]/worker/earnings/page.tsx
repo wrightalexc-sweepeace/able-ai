@@ -93,7 +93,7 @@ export default function WorkerEarningsPage() {
   // Fetch earnings
   useEffect(() => {
     // Ensure user is authenticated, authorized for this page, and has necessary roles before fetching
-    if (!loadingAuth && user && authUserId === pageUserId && (user?.role === "GIG_WORKER" || user?.role === "QA")) {
+    if (!loadingAuth && user && authUserId === pageUserId && (user?.claims.role === "GIG_WORKER" || user?.claims.role === "QA")) {
       setIsLoadingEarnings(true);
       fetchWorkerEarnings(pageUserId, filterGigType) // Fetch earnings for the pageUserId
         .then(data => {
@@ -129,7 +129,7 @@ export default function WorkerEarningsPage() {
     return <Briefcase size={18} className={styles.earningGigIcon} />;
   }
 
-  if (loadingAuth || (!user?.isAuthenticated && !user?.isQA)) {
+  if (loadingAuth || (!user && user?.claims.role !== "QA")) {
     return <div className={styles.loadingContainer}><Loader2 className="animate-spin" size={32} /> Loading...</div>;
   }
 

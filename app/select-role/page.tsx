@@ -2,25 +2,26 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { useUser } from '@/app/context/UserContext';
 import Logo from "@/app/components/brand/Logo";
 import ActionButton from "./ActionButton";
 import styles from "./SelectRolePage.module.css";
 import Loader from "@/app/components/shared/Loader";
 import { toast } from "sonner";
+import { useAuth } from '@/context/AuthContext';
 
 export default function SelectRolePage() {
   const router = useRouter();
-  const { user, loading: loadingAuth, updateUserContext /* TODO: Handle authError if necessary */ } = useUser();
+  const { user, loading: loadingAuth } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Redirect if not authenticated or auth state is still loading
   useEffect(() => {
-    if (!loadingAuth && user?.isAuthenticated === false) {
+    if (!loadingAuth && !user) {
       router.push("/signin");
     }
-    if (!loadingAuth && user?.isAuthenticated && !user?.isQA) {
+    if (!loadingAuth && user && user?.claims.role !== "QA") {
+      /*
       if (user?.isBuyerMode) {
         if (user?.lastViewVisitedBuyer) {
           router.push(user?.lastViewVisitedBuyer);
@@ -35,9 +36,12 @@ export default function SelectRolePage() {
           router.push(`user/${user?.uid || 'this_user'}/worker`);
         }
       }
+      */
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.isAuthenticated, loadingAuth, router]);
+  }, [user, loadingAuth, router]);
+
+  const updateUserContext = false
 
   const handleRoleSelection = async (role: "BUYER" | "GIG_WORKER") => {
     if (!updateUserContext) {
@@ -51,10 +55,10 @@ export default function SelectRolePage() {
     setIsLoading(true);
     setError(null);
     try {
-      await updateUserContext({ lastRoleUsed: role });
+      //await updateUserContext({ lastRoleUsed: role });
 
       if (role === "BUYER") {
-        if (user?.canBeBuyer) {
+        if (user?.claims.role === "BUYER") {
           if (user?.lastViewVisitedBuyer) {
             router.push(user?.lastViewVisitedBuyer);
           }
@@ -66,7 +70,7 @@ export default function SelectRolePage() {
           setIsLoading(false);
         }
       } else if (role === "GIG_WORKER") {
-        if (user?.canBeGigWorker || user?.isQA) {
+        if (user?.claims.role === "GIG_WORKER" || user?.claims.role === "QA") {
           router.push(`user/${user?.uid || 'this_user'}/worker`);
         } else {
           router.push(`user/${user?.uid || 'this_user'}/worker/onboarding`);

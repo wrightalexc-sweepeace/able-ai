@@ -4,14 +4,15 @@ import { Toaster } from 'sonner'
 import styles from "./page.module.css";
 import { useState } from "react";
 import Link from "next/link";
+import { useAuth } from '@/context/AuthContext';
 
 export default function Home() {
-  const { user, loading, error, signOutUser, refetchUser } = useUser();
+  const { user, loading } = useAuth();
   const [isProjectInfoOpen, setIsProjectInfoOpen] = useState(false); 
 
   const handleSignOut = async () => {
     try {
-      await signOutUser();
+      //await signOutUser();
     } catch (error) {
       // Error is already logged in signOutUser, but can add more handling here if needed
       console.error("Error during sign out process on page:", error);
@@ -20,12 +21,9 @@ export default function Home() {
 
 const toggleIsViewQA = async () => {
   try {
-    const currentIsQA = user?.isQA ?? false;
+    const currentIsQA = user?.claims.role === "QA";
     const newIsQA = !currentIsQA;
     localStorage.setItem('isViewQA', String(newIsQA));
-    if (refetchUser) {
-      await refetchUser(); // Refetch user data to update context
-    }
   } catch (error) {
     console.error('Error toggling isViewQA and refetching user:', error);
   }
@@ -59,20 +57,22 @@ const toggleIsViewQA = async () => {
         <section className={styles.userSection}>
           <h2>User Status</h2>
           {loading && <p>Loading user context...</p>}
-          {error && <p>Error loading context: {error.message}</p>}
+          { /*error && <p>Error loading context: {error.message}</p>*/}
           {user && (
             <div>
               <p>User Email: {user.email}</p>
-              <p>App Role: {user.appRole}</p>
-              <p>Last Role Used: {user.lastRoleUsed}</p>
-              <p>Is Buyer Mode: {String(user.isBuyerMode)}</p>
-              <p>Is Worker Mode: {String(user.isWorkerMode)}</p>
-              <p>Is Authenticated: {String(user.isAuthenticated)}</p>
-              <p>Is QA Mode: {String(user.isQA)}</p> {/* Added isQA display */}
+              <p>App Role: {user?.claims.role}</p>
+              {/*
+                <p>Last Role Used: {user.lastRoleUsed}</p>
+                <p>Is Buyer Mode: {String(user.isBuyerMode)}</p>
+                <p>Is Worker Mode: {String(user.isWorkerMode)}</p>
+                <p>Is Authenticated: {String(user.isAuthenticated)}</p>
+                <p>Is QA Mode: {String(user.isQA)}</p>
+              */}
             </div>
           )}
           {/* User Actions moved into the same section */}
-          {user && user.isAuthenticated ? (
+          {user && user?.claims ? (
             <div className={styles.userInfo_actions}> {/* Changed className for potential styling adjustments */}
               <div className={styles.userActions}>
                 <Link href="/select-role" className={styles.primary}>
@@ -256,7 +256,7 @@ const toggleIsViewQA = async () => {
             Clear Local Storage Role
           </button>
           <button onClick={() => toggleIsViewQA()} className={styles.secondary}>
-            Toggle isViewQA (currently {String(user?.isQA ?? false)})
+            Toggle isViewQA (currently {String(user?.claims.role === "QA")})
           </button>
         </section>
       </main>

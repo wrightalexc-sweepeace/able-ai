@@ -93,13 +93,13 @@ export default function InvoicePage({ params }: { params: { userId: string } }) 
       return; // Wait for user context to be loaded before deciding to fetch data
     }
 
-    if (user?.role == "QA") {
+    if (user?.claims.role == "QA") {
       // QA users get mock data regardless of their own authUserId vs params.userId
       fetchInvoiceData(); 
     } else if (user && user?.uid === params.userId) {
       // Non-QA users must be authenticated and authorized
       fetchInvoiceData();
-    } else if (!user?.role === "QA" && !user) {
+    } else if (user?.claims.role !== "QA" && !user) {
       // This case should ideally be caught by the auth useEffect and result in a redirect.
       // If reached, ensure loading stops.
       console.warn("Invoice data fetch attempted by non-QA, non-authenticated user.");
@@ -124,7 +124,7 @@ export default function InvoicePage({ params }: { params: { userId: string } }) 
 
   return (
     <div className={styles.container}>
-      {user.role === "QA" && (
+      {user?.claims.role === "QA" && (
         <div className={styles.qaIndicator}>
           QA View - Mock Data
         </div>

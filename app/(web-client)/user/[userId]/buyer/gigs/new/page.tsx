@@ -176,7 +176,7 @@ export default function OnboardBuyerPage() {
   const { user, loading: loadingAuth } = useAuth();
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
-  const isQA = !!user?.role === "QA";
+  const isQA = user?.claims.role === "QA";
 
   const [onboardingSteps, setOnboardingSteps] = useState<OnboardingStep[]>(
     baseInitialSteps.map((s) => ({ ...s, isComplete: false }))

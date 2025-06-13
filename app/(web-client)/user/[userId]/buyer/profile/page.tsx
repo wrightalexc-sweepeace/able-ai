@@ -111,7 +111,7 @@ export default function BuyerProfilePage() {
 
         // At this point, user is authenticated and authorized for this pageUserId
         if (user) { // This check is somewhat redundant due to above, but keeps structure similar
-            if (user?.role === "QA") {
+            if (user?.claims.role === "QA") {
                 setDashboardData(mockDashboardData);
                 setIsLoadingData(false);
             } else {

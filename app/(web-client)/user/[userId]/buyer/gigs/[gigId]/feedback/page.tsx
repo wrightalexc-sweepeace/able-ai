@@ -83,7 +83,7 @@ export default function BuyerFeedbackPage() {
     // Fetch data only if user is loaded, authenticated, and authorized (or is QA)
     if (loadingAuth) return;
 
-    const shouldFetch = (user?.role === "QA" && gigId) || 
+    const shouldFetch = (user?.claims.role === "QA" && gigId) || 
                         (user && authUserId === pageUserId && gigId);
 
     if (shouldFetch) {
@@ -158,7 +158,7 @@ export default function BuyerFeedbackPage() {
   }
   if (
     error &&
-    (!gigData || !user || !user?.role === "BUYER") &&
+    (!gigData || !user || user?.claims.role !== "BUYER") &&
     !successMessage
   ) {
     return (
@@ -179,7 +179,7 @@ export default function BuyerFeedbackPage() {
       </div>
     );
   }
-  if (!gigData && !successMessage && user && user?.role === "BUYER") {
+  if (!gigData && !successMessage && user && user?.claims.role === "BUYER") {
     return (
       <div className={styles.container}>
         <div className={styles.pageWrapper}>

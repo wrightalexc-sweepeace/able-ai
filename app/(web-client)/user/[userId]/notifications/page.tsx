@@ -189,9 +189,9 @@ export default function NotificationsPage() {
 
   const handleGoBack = () => {
     // Navigate to appropriate dashboard based on user.lastRoleUsed
-    if (user?.role === "BUYER") {
+    if (user?.claims.role === "BUYER") {
       router.push(`/user/${authUserId}/buyer`); // Assuming buyer dashboard path
-    } else if (user?.role === "GIG_WORKER") {
+    } else if (user?.claims.role === "GIG_WORKER") {
       router.push(`/user/${authUserId}/worker`); // Assuming worker dashboard path
     } else {
       // If lastRoleUsed is not set, or user is not available, fallback to previous page or a default
@@ -270,9 +270,9 @@ export default function NotificationsPage() {
           <footer className={styles.footer}>
             <Link
               href={
-                user?.role === "BUYER"
+                user?.claims.role === "BUYER"
                   ? `/user/${authUserId}/buyer`
-                  : user?.role === "GIG_WORKER"
+                  : user?.claims.role === "GIG_WORKER"
                   ? `/user/${authUserId}/worker`
                   : `/select-role` // Fallback if role is unknown
               }
