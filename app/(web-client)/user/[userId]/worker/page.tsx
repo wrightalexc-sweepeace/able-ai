@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useRouter, useParams, usePathname } from "next/navigation";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 
 // Import shared components
@@ -37,9 +37,7 @@ import { useAuth } from "@/context/AuthContext";
 // }
 
 export default function WorkerDashboardPage() {
-  const router = useRouter();
   const params = useParams();
-  const pathname = usePathname();
   const pageUserId = params.userId as string;
 
   const {

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Bot, Edit3 } from "lucide-react"; // Icons: Bot for friendly face, Edit3 for pencil
 import styles from "./CancelOrAmendGigDetailsPage.module.css";
 import { usePathname } from "next/navigation";
@@ -18,7 +18,6 @@ const gigDetailsData = {
 };
 
 export default function CancelOrAmendGigDetailsPage() {
-  const pathname = usePathname();
   const {loading: loadingAuth, user } = useAuth();
   const [userMessage, setUserMessage] = useState("");
   const [isEditingDetails, setIsEditingDetails] = useState(false); // Add state for edit mode

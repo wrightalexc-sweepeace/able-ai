@@ -119,7 +119,7 @@ export default function OnboardWorkerPage() {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
-    if (!user?.claims.role === "QA" && currentFocusedInputName) {
+    if (user?.claims.role !== "QA" && currentFocusedInputName) {
         const inputElement = document.querySelector(`[name="${currentFocusedInputName}"]`) as HTMLElement;
         inputElement?.focus();
     }
@@ -350,7 +350,7 @@ export default function OnboardWorkerPage() {
       {/* Removed the generic "Confirm & Proceed" button as booking is per card now */}
       {/* {allInteractiveStepsComplete && !isSubmitting && !isViewQA && onboardingSteps[onboardingSteps.length-1]?.type !== 'botMessage' && ( ... )} */}
 
-       {isSubmitting && !user?.claims.role === "QA" && (
+       {isSubmitting && user?.claims.role !== "QA" && (
          <MessageBubble key="submitting-msg" text="Processing..." senderType="bot" />
       )}
        {/* <input

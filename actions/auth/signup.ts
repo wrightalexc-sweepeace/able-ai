@@ -18,8 +18,6 @@ export async function registerUserAction(data: RegisterUserData) {
       //displayName: data.name,
     });
 
-    console.log(firebaseUser);
-
     await findOrCreatePgUserAndUpdateRole({
       // This function MUST return these new fields
       firebaseUid: firebaseUser.uid,

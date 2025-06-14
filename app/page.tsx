@@ -5,14 +5,16 @@ import styles from "./page.module.css";
 import { useState } from "react";
 import Link from "next/link";
 import { useAuth } from '@/context/AuthContext';
+import { signOut } from "firebase/auth";
+import { authClient } from "@/lib/firebase/clientApp";
 
 export default function Home() {
   const { user, loading } = useAuth();
-  const [isProjectInfoOpen, setIsProjectInfoOpen] = useState(false); 
+  const [isProjectInfoOpen, setIsProjectInfoOpen] = useState(false);
 
   const handleSignOut = async () => {
     try {
-      //await signOutUser();
+      await signOut(authClient)
     } catch (error) {
       // Error is already logged in signOutUser, but can add more handling here if needed
       console.error("Error during sign out process on page:", error);

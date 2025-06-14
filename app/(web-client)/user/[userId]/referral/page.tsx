@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, ChangeEvent, FormEvent, useEffect } from 'react';
+import React, { useState, ChangeEvent, FormEvent } from 'react';
 import Image from 'next/image';
-import { useRouter, useParams, usePathname } from 'next/navigation';
+import { useParams } from 'next/navigation';
 
 // Shared InputField, or use direct styling with .input class
 import InputField from '@/app/components/form/InputField'; // Assuming general input style
@@ -21,9 +21,7 @@ interface ReferralFormData {
 }
 
 export default function ReferralPage() {
-  const router = useRouter();
   const params = useParams();
-  const pathname = usePathname();
   const pageUserId = params.userId as string;
 
   const { user, loading: loadingAuth } = useAuth();

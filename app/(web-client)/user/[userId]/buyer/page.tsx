@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { Toaster } from "sonner";
@@ -20,8 +20,6 @@ import styles from "./HomePage.module.css";
 import { useAuth } from "@/context/AuthContext";
 
 export default function BuyerDashboardPage() {
-  const router = useRouter();
-  const pathname = usePathname();
   const {
     user: userPublicProfile,
     loading: loadingAuth,

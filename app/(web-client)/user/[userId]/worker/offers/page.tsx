@@ -184,7 +184,7 @@ export default function WorkerOffersPage() {
     router.push(`/user/${pageUserId}/worker`);
   };
 
-  if (!user?.isAuthenticated || (user?.uid && user.uid !== pageUserId)) { // Use isLoading and user?.uid
+  if (!user || (user?.uid && user.uid !== pageUserId)) { // Use isLoading and user?.uid
     return <div className={styles.loadingContainer}><Loader2 className="animate-spin" size={32} /> Loading...</div>;
   }
 
