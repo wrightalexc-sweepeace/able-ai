@@ -10,7 +10,6 @@ export async function setLastRoleUsed(lastRoleUsed: "BUYER" | "GIG_WORKER") {
 export function getLastRoleUsed(): "BUYER" | "GIG_WORKER" | null {
   try {
     const lastRoleUsed = window.localStorage.getItem("lastRoleUsed");
-    console.log(lastRoleUsed, "lastRoleUsed from localStorage");
     
     return lastRoleUsed as "BUYER" | "GIG_WORKER" | null;
   } catch (error) {
