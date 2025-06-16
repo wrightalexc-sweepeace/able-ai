@@ -24,6 +24,10 @@ export default function SelectRolePage() {
     const lastRoleUsed = user?.claims?.lastRoleUsed;
     const lastPath = getLastPathByRole(lastRoleUsed);
 
+    console.log("Last Role Used:", lastRoleUsed);
+    console.log("Last Path:", lastPath);
+    
+    
     if (lastRoleUsed && lastPath) {
       router.push(lastPath);
     }
