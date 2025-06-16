@@ -12,6 +12,7 @@ import styles from "./page.module.css";
 import WorkerProfile from "@/app/components/profile/WorkerProfile";
 import CloseButton from "@/app/components/profile/CloseButton";
 import { useAuth } from "@/context/AuthContext";
+import { getLastRoleUsed } from "@/lib/last-role-used";
 
 // Mock data for QA testing
 const qaMockProfileData = {
@@ -46,8 +47,8 @@ const qaMockProfileData = {
     { name: "Graphic Designer", ableGigs: 1, experience: "7 years", eph: 22 },
   ],
   awards: [
-    { id: "a1", icon: AwardIconLucide, textLines: "Always on time"},
-    { id: "a2", icon: UserCircle, textLines: "Able professional"},
+    { id: "a1", icon: AwardIconLucide, textLines: "Always on time" },
+    { id: "a2", icon: UserCircle, textLines: "Able professional" },
   ],
   feedbackSummary: "Professional, charming and lively",
   qualifications: [
@@ -87,6 +88,7 @@ export default function WorkerOwnedProfilePage() {
   const params = useParams();
   const pathname = usePathname();
   const userId = params.userId as string;
+  const lastRoleUsed = getLastRoleUsed();
 
   const { user, loading: loadingAuth } = useAuth();
 
@@ -109,41 +111,31 @@ export default function WorkerOwnedProfilePage() {
   };
 
   useEffect(() => {
-    if (loadingAuth) {
-      return; // Wait for user context to load
-    }
-
-    if (!user || !user) {
-      router.replace(`/signin?redirect=${pathname}`);
-      return;
-    }
-
-    if (user.uid !== userId) {
-      router.replace('/signin?error=unauthorized'); // Or a more appropriate unauthorized page
-      return;
-    }
-
-    if (user.claims.role === "GIG_WORKER" || user.claims.role === "QA") {
-
-      setLoadingProfile(true);
-      fetchWorkerOwnedProfile(userId, !!user.isQA)
-        .then((data) => {
-          setProfile(data);
-          setError(null);
-        })
-        .catch((err) => {
-          console.error("Failed to fetch worker profile:", err);
-          setError("Could not load your profile.");
-        })
-        .finally(() => setLoadingProfile(false));
-    } else {
-      router.replace("/select-role");
+    if (!loadingAuth && user) {
+      if (
+        lastRoleUsed === "GIG_WORKER" ||
+        user.claims.role === "QA"
+      ) {
+        setLoadingProfile(true);
+        fetchWorkerOwnedProfile(userId, user.claims.role === "QA")
+          .then((data) => {
+            setProfile(data);
+            setError(null);
+          })
+          .catch((err) => {
+            console.error("Failed to fetch worker profile:", err);
+            setError("Could not load your profile.");
+          })
+          .finally(() => setLoadingProfile(false));
+      } else {
+        router.replace("/select-role");
+      }
     }
   }, [loadingAuth, user, userId, pathname, router]);
 
   const handleSkillDetails = (name: string) => {
     return router.push(`/user/${userId}/worker/profile/skills/${name}`);
-  }
+  };
 
   if (loadingAuth || loadingProfile) {
     return (

@@ -6,6 +6,7 @@ import styles from './ConfirmAmendedGigDetailsPage.module.css';
 
 import { usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { getLastRoleUsed } from '@/lib/last-role-used';
 
 // Mock data for Buyer view
 const buyerGigDetailsData = {
@@ -41,10 +42,12 @@ const workerNotificationMessage = {
 export default function ConfirmAmendedGigDetailsPage() {
   const pathname = usePathname()
   const { loading: loadingAuth, user } = useAuth();
+  const lastRoleUsed = getLastRoleUsed()
+  
 
   // Determine which data and UI elements to use based on role
-  const gigDetailsData = user?.claims.lastRoleUsed == "BUYER" ? buyerGigDetailsData : workerGigDetailsData;
-  const notificationMessage = user?.claims.lastRoleUsed == "BUYER" ? buyerNotificationMessage : workerNotificationMessage;
+  const gigDetailsData = lastRoleUsed ? buyerGigDetailsData : workerGigDetailsData;
+  const notificationMessage = lastRoleUsed ? buyerNotificationMessage : workerNotificationMessage;
 
   const handleEditDetails = () => {
     console.log("Edit details clicked");
@@ -84,7 +87,7 @@ export default function ConfirmAmendedGigDetailsPage() {
               {notificationMessage.user} has {notificationMessage.change}, the update details are below. {notificationMessage.prompt}
             </p>
           </div>
-          {user?.claims.lastRoleUsed == "BUYER" && (
+          {lastRoleUsed == "BUYER" && (
             <MessageSquare className={styles.chatIcon} strokeWidth={1.5} onClick={() => console.log("Chat icon clicked")} />
           )}
         </section>
@@ -93,7 +96,7 @@ export default function ConfirmAmendedGigDetailsPage() {
         <section className={styles.card}>
           <div className={styles.detailsHeader}>
             <h2 className={styles.detailsTitle}>Updated gig details:</h2>
-            {user?.claims.lastRoleUsed == "BUYER" && (
+            {lastRoleUsed == "BUYER" && (
               <Edit3 className={styles.editIcon} onClick={handleEditDetails} />
             )}
           </div>
@@ -112,11 +115,11 @@ export default function ConfirmAmendedGigDetailsPage() {
             </div>
             <div className={styles.detailItem}>
               <span className={styles.detailItemLabel}>Pay per hour:</span>
-              <span className={`${styles.detailItemValue} ${user?.claims.lastRoleUsed == "BUYER" ? styles.highlightedValue : ''}`}>
+              <span className={`${styles.detailItemValue} ${lastRoleUsed == "BUYER" ? styles.highlightedValue : ''}`}>
                 {gigDetailsData.payPerHour}
               </span>
             </div>
-            {user?.claims.lastRoleUsed == "BUYER" ? (
+            {lastRoleUsed == "BUYER" ? (
               <div className={styles.detailItem}>
                 <span className={styles.detailItemLabel}>Total cost:</span>
                 <span className={styles.detailItemValue}>
@@ -137,12 +140,12 @@ export default function ConfirmAmendedGigDetailsPage() {
       <footer className={styles.actionsFooter}>
         <button
           type="button"
-          className={`${styles.actionButton} ${user?.claims.lastRoleUsed == "BUYER" ? styles.confirmButton : styles.suggestButton /* Using suggestButton style for worker confirm */}`}
+          className={`${styles.actionButton} ${lastRoleUsed == "BUYER" ? styles.confirmButton : styles.suggestButton /* Using suggestButton style for worker confirm */}`}
           onClick={handleConfirm}
         >
           Confirm changes
         </button>
-        {user?.claims.lastRoleUsed == "BUYER" && (
+        {lastRoleUsed == "BUYER" && (
           <>
             <button
               type="button"

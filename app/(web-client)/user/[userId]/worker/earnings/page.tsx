@@ -10,6 +10,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 
 import styles from './EarningsPage.module.css';
 import { useAuth } from '@/context/AuthContext';
+import { getLastRoleUsed } from '@/lib/last-role-used';
 
 // Define interface for earning data
 interface Earning {
@@ -76,6 +77,8 @@ export default function WorkerEarningsPage() {
   const params = useParams();
   const pathname = usePathname();
   const pageUserId = params.userId as string;
+  const lastRoleUsed = getLastRoleUsed()
+  
   
   const { user, loading: loadingAuth } = useAuth();
   const authUserId = user?.uid;
@@ -106,7 +109,7 @@ export default function WorkerEarningsPage() {
           setEarnings([]); // Clear earnings on error
         })
         .finally(() => setIsLoadingEarnings(false));
-    } else if (!loadingAuth && user && authUserId === pageUserId && !(user?.claims.role === "GIG_WORKER" || user?.claims.role === "QA")){
+    } else if (!loadingAuth && user && authUserId === pageUserId && !(lastRoleUsed === "GIG_WORKER" || user?.claims.role === "QA")){
       // If user is auth'd for page, but no role, don't attempt fetch, auth useEffect handles redirect
       // Set loading to false as fetch won't occur.
       setIsLoadingEarnings(false); 

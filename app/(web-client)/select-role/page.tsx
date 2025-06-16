@@ -6,10 +6,8 @@ import Logo from "@/app/components/brand/Logo";
 import ActionButton from "./ActionButton";
 import styles from "./SelectRolePage.module.css";
 import Loader from "@/app/components/shared/Loader";
-import { toast } from "sonner";
 import { useAuth } from '@/context/AuthContext';
-import { getIdTokenResult } from "firebase/auth";
-import { updateLastRoleUsedFirebaseAction } from "@/actions/auth/singin";
+import { setLastRoleUsed } from "@/lib/last-role-used";
 
 export default function SelectRolePage() {
   const router = useRouter();
@@ -28,18 +26,7 @@ export default function SelectRolePage() {
   
     try {
       
-      const response = await updateLastRoleUsedFirebaseAction(user.uid, role);
-  
-      if (response?.error) {
-        toast.error("Failed to update role: " + response.error);
-        setIsLoading(false);
-        return;
-      }
-  
-      // Force refresh of token to get new claims
-      const refreshedToken = await getIdTokenResult(user, true);
-      const newClaims = refreshedToken.claims;
-
+      await setLastRoleUsed(role);
       
       // Save rute initial in the localstorage
       if (role === "BUYER") {
@@ -48,7 +35,7 @@ export default function SelectRolePage() {
           
           router.push(path);
       } else if (role === "GIG_WORKER") {
-        const isWorker = ["GIG_WORKER", "QA"].includes(newClaims.role);
+        const isWorker = ["GIG_WORKER", "QA"].includes(user.claims.role);
         
         const path = isWorker
           ? `user/${user.uid || "this_user"}/worker`

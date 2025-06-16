@@ -3,16 +3,18 @@
 import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { getLastRoleUsed } from "@/lib/last-role-used";
 
 const RouteTracker = () => {
   const { user } = useAuth();
   const pathname = usePathname();
   const previousPathRef = useRef<string | null>(null);
+  const lastRoleUsed = getLastRoleUsed();
 
   useEffect(() => {
     if (!user?.claims?.lastRoleUsed) return;
 
-    const role = user.claims.lastRoleUsed;
+    const role = lastRoleUsed;
     const previousPath = previousPathRef.current;
 
     if (previousPath && previousPath !== pathname) {
