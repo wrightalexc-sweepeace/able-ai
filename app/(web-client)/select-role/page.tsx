@@ -61,11 +61,13 @@ export default function SelectRolePage() {
           router.push(path);
       } else if (role === "GIG_WORKER") {
         const isWorker = ["GIG_WORKER", "QA"].includes(newClaims.role);
+        
         const path = isWorker
           ? `user/${user.uid || "this_user"}/worker`
           : `user/${user.uid || "this_user"}/worker/onboarding`;
-  
-        localStorage.setItem("lastPathGigWorker", path);
+ 
+          localStorage.setItem("lastPathGigWorker", path);
+          router.push(path);
       }
     } catch (err) {
       console.error("Error setting role:", err);

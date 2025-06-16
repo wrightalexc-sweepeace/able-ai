@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { useAppContext } from '@/app/hooks/useAppContext';
 
 import {
   Award as AwardIconLucide, UserCircle, Loader2, ThumbsUp, MessageCircleCode, X } from 'lucide-react';
@@ -13,6 +12,7 @@ import WorkerProfile from '@/app/components/profile/WorkerProfile';
 import PublicWorkerProfile from '@/app/types/workerProfileTypes';
 import CloseButton from '@/app/components/profile/CloseButton';
 import HireButton from '@/app/components/profile/HireButton';
+import { useAuth } from '@/context/AuthContext';
 
 // --- MOCK FUNCTION (Updated with new data points) ---
 async function fetchPublicWorkerProfile(workerIdToView: string): Promise<PublicWorkerProfile | null> {
@@ -64,7 +64,7 @@ export default function PublicWorkerProfilePage() {
   const params = useParams();
   const workerProfileIdToView = params.workerId as string;
 
-  const { isLoading: loadingAuth, user: authUser } = useAppContext();
+  const { loading: loadingAuth, user: authUser } = useAuth();
 
   const [workerProfile, setWorkerProfile] = useState<PublicWorkerProfile | null>(null);
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);

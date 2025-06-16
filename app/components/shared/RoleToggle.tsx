@@ -2,10 +2,9 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { ExtendedUser } from "@/app/hooks/useAppContext";
 import styles from "./RoleToggle.module.css";
 
-const RoleToggle: React.FC<{ lastViewVisited?: string, user: ExtendedUser }> = ({
+const RoleToggle: React.FC<{ lastViewVisited?: string, user: any }> = ({
   user,
   lastViewVisited,
 }) => {

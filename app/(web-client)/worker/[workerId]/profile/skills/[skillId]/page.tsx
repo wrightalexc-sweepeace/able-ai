@@ -1,10 +1,8 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useRouter, useParams } from 'next/navigation';
-// useAppContext might not be needed for the public view, but include for now if context is used elsewhere
-// import { useAppContext } from '@/app/hooks/useAppContext';
 
 // --- SHARED & HELPER COMPONENTS ---
 import SkillSpecificHeaderCard from '@/app/components/skills/SkillSpecificHeaderCard';
