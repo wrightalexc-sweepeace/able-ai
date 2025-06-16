@@ -34,9 +34,11 @@ async function fetchBuyerGigDetails(userId: string, gigId: string): Promise<GigD
       location: "123 Business Rd, Tech Park, London, EC1A 1BB",
       hourlyRate: 25, estimatedEarnings: 125,
       specialInstructions: "Focus on high-quality cocktails. Dress code: smart black. Setup starts 30 mins prior. Contact person on site: Jane (07xxxxxxxxx).",
-      status: "PENDING", // Initially pending
+      status: "IN_PROGRESS", // Initially pending
       hiringManager: "Jane Smith",
       hiringManagerUsername: "@janesmith",
+      isBuyerSubmittedFeedback: false,
+      isWorkerSubmittedFeedback: true,
     };
   }
   if (gigId === "gig456-inprogress") {
@@ -54,6 +56,8 @@ async function fetchBuyerGigDetails(userId: string, gigId: string): Promise<GigD
       status: "IN_PROGRESS", // Initially completed
       hiringManager: "Sarah Johnson",
       hiringManagerUsername: "@sarahjohnson",
+      isBuyerSubmittedFeedback: false,
+      isWorkerSubmittedFeedback: true,
     };
   }
   return null; // Or throw an error

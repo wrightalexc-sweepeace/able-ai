@@ -15,5 +15,6 @@ export default interface GigDetails {
   status: 'PENDING' | 'ACCEPTED' | 'IN_PROGRESS' | 'AWAITING_BUYER_CONFIRMATION' | 'COMPLETED' | 'CANCELLED' | 'CONFIRMED' | 'REQUESTED'; // From Prisma enum
   hiringManager?: string; // Optional, if available
   hiringManagerUsername?: string; // Optional, if available
-  // Add other relevant fields
+  isWorkerSubmittedFeedback?: boolean; // Indicates if worker has submitted feedback
+  isBuyerSubmittedFeedback?: boolean; // Indicates if buyer has submitted feedback
 }

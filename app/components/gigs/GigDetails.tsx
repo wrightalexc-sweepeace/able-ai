@@ -38,6 +38,7 @@ const worker = {
   isStar: true,
 };
 
+const workerName = worker.name.split(" ")[0];
 
 const GigDetailsComponent = ({ gig, setGig }: GigDetailsProps) => {
     const router = useRouter();
@@ -46,24 +47,39 @@ const GigDetailsComponent = ({ gig, setGig }: GigDetailsProps) => {
 
     const gigDuration = calculateDuration(gig.startTime, gig.endTime);
 
+
+
     const getButtonLabel = (action: string) => {
         const status = gig.status;
         switch (action) {
         case 'accept':
-            return status === 'PENDING' ? 'Accept Gig' : 'Gig Accepted';
+            return status === 'PENDING' ? (user?.isWorkerMode ? 'Accept Gig' : 'Offer Sent-awaiting acceptance') : 'Gig Accepted';
         case 'start':
-            return status === 'PENDING' || status === 'ACCEPTED'  ? 'Mark as started' : 'Gig Started';
+            return status === 'PENDING' || status === 'ACCEPTED'  ? (user?.isWorkerMode ? 'Mark as you started the gig' : 'Mark as started') : (user?.isWorkerMode ? 'Gig Started' : `${workerName} has started the gig`);
         case 'complete':
-            return status === 'PENDING' || status === 'ACCEPTED' || status === 'IN_PROGRESS' ? 'Mark as complete' : 'Gig Completed';
+            if (!gig.isWorkerSubmittedFeedback && !gig.isBuyerSubmittedFeedback) {
+                if (user?.isWorkerMode) {
+                    return status === 'PENDING' || status === 'ACCEPTED' || status === 'IN_PROGRESS' ? 'Mark as complete' : 'Gig Completed';   
+                } else {
+                    return status === 'PENDING' || status === 'ACCEPTED' || status === 'IN_PROGRESS' ? `Mark as complete, pay ${workerName}` : `${workerName} has completed the gig`;
+                }
+            }
+            else if (gig.isBuyerSubmittedFeedback && user?.isWorkerMode) {
+               return status === 'PENDING' || status === 'ACCEPTED' || status === 'IN_PROGRESS' ? 'Buyer confirmed & paid: leave feedback' : 'Gig Completed';
+            }
+            else if (gig.isWorkerSubmittedFeedback && user?.isBuyerMode) {
+               return status === 'PENDING' || status === 'ACCEPTED' || status === 'IN_PROGRESS' ? `🕒Confirm, pay and review ${workerName}` : 'Gig Completed';
+            }
+
         case 'awaiting':
             if (user?.isWorkerMode) {
-            return status === 'PENDING' || status === 'ACCEPTED' || status === 'IN_PROGRESS' || status === 'COMPLETED' ? 'Request payment' : 'Payment requested';
+                return status === 'PENDING' || status === 'ACCEPTED' || status === 'IN_PROGRESS' || status === 'COMPLETED' ? 'Request payment' : 'Payment requested';
             }
             return status === 'PENDING' || status === 'ACCEPTED' || status === 'IN_PROGRESS' || status === 'COMPLETED' ? 'Pay' : 'Payment done';
         case 'requested':
             return 'Payment requested';
         case 'confirmed':
-            return 'Payment done'; 
+            return 'Payment done';
         default:
             return '';
         }
