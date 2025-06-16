@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import Logo from "@/app/components/brand/Logo";
 import ActionButton from "./ActionButton";
@@ -10,28 +10,12 @@ import { toast } from "sonner";
 import { useAuth } from '@/context/AuthContext';
 import { getIdTokenResult } from "firebase/auth";
 import { updateLastRoleUsedFirebaseAction } from "@/actions/auth/singin";
-import { getLastPathByRole } from "@/lib/redirect";
 
 export default function SelectRolePage() {
   const router = useRouter();
-  const { user, loading: loadingAuth } = useAuth();
+  const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (loadingAuth) return;
-
-    const lastRoleUsed = user?.claims?.lastRoleUsed;
-    const lastPath = getLastPathByRole(lastRoleUsed);
-
-    console.log("Last Role Used:", lastRoleUsed);
-    console.log("Last Path:", lastPath);
-    
-    
-    if (lastRoleUsed && lastPath) {
-      router.push(lastPath);
-    }
-  }, [user, loadingAuth, router]);
 
   const handleRoleSelection = async (role: "BUYER" | "GIG_WORKER") => {
     if (!user) {
