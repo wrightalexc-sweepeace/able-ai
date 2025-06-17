@@ -1,6 +1,4 @@
 // app/utils/userContextUtils.ts
-import { ExtendedUser } from '../context/UserContext'; // Adjust path if ExtendedUser is elsewhere
-
 export interface UpdateUserContextUpdates {
   lastRoleUsed?: "BUYER" | "GIG_WORKER";
   lastViewVisited?: string;
@@ -11,7 +9,7 @@ export type BackendUserUpdateData = {
   lastRoleUsed?: "BUYER" | "GIG_WORKER" | null;
   lastViewVisitedBuyer?: string | null;
   lastViewVisitedWorker?: string | null;
-  appRole?: ExtendedUser['appRole'] | null; // Use the type from ExtendedUser, allow null
+  appRole?: any | null; // Use the type from ExtendedUser, allow null
   isBuyer?: boolean;      // Corresponds to canBeBuyer in ExtendedUser
   isGigWorker?: boolean;  // Corresponds to canBeGigWorker in ExtendedUser
 };
@@ -24,7 +22,7 @@ export interface StorageSetterFunctions {
 
 export const handleUpdateUserContextLogic = async (
   updates: UpdateUserContextUpdates,
-  currentUser: ExtendedUser | null,
+  currentUser: any | null,
   idToken: string | null,
   updateUserAppContextFn: (
     updates: UpdateUserContextUpdates,
@@ -35,7 +33,7 @@ export const handleUpdateUserContextLogic = async (
     data: { currentActiveRole: "BUYER" | "GIG_WORKER" }
   ) => Promise<void>,
   storageSetterFns: StorageSetterFunctions,
-  setOptimisticUserFn: React.Dispatch<React.SetStateAction<ExtendedUser | null>>,
+  setOptimisticUserFn: React.Dispatch<React.SetStateAction<any | null>>,
   forceReloadUserFn: () => Promise<void>
 ): Promise<{ ok: boolean; error?: string }> => {
   if (!currentUser?.isAuthenticated || !idToken) {
@@ -89,7 +87,7 @@ export const handleUpdateUserContextLogic = async (
     
     // 4. Optimistically update local state for immediate UI reflection
     if (updatedPgData) {
-      setOptimisticUserFn((prevUser: ExtendedUser | null) => {
+      setOptimisticUserFn((prevUser: any | null) => {
         if (!prevUser) return null; // Should not happen if isAuthenticated check passed
         // Handle potential null values from backend when updating optimistic state
         const newLastRoleUsed = updatedPgData.lastRoleUsed === null ? undefined : (updatedPgData.lastRoleUsed || prevUser.lastRoleUsed);

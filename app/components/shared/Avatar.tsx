@@ -18,7 +18,7 @@ const Avatar: React.FC<AvatarProps> = ({
   height = 40,
   className = '',
 }) => {
-  // const avatarSize = `${size}px`;
+  const avatarSize = `${width}px`;
 
   if (src) {
     return (
@@ -45,7 +45,7 @@ const Avatar: React.FC<AvatarProps> = ({
       className={`${styles.avatarContainer} ${styles.fallback} ${className}`}
       style={{ width: avatarSize, height: avatarSize }}
     >
-       <UserCircle size={size * 0.8} color="currentColor" className={styles.fallbackIcon} />
+       <UserCircle size={width * 0.8} color="currentColor" className={styles.fallbackIcon} />
        {/* Or render initials here */}
     </div>
   );

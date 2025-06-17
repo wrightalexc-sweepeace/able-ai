@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import React, { useState, useEffect, useRef, FormEvent } from 'react';
 
 import ChatBotLayout from '@/app/components/onboarding/ChatBotLayout'; // Corrected path
 import MessageBubble from '@/app/components/onboarding/MessageBubble'; // Corrected path

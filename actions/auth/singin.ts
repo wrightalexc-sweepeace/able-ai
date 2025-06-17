@@ -20,7 +20,7 @@ export async function signInWithFirebaseAction(uid: string) {
 
     await admin.auth().setCustomUserClaims(uid, customClaims);
 
-    return CODES_SUCCESS.QUERY_OK;
+    return {...CODES_SUCCESS.QUERY_OK, error: false};
   } catch (error: any) {
     return { error: error.message, ...ERROR_CODES.BAD_REQUEST };
   }

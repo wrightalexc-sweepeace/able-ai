@@ -34,7 +34,7 @@ const RoleToggle: React.FC<{ lastViewVisited?: string }> = ({
       }
 
       const path = newRole === "GIG_WORKER" ? `/user/${user?.uid}/worker` : `/user/${user?.uid}/buyer`;
-      await setLastRoleUsed(newRole);
+      await setLastRoleUsed("BUYER");
       router.push(lastViewVisited || path);
     } catch (error) {
       console.error("Failed to switch role:", error);

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { useRouter, useParams, usePathname } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 
 // Using Lucide Icons
@@ -75,7 +75,6 @@ const CustomTooltip = ({ active, payload, label }: CustomTooltipProps) => {
 export default function WorkerEarningsPage() {
   const router = useRouter();
   const params = useParams();
-  const pathname = usePathname();
   const pageUserId = params.userId as string;
   const lastRoleUsed = getLastRoleUsed()
   
@@ -132,7 +131,7 @@ export default function WorkerEarningsPage() {
     return <Briefcase size={18} className={styles.earningGigIcon} />;
   }
 
-  if (loadingAuth || (!user && user?.claims.role !== "QA")) {
+  if (loadingAuth || (user && user?.claims.role !== "QA")) {
     return <div className={styles.loadingContainer}><Loader2 className="animate-spin" size={32} /> Loading...</div>;
   }
 

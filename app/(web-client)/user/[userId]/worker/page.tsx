@@ -177,7 +177,7 @@ export default function WorkerDashboardPage() {
         <ReferralBanner title="Refer a worker and earn £5!" />
 
         <footer className={styles.pageFooter}>
-          <RoleToggle user={user} />
+          <RoleToggle />
           <SettingsButton />
         </footer>
         <Toaster />

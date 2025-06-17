@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, FormEvent, ChangeEvent } from "react";
 import { useRouter, useParams, usePathname } from "next/navigation";
-import { useUser } from "@/app/context/UserContext";
 import styles from "./Feedback.module.css";
 import {
   ThumbsUp,
@@ -13,6 +12,8 @@ import {
   Paperclip,
 } from "lucide-react";
 import AwardDisplayBadge from "@/app/components/profile/AwardDisplayBadge";
+import { useAuth } from "@/context/AuthContext";
+import { getLastRoleUsed, setLastRoleUsed } from "@/lib/last-role-used";
 
 
 interface GigDetails {
@@ -59,8 +60,9 @@ export default function Feedback() {
   const pathname = usePathname();
   const pageUserId = params.userId as string;
   const gigId = params.gigId as string;
+  const lastRoleUsed = getLastRoleUsed()
 
-  const { user, loading: loadingAuth, updateUserContext } = useUser();
+  const { user, loading: loadingAuth } = useAuth();
   const authUserId = user?.uid;
 
   const [formData, setFormData] = useState<FormData>({
@@ -74,7 +76,7 @@ export default function Feedback() {
   useEffect(() => {
     if (loadingAuth) return;
 
-    if (!user?.isAuthenticated) {
+    if (!user) {
       router.push(`/signin?redirect=${encodeURIComponent(pathname)}`);
       return;
     }
@@ -90,19 +92,13 @@ export default function Feedback() {
       return;
     }
 
-    if (!(user.canBeGigWorker || user.isQA)) {
+    if (!(lastRoleUsed === "GIG_WORKER" || user.claims.role === "QA")) {
       router.push('/select-role');
       return;
     }
 
-    updateUserContext({
-      lastRoleUsed: "GIG_WORKER",
-      lastViewVisited: pathname,
-    }).catch(err => {
-      console.error("Failed to update user context for worker feedback page:", err);
-      // Non-critical error
-    });
-  }, [user, loadingAuth, authUserId, pageUserId, router, pathname, updateUserContext]);
+    setLastRoleUsed("GIG_WORKER");
+  }, [user, loadingAuth, authUserId, pageUserId, router, pathname]);
 
   const handleThumbsUp = () =>
     setFormData({ ...formData, wouldWorkAgain: true });
@@ -176,7 +172,7 @@ export default function Feedback() {
             <div className={styles.workAgainContainer}>
               {/* <div className={styles.actionNumber}>2</div> */}
               <h3 className={styles.workAgainText}>
-                Would you work with <span>{user?.isWorkerMode ? MockGigDetails?.workerName.split(" ")[0] : "this buyer"}</span> again?
+                Would you work with <span>{lastRoleUsed === "GIG_WORKER" ? MockGigDetails?.workerName.split(" ")[0] : "this buyer"}</span> again?
               </h3>
               <div className={styles.thumbsContainer}>
                 <button
@@ -203,7 +199,7 @@ export default function Feedback() {
             <div className={styles.actionButtonWithNumber}>
               {/* <div className={styles.actionNumber}>3</div> */}
               <h3 className={styles.awardTitle}>
-                Would you like to award <span>{user?.isWorkerMode ? MockGigDetails?.workerName.split(" ")[0] : "the buyer"}</span>?
+                Would you like to award <span>{lastRoleUsed === "GIG_WORKER" ? MockGigDetails?.workerName.split(" ")[0] : "the buyer"}</span>?
               </h3>
               <div className={styles.badgeContainer}>
                 <button
@@ -257,7 +253,7 @@ export default function Feedback() {
             </div>
           </section>
 
-          {user?.isWorkerMode && (
+          {lastRoleUsed === "GIG_WORKER" && (
             <section className={styles.buttonWrapper}>
               <button className={styles.negotiationButton}>
                 Amend gig timing or add tips
@@ -267,7 +263,7 @@ export default function Feedback() {
 
           <section className={styles.buttonWrapper}>
             {/* <div className={styles.actionButtonWithNumber}> */}
-            {user?.isWorkerMode ? (   
+            {lastRoleUsed === "GIG_WORKER" ? (   
                 <button className={styles.submitButton} type="submit">
                   <Send size={14} /> Submit for payment
                 </button>

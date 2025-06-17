@@ -67,7 +67,7 @@ const WorkerProfile = ({
         </div>
         <div className={styles.workerInfo}>
           {workerProfile.userHandle && (
-            <PillBadge text={workerProfile.userHandle} variant="neutral" className={styles.userHandleBadge} />
+            <PillBadge text={workerProfile.userHandle} variant="neutral" className={styles.userHandleBadge} handleSkillDetails={handleSkillDetails} />
           )}
           {workerProfile.viewCalendarLink && (
           <Link href={workerProfile.viewCalendarLink} className={styles.viewCalendarLink} aria-label="View calendar">

@@ -1,7 +1,14 @@
 import { pgTable, uuid, varchar, text, timestamp, jsonb, integer, date, primaryKey } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
-import { users } from './auth'; // Assuming users table is in auth.ts schema
-
+// Mock definition for the users table
+export const users = pgTable('users', {
+  id: uuid('id').default(sql`gen_random_uuid()`).notNull().primaryKey(),
+  username: varchar('username', { length: 255 }).notNull().unique(),
+  email: varchar('email', { length: 255 }).notNull().unique(),
+  passwordHash: text('password_hash').notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+});
 // Define enums if they are not globally defined or imported
 // For simplicity, using varchar for status enums for now, but proper Drizzle enums are preferred.
 // Example: import { user_app_role_enum } from './auth';

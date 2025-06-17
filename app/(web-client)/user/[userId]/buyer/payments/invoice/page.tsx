@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { useRouter, useSearchParams, usePathname, useParams } from 'next/navigation';
 import { getInvoiceData } from '@/app/actions/invoice';
 import styles from './Invoice.module.css';
 import { useAuth } from '@/context/AuthContext';
@@ -31,10 +31,9 @@ interface InvoiceData {
   status: 'Paid' | 'Pending';
 }
 
-export default function InvoicePage({ params }: { params: { userId: string } }) {
-  const router = useRouter();
+export default function InvoicePage() {
+  const params = useParams();
   const searchParams = useSearchParams();
-  const pathname = usePathname(); // Added pathname
   const { user, loading: loadingAuth } = useAuth();
 
   const [invoiceData, setInvoiceData] = useState<InvoiceData | null>(null);

@@ -5,6 +5,7 @@ import { Bot, Edit3 } from "lucide-react"; // Icons: Bot for friendly face, Edit
 import styles from "./CancelOrAmendGigDetailsPage.module.css";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
+import { getLastRoleUsed } from "@/lib/last-role-used";
 
 // Mock data - replace with actual props or state
 const gigDetailsData = {
@@ -22,6 +23,7 @@ export default function CancelOrAmendGigDetailsPage() {
   const [userMessage, setUserMessage] = useState("");
   const [isEditingDetails, setIsEditingDetails] = useState(false); // Add state for edit mode
   const [editedGigDetails, setEditedGigDetails] = useState(gigDetailsData); // State for edited details
+  const lastRoleUsed = getLastRoleUsed()
 
   const handleEditDetails = () => {
     // Logic for editing gig details - perhaps opens a modal or navigates
@@ -98,7 +100,7 @@ export default function CancelOrAmendGigDetailsPage() {
                   value={editedGigDetails.location}
                   onChange={handleInputChange}
                   className={styles.textareaInput} // Reuse input style
-                  disabled={user?.isWorkerMode} // Disable for workers
+                  disabled={lastRoleUsed === "GIG_WORKER"} // Disable for workers
                 />
               </div>
               <div className={styles.detailItem}>
@@ -109,7 +111,7 @@ export default function CancelOrAmendGigDetailsPage() {
                   value={editedGigDetails.date}
                   onChange={handleInputChange}
                   className={styles.textareaInput} // Reuse input style
-                  disabled={user?.isWorkerMode} // Disable for workers
+                  disabled={lastRoleUsed === "GIG_WORKER"} // Disable for workers
                 />
               </div>
               <div className={styles.detailItem}>
@@ -130,7 +132,7 @@ export default function CancelOrAmendGigDetailsPage() {
                   value={editedGigDetails.payPerHour}
                   onChange={handleInputChange}
                   className={styles.textareaInput} // Reuse input style
-                  disabled={user?.isWorkerMode} // Disable for workers
+                  disabled={lastRoleUsed === "GIG_WORKER"} // Disable for workers
                 />
               </div>
               <div className={styles.detailItem}>

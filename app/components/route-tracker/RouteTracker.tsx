@@ -30,7 +30,7 @@ const RouteTracker = () => {
     }
 
     previousPathRef.current = pathname;
-  }, [pathname, user?.claims?.lastRoleUsed]);
+  }, [pathname, user?.claims]);
 
   return null;
 };

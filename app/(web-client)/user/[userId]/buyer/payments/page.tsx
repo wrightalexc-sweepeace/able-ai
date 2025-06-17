@@ -91,7 +91,7 @@ export default function BuyerPaymentsPage() {
   useEffect(() => {
 
       setIsLoadingPayments(true);
-      fetchBuyerPayments(authUserId, filterGigType)
+      fetchBuyerPayments(authUserId || "", filterGigType)
         .then(data => {
           setPayments(data);
           setError(null);

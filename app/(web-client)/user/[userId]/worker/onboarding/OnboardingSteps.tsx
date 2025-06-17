@@ -1,6 +1,6 @@
 import React from 'react';
 import { WorkerData } from '@/app/components/onboarding/WorkerCard';
-import { StepInputConfig } from "../../../../types/form";
+import { StepInputConfig } from '@/app/types/form';
 
 export interface OnboardingStep {
   id: number;

@@ -417,6 +417,6 @@ export default function BuyerFeedbackPage() {
     //     )}
     //   </div>
     // </div>
-    <Feedback gig={gigData} />
+    <Feedback />
   );
 }

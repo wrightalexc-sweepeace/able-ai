@@ -40,8 +40,6 @@ const workerNotificationMessage = {
 };
 
 export default function ConfirmAmendedGigDetailsPage() {
-  const pathname = usePathname()
-  const { loading: loadingAuth, user } = useAuth();
   const lastRoleUsed = getLastRoleUsed()
   
 

@@ -136,7 +136,7 @@ export default function WorkerSkillDetailPage() {
     }
 
     // Role check: Ensure the user can be a GigWorker to view their skills
-    if (!user?.claims.role === "GIG_WORKER") {
+    if (user?.claims.role !== "GIG_WORKER") {
       console.warn(`Role Mismatch: User ${authUserId} is not a GigWorker. Redirecting.`);
       router.push('/select-role');
       return;

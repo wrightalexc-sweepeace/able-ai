@@ -1,23 +1,10 @@
-/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React from 'react';
 import { useRouter, useParams } from 'next/navigation';
 
-// --- SHARED & HELPER COMPONENTS ---
-import SkillSpecificHeaderCard from '@/app/components/skills/SkillSpecificHeaderCard';
-import InlineSummaryStats from '@/app/components/skills/InlineSummaryStats';
-import PortfolioCarousel from '@/app/components/shared/PortfolioCarousel';
-import CircularBadge from '@/app/components/shared/CircularBadge';
-import ContentCard from '@/app/components/shared/ContentCard';
-import TitledItemListCard from '@/app/components/shared/TitledItemListCard';
-import ReviewCardItem from '@/app/components/shared/ReviewCardItem';
-import RecommendationCardItem from '@/app/components/shared/RecommendationCardItem';
-
 import { 
     Trophy, Star,Martini,
-    Award as AwardIconLucide, // Using AwardIconLucide for potential badges
-    MessageCircleCode // For reviews section icon
 } from 'lucide-react';
 import styles from './SkillSpecificPage.module.css';
 import SkillSplashScreen from '@/app/components/profile/SkillSplashScreen';

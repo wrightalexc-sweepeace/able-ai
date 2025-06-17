@@ -126,7 +126,7 @@ export default function BuyerDashboardPage() {
         />
 
         <footer className={styles.pageFooter}>
-          <RoleToggle user={userPublicProfile} />
+          <RoleToggle />
           <SettingsButton />
         </footer>
       </div>

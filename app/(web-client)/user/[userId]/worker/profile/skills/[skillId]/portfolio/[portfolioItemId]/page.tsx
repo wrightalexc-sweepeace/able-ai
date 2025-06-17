@@ -100,7 +100,7 @@ export default function EditablePortfolioItemPage() {
   // Data Fetching Effect
   useEffect(() => {
     // Proceed only if authentication is not loading, user is authenticated, and authorized
-    if (loadingAuth || !user?.isAuthenticated || !authUserId || authUserId !== workerId) {
+    if (loadingAuth || !user || !authUserId || authUserId !== workerId) {
       // If auth conditions are not met (e.g., still loading, or mismatch detected by this hook before auth hook redirects),
       // ensure isLoading is false if it's not a new item, or if an error isn't already set by auth hook.
       if (!isNewItem && !error) setIsLoading(false);
