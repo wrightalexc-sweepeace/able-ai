@@ -13,6 +13,7 @@ import styles from './OffersPage.module.css'; // Import styles
 import Logo from '@/app/components/brand/Logo';
 import { useAiSuggestionBanner } from '@/app/hooks/useAiSuggestionBanner';
 import Image from 'next/image';
+import { is } from 'drizzle-orm';
 
 interface GigOffer {
   id: string;
@@ -129,7 +130,7 @@ export default function WorkerOffersPage() {
   useEffect(() => {
     // Ensure user is authenticated, authorized for this page, and has necessary roles before fetching
     if (!loadingAuth && user?.isAuthenticated && authUserId === pageUserId && (user.canBeGigWorker || user.isQA)) {
-      setIsLoadingData(true);
+      if (!isLoadingData) setIsLoadingData(true);
       fetchWorkerData(pageUserId, { /* pass filters if any */ })
         .then(data => {
           setOffers(data.offers);
