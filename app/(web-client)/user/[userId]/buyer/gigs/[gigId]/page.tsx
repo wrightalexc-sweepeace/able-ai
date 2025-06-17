@@ -1,30 +1,12 @@
 "use client";
 
-import React from "react";
-import Link from "next/link";
-import { Info, MessageSquare, Star, FileText, AlertCircle } from "lucide-react";
-import styles from "@/app/(web-client)/user/[userId]/worker/gigs/[gigId]/GigDetailsPage.module.css";
+import React, { useEffect, useState } from "react";
+import { useAuth } from "@/context/AuthContext";
+import { useParams } from "next/navigation"; // Added useParams
+import GigDetailsComponent from "@/app/components/gigs/GigDetails";
+import type GigDetails from "@/app/types/GigDetailsTypes"; // Assuming you have this type defined
 
-// Placeholder for gig and worker data
-const gig = {
-  title: "Bartender Gig",
-  location: "The Green Tavern, Rye lane, Peckham, SE15 5AR",
-  date: "2025-07-25",
-  startTime: "18:00",
-  endTime: "00:00",
-  hourlyRate: 15,
-  totalCost: 98.68,
-  specialInstructions:
-    "Ensure all glassware is polished and the bar is stocked before opening. Dress code: black shirt and trousers.",
-  status: 1, // 1: accepted, 2: started, 3: mark as complete, 4: paid
-};
-const worker = {
-  name: "Benji Asamoah",
-  avatarUrl: "/images/benji.jpeg",
-  gigs: 15,
-  experience: 3,
-  isStar: true,
-};
+
 const stepLabels = [
   "Gig accepted",
   "Benji has started the gig",
@@ -32,165 +14,226 @@ const stepLabels = [
   "Gigee Paid",
 ];
 
+async function fetchBuyerGigDetails(userId: string, gigId: string): Promise<GigDetails | null> {
+  console.log("Fetching gig details for worker:", userId, "gig:", gigId);
+  // API call: GET /api/gigs/worker/${gigId} (ensure backend auth checks worker owns this gig)
+  // Or: GET /api/gigs/${gigId} and then verify workerId matches on client
+  await new Promise(resolve => setTimeout(resolve, 700));
+
+  // Example Data (should match the actual GigDetails interface)
+  if (gigId === "gig123-accepted") {
+    return {
+      id: "gig123-accepted", 
+      role: "Lead Bartender", 
+      gigTitle: "Corporate Mixer Event",
+      buyerName: "Innovate Solutions Ltd.", buyerAvatarUrl: "/images/logo-placeholder.svg",
+      date: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(), // In 2 days
+      startTime: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).setHours(18,0,0,0).toString(),
+      endTime: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).setHours(23,0,0,0).toString(),
+      location: "123 Business Rd, Tech Park, London, EC1A 1BB",
+      hourlyRate: 25, estimatedEarnings: 125,
+      specialInstructions: "Focus on high-quality cocktails. Dress code: smart black. Setup starts 30 mins prior. Contact person on site: Jane (07xxxxxxxxx).",
+      status: "IN_PROGRESS", // Initially pending
+      hiringManager: "Jane Smith",
+      hiringManagerUsername: "@janesmith",
+      isBuyerSubmittedFeedback: false,
+      isWorkerSubmittedFeedback: true,
+    };
+  }
+  if (gigId === "gig456-inprogress") {
+     return {
+      id: "gig456-inprogress", 
+      role: "Event Server", 
+      gigTitle: "Wedding Reception",
+      buyerName: "Alice & Bob",
+      date: new Date().toISOString(), // Today
+      startTime: new Date(new Date().setHours(16, 0, 0, 0)).toISOString(),
+      endTime: new Date(new Date().setHours(22, 0, 0, 0)).toISOString(),
+      location: "The Manor House, Countryside Lane, GU21 5ZZ",
+      hourlyRate: 18, estimatedEarnings: 108,
+      specialInstructions: "Silver service required. Liaise with the event coordinator Sarah upon arrival.",
+      status: "IN_PROGRESS", // Initially completed
+      hiringManager: "Sarah Johnson",
+      hiringManagerUsername: "@sarahjohnson",
+      isBuyerSubmittedFeedback: false,
+      isWorkerSubmittedFeedback: true,
+    };
+  }
+  return null; // Or throw an error
+}
+
+
 export default function BuyerGigDetailsPage() {
+  const params = useParams();
+  const pageUserId = params.userId as string;
 
+  const { user, loading: loadingAuth } = useAuth(); 
+  const authUserId = user?.uid;
+
+  const gigId = params.gigId as string;
+  const [isLoadingGig, setIsLoadingGig] = useState(false);
+  const [gig, setGig] = useState<GigDetails | null>(null);
+
+  useEffect(() => {
+    if (loadingAuth) return; // Wait for auth state to be clear
+
+    const shouldFetch = (user?.claims.role === "QA" && pageUserId && gigId) || 
+                        (user && authUserId === pageUserId && gigId);
+
+    if (shouldFetch) {
+      setIsLoadingGig(true);
+      fetchBuyerGigDetails(pageUserId, gigId) // pageUserId is correct here (worker's ID from URL)
+        .then(data => {
+          if (data) {
+            setGig(data);
+            setIsLoadingGig(false);
+            console.log("Gig details fetched successfully:", data);
+          }
+        })
+
+    }
+  }, [loadingAuth, user, authUserId, pageUserId, gigId, setIsLoadingGig]);
+
+  if (isLoadingGig || !gig) {
+    return <div>Loading gig details...</div>;
+  }
+
+  
   return (
-    <div className={styles.container}>
-      {/* Header */}
-      <header className={styles.header}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <div
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: "50%",
-              background: "#222",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: 24,
-              marginRight: 12,
-            }}
-          >
-            <span role="img" aria-label="gig">
-              🧑‍🎤
-            </span>
-          </div>
-          <h1 className={styles.pageTitle}>{gig.title}</h1>
-        </div>
-        <button className={styles.chatButton} aria-label="Chat">
-          <MessageSquare size={22} className={styles.icon} />
-        </button>
-      </header>
+    // <div className={styles.container}>
+    //   {/* Header */}
+    //   <header className={styles.header}>
+    //     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+    //       <Logo width={50} height={50} />
+    //       <h1 className={styles.pageTitle}>{gig.title}</h1>
+    //     </div>
+    //     <button className={styles.chatButton} aria-label="Chat">
+    //       <MessageSquare size={40} className={styles.icon} fill="#ffffff"/>
+    //     </button>
+    //   </header>
 
-      {/* Gig Details Card */}
-      <section className={styles.gigDetailsSection}>
-        <h2 className={styles.sectionTitle}>
-          <Info size={18} />
-          Gig Details
-        </h2>
-        <div className={styles.gigDetailsRow}>
-          <span className={styles.label}>Location:</span>
-          <span className={styles.detailValue}>{gig.location}</span>
-        </div>
-        <div className={styles.gigDetailsRow}>
-          <span className={styles.label}>Date:</span>
-          <span className={styles.detailValue}>
-            {new Date(gig.date).toLocaleDateString(undefined, {
-              weekday: "long",
-              year: "numeric",
-              month: "long",
-              day: "numeric",
-            })}
-          </span>
-        </div>
-        <div className={styles.gigDetailsRow}>
-          <span className={styles.label}>Time:</span>
-          <span className={styles.detailValue}>
-            {gig.startTime} PM - {gig.endTime} AM
-          </span>
-        </div>
-        <div className={styles.gigDetailsRow}>
-          <span className={styles.label}>Pay per hour:</span>
-          <span className={styles.detailValue}>£{gig.hourlyRate}</span>
-        </div>
-        <div className={styles.gigDetailsRow}>
-          <span className={styles.label}>Total cost:</span>
-          <span className={styles.detailValue}>
-            incl Able fees +VAT and Stripe fees:{" "}
-            <b>£{gig.totalCost.toFixed(2)}</b>
-          </span>
-        </div>
-      </section>
+    //   {/* Gig Details Card */}
+    //   <section className={styles.gigDetailsSection}>
+    //     <div className={styles.gigDetailsHeader}>
+    //        <h2 className={styles.sectionTitle}>Gig Details</h2>
+    //        <Calendar size={26} color='#ffffff'/>
+    //     </div>
+    //     <div className={styles.gigDetailsRow}>
+    //       <span className={styles.label}>Location:</span>
+    //       <span className={styles.detailValue}>{gig.location}</span>
+    //     </div>
+    //     <div className={styles.gigDetailsRow}>
+    //       <span className={styles.label}>Date:</span>
+    //       <span className={styles.detailValue}>
+    //         {new Date(gig.date).toLocaleDateString(undefined, {
+    //           weekday: "long",
+    //           year: "numeric",
+    //           month: "long",
+    //           day: "numeric",
+    //         })}
+    //       </span>
+    //     </div>
+    //     <div className={styles.gigDetailsRow}>
+    //       <span className={styles.label}>Time:</span>
+    //       <span className={styles.detailValue}>
+    //         {gig.startTime} PM - {gig.endTime} AM
+    //       </span>
+    //     </div>
+    //     <div className={styles.gigDetailsRow}>
+    //       <span className={styles.label}>Pay per hour:</span>
+    //       <span className={styles.detailValue}>£{gig.hourlyRate}</span>
+    //     </div>
+    //     <div className={styles.gigDetailsRow}>
+    //       <span className={styles.label}>Total cost:</span>
+    //       <span className={styles.detailValue}>
+    //         incl Able fees +VAT and Stripe fees:{" "}
+    //         <b>£{gig.totalCost.toFixed(2)}</b>
+    //       </span>
+    //     </div>
+    //   </section>
 
-      {/* Worker Card */}
-      <section
-        className={styles.gigDetailsSection}
-        style={{ display: "flex", alignItems: "center", gap: 16 }}
-      >
-        <img
-          src={worker.avatarUrl}
-          alt={worker.name}
-          style={{
-            width: 56,
-            height: 56,
-            borderRadius: "50%",
-            objectFit: "cover",
-            marginRight: 12,
-          }}
-        />
-        <div style={{ flex: 1 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <span style={{ fontWeight: 600, fontSize: "1.1rem" }}>
-              {worker.name}
-            </span>
-            {worker.isStar && <Star size={20} color="#5dade2" fill="#5dade2" />}
-          </div>
-          <div style={{ color: "#a0a0a0", fontSize: 14 }}>
-            {worker.gigs} Able gigs, {worker.experience} years experience
-          </div>
-        </div>
-      </section>
+    //   {/* Worker Card */}
+    //   <section
+    //     className={`${styles.gigDetailsSection} ${pageStyles.workerSection}`}
+    //   >
+    //     <Image
+    //       src={worker.avatarUrl}
+    //       className={pageStyles.workerAvatar}
+    //       alt={worker.name}
+    //       width={56}
+    //       height={56}
+    //     />
+    //     <div className={pageStyles.workerDetailsContainer}>
+    //       <div className={pageStyles.workerDetails}>
+    //         <span className={pageStyles.workerName}>
+    //           {worker.name}
+    //         </span>
+    //          {worker.gigs} Able gigs, {worker.experience} years experience
+    //       </div>
+    //       {worker.isStar && <Image src="/images/star.svg" alt="Star" width={56} height={50} />}
+    //     </div>
+    //   </section>
 
-      {/* Special Instructions */}
-      <section className={styles.instructionsSection}>
-        <h2 className={styles.sectionTitle}>
-          <Info size={18} />
-          Special Instructions
-        </h2>
-        <p className={styles.specialInstructions}>{gig.specialInstructions}</p>
-      </section>
+    //   {/* Special Instructions */}
+    //   <section className={styles.instructionsSection}>
+    //     <h2 className={styles.sectionTitle}>
+    //       <Info size={18} />
+    //       Special Instructions
+    //     </h2>
+    //     <p className={styles.specialInstructions}>{gig.specialInstructions}</p>
+    //   </section>
 
-      {/* Stepper/Status */}
-      <section style={{ margin: "24px 0" }}>
-        <ol style={{ listStyle: "none", padding: 0, margin: 0 }}>
-          {stepLabels.map((label, idx) => (
-            <li
-              key={label}
-              style={{
-                background: gig.status === idx + 1 ? "#5dade2" : "#23272b",
-                color: gig.status === idx + 1 ? "#fff" : "#c2c2c2",
-                borderRadius: 24,
-                padding: "12px 0",
-                marginBottom: 8,
-                textAlign: "center",
-                fontWeight: 600,
-                fontSize: 16,
-                border:
-                  gig.status === idx + 1
-                    ? "2px solid #5dade2"
-                    : "1px solid #23272b",
-                transition: "all 0.2s",
-              }}
-            >
-              <span style={{ marginRight: 8, fontWeight: 700 }}>{idx + 1}</span>{" "}
-              {label}
-            </li>
-          ))}
-        </ol>
-      </section>
+    //   {/* Stepper/Status */}
+    //   <section style={{ margin: "24px 0" }}>
+    //     <ol style={{ listStyle: "none", padding: 0, margin: 0 }}>
+    //       {stepLabels.map((label, idx) => (
+    //         <li
+    //           key={label}
+    //           style={{
+    //             background: gig.status === idx + 1 ? "#5dade2" : "#23272b",
+    //             color: gig.status === idx + 1 ? "#fff" : "#c2c2c2",
+    //             borderRadius: 24,
+    //             padding: "12px 0",
+    //             marginBottom: 8,
+    //             textAlign: "center",
+    //             fontWeight: 600,
+    //             fontSize: 16,
+    //             border:
+    //               gig.status === idx + 1
+    //                 ? "2px solid #5dade2"
+    //                 : "1px solid #23272b",
+    //             transition: "all 0.2s",
+    //           }}
+    //         >
+    //           <span style={{ marginRight: 8, fontWeight: 700 }}>{idx + 1}</span>{" "}
+    //           {label}
+    //         </li>
+    //       ))}
+    //     </ol>
+    //   </section>
 
-      {/* Action Buttons */}
-      <section className={styles.actionSection}>
-        <button className={styles.negotiationButton} disabled>
-          Cancel, amend gig timing or add tips
-        </button>
-        <div className={styles.secondaryActionsSection}>
-          <Link
-            href="/terms-of-service"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondaryActionButton}
-          >
-            <FileText size={16} style={{ marginRight: "8px" }} />
-            Terms of Agreement
-          </Link>
-          <button className={styles.secondaryActionButton}>
-            <AlertCircle size={16} style={{ marginRight: "8px" }} />
-            Report an issue
-          </button>
-        </div>
-      </section>
-    </div>
+    //   {/* Action Buttons */}
+    //   <section className={styles.actionSection}>
+    //     <button className={styles.negotiationButton} disabled>
+    //       Cancel, amend gig timing or add tips
+    //     </button>
+    //     <div className={styles.secondaryActionsSection}>
+    //       <Link
+    //         href="/terms-of-service"
+    //         target="_blank"
+    //         rel="noopener noreferrer"
+    //         className={styles.secondaryActionButton}
+    //       >
+    //         <FileText size={16} style={{ marginRight: "8px" }} />
+    //         Terms of Agreement
+    //       </Link>
+    //       <button className={styles.secondaryActionButton}>
+    //         <AlertCircle size={16} style={{ marginRight: "8px" }} />
+    //         Report an issue
+    //       </button>
+    //     </div>
+    //   </section>
+    // </div>
+    <GigDetailsComponent gig={gig} setGig={setGig} />
   );
 }

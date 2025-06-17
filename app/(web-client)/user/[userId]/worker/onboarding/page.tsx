@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, FormEvent } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 
 import ChatBotLayout from '@/app/components/onboarding/ChatBotLayout'; // Corrected path
@@ -26,7 +26,7 @@ export default function OnboardWorkerPage() {
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
   const [onboardingSteps, setOnboardingSteps] = useState<OnboardingStep[]>(baseInitialSteps.map(s => ({...s, isComplete: false})));
-  const [formData, setFormData] = useState<Record<string, any>>({});
+  const [formData, setFormData] = useState<Record<string, string | number | Date | File | null>>({});
   const [chatMessages, setChatMessages] = useState<OnboardingStep[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentFocusedInputName, setCurrentFocusedInputName] = useState<string | null>(null);
@@ -37,11 +37,11 @@ export default function OnboardWorkerPage() {
     if (user?.claims.role === "QA") {
       const qaFormData: Record<string, any> = {};
       baseInitialSteps.forEach(step => {
-        if (step.inputName) {
-          switch (step.inputType) {
-            case 'file': qaFormData[step.inputName] = `sample-${step.inputName}.pdf`; break;
-            case 'date': qaFormData[step.inputName] = new Date().toISOString().split('T')[0]; break;
-            default: qaFormData[step.inputName] = `QA: ${step.inputLabel || step.inputName || 'Sample'}`;
+        if (step.inputConfig?.name) {
+          switch (step.inputConfig.type) {
+            case 'file': qaFormData[step.inputConfig.name] = `sample-${step.inputConfig.name}.pdf`; break;
+            case 'date': qaFormData[step.inputConfig.name] = new Date().toISOString().split('T')[0]; break;
+            default: qaFormData[step.inputConfig.name] = `QA: ${step.inputConfig.label || step.inputConfig.name || 'Sample'}`;
           }
         }
       });
@@ -61,14 +61,14 @@ export default function OnboardWorkerPage() {
         newMessages.push(messageToAdd);
         currentStepIdForDependency = step.id;
 
-        if (step.inputName && (step.type === 'userInput' || step.type === 'fileUpload' || step.type === 'datePicker' || step.type === 'terms')) {
-          let qaValue = formData[step.inputName];
+        if (step.inputConfig?.name && (step.type === 'userInput' || step.type === 'fileUpload' || step.type === 'datePicker')) {
+          let qaValue = formData[step.inputConfig.name];
           if (qaValue === undefined) {
-             switch (step.inputType) {
-                case 'file': qaValue = `sample-${step.inputName}.pdf`; break;
+             switch (step.inputConfig.type) {
+                case 'file': qaValue = `sample-${step.inputConfig.name}.pdf`; break;
                 case 'date': qaValue = new Date().toISOString().split('T')[0]; break;
-                default: qaValue = `QA: ${step.inputLabel || step.inputName || 'Sample Answer'}`;
-            }
+                default: qaValue = `QA: ${step.inputConfig.label || step.inputConfig.name || 'Sample Answer'}`;
+             }
           }
           newMessages.push({
             id: step.id + 0.5,
@@ -98,12 +98,12 @@ export default function OnboardWorkerPage() {
             break;
           }
         }
-        newMessages.push({ ...step, value: formData[step.inputName || ''] });
+        newMessages.push({ ...step, value: formData[step.inputConfig?.name || ''] });
 
         if ((step.type === 'userInput' || step.type === 'fileUpload' || step.type === 'datePicker') && !step.isComplete && !firstUncompletedInputFound) {
           firstUncompletedInputFound = true;
           if (!currentFocusedInputName && !nextFocusTargetSet) {
-            setCurrentFocusedInputName(step.inputName || null);
+            setCurrentFocusedInputName(step.inputConfig?.name || null);
             nextFocusTargetSet = true;
           }
         }
@@ -175,7 +175,7 @@ export default function OnboardWorkerPage() {
   //       if ((nextStepDef.type === 'userInput' || nextStepDef.type === 'fileUpload' || nextStepDef.type === 'datePicker') && !nextStepDef.isComplete) {
   //           const depStep = onboardingSteps.find(s => s.id === nextStepDef.dependsOn);
   //           if ((depStep && depStep.isComplete) || !nextStepDef.dependsOn) {
-  //               nextFocus = nextStepDef.inputName || null;
+  //               nextFocus = nextStepDef.inputConfig?.name || null;
   //               break;
   //           }
   //       }
@@ -240,12 +240,12 @@ export default function OnboardWorkerPage() {
     finalOnboardingState.forEach(step => {
         finalChatMessages.push({...step, dependsOn: lastIdForDep});
         lastIdForDep = step.id;
-        if(step.inputName && formData[step.inputName] && step.type !== 'botMessage' && step.type !== 'userResponseDisplay' && step.type !== 'workerCard'){
+        if(step.inputConfig?.name && formData[step.inputConfig.name] && step.type !== 'botMessage' && step.type !== 'userResponseDisplay' && step.type !== 'workerCard'){
             finalChatMessages.push({
                 id: step.id + 0.5,
                 type: 'userResponseDisplay',
                 senderType: 'user',
-                content: String(formData[step.inputName]),
+                content: String(formData[step.inputConfig.name]),
                 isComplete: true,
                 dependsOn: step.id,
             });
@@ -270,14 +270,14 @@ export default function OnboardWorkerPage() {
   }
 
   return (
-    <ChatBotLayout ref={chatContainerRef} onScroll={(e: React.UIEvent<HTMLDivElement>) => {}} >
+    <ChatBotLayout ref={chatContainerRef} onScroll={() => {}} >
       {/* {isViewQA && (
         <div style={{ background: 'rgba(255,220,220,0.8)', borderBottom: '1px solid rgba(200,0,0,0.3)', color: '#8B0000', textAlign: 'center', padding: '8px 5px', fontSize: '0.85em', fontWeight: '500' }}>
           QA Mode: Full Chat Preview
         </div>
       )} */}
       {chatMessages.map((step) => {
-        const key = `step-${step.id}-${step.senderType || step.type}-${step.inputName || Math.random()}`;
+        const key = `step-${step.id}-${step.senderType || step.type}-${step.inputConfig?.name || Math.random()}`;
 
         if (step.type === 'botMessage') {
           if (step.value) {
@@ -316,32 +316,32 @@ export default function OnboardWorkerPage() {
 
         // if (!isViewQA && (step.type === 'userInput' || step.type === 'fileUpload' || step.type === 'datePicker') && !step.isComplete) {
         //   const commonProps = {
-        //     id: step.inputName,
-        //     name: step.inputName,
-        //     label: step.inputLabel,
-        //     value: formData[step.inputName!] || '',
+        //     id: step.inputConfig.name,
+        //     name: step.inputConfig.name,
+        //     label: step.inputConfig.label,
+        //     value: formData[step.inputConfig.name!] || '',
         //     disabled: isSubmitting,
-        //     onFocus: () => setCurrentFocusedInputName(step.inputName || null),
+        //     onFocus: () => setCurrentFocusedInputName(step.inputConfig.name || null),
         //     onBlur: () => {
-        //         if(formData[step.inputName!] || step.inputType === 'date' || step.inputType === 'file'){
-        //             handleInputSubmit(step.id, step.inputName!);
+        //         if(formData[step.inputConfig.name!] || step.inputConfig.type === 'date' || step.inputConfig.type === 'file'){
+        //             handleInputSubmit(step.id, step.inputConfig.name!);
         //         }
         //     },
         //     onKeyPress: (e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        //       if (e.key === 'Enter' && (step.inputType === 'text' || step.inputType === 'email' || step.inputType === 'number')) {
+        //       if (e.key === 'Enter' && (step.inputConfig.type === 'text' || step.inputConfig.type === 'email' || step.inputConfig.type === 'number')) {
         //         e.preventDefault();
-        //         handleInputSubmit(step.id, step.inputName!);
+        //         handleInputSubmit(step.id, step.inputConfig.name!);
         //       }
         //     }
         //   };
 
-        //   if (step.inputType === 'textarea') {
-        //     return <TextAreaBubble key={key} {...commonProps} placeholder={step.inputPlaceholder} rows={3} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleInputChange(step.inputName!, e.target.value)} ref={(el: HTMLTextAreaElement | null) => { if (el && currentFocusedInputName === step.inputName) el.focus(); }}/>;
+        //   if (step.inputConfig.type === 'textarea') {
+        //     return <TextAreaBubble key={key} {...commonProps} placeholder={step.inputConfig.placeholder} rows={3} onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleInputChange(step.inputConfig.name!, e.target.value)} ref={(el: HTMLTextAreaElement | null) => { if (el && currentFocusedInputName === step.inputConfig.name) el.focus(); }}/>;
         //   }
         //   // FileUploadBubble rendering was removed in user's provided code, add back if needed
-        //   // if (step.inputType === 'file') { ... }
-        //   if (step.inputType === 'text' || step.inputType === 'email' || step.inputType === 'number' || step.inputType === 'date') {
-        //     return <InputBubble key={key} {...commonProps} type={step.inputType} placeholder={step.inputPlaceholder} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange(step.inputName!, e.target.value)} ref={(el: HTMLInputElement | null) => { if (el && currentFocusedInputName === step.inputName) el.focus(); }}/>;
+        //   // if (step.inputConfig.type === 'file') { ... }
+        //   if (step.inputConfig.type === 'text' || step.inputConfig.type === 'email' || step.inputConfig.type === 'number' || step.inputConfig.type === 'date') {
+        //     return <InputBubble key={key} {...commonProps} type={step.inputConfig.type} placeholder={step.inputConfig.placeholder} onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputChange(step.inputConfig.name!, e.target.value)} ref={(el: HTMLInputElement | null) => { if (el && currentFocusedInputName === step.inputConfig.name) el.focus(); }}/>;
         //   }
         // }
         return null;

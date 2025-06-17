@@ -11,7 +11,14 @@
   outline: none;
 }
 
-.active {
+.activeWorker {
   cursor: pointer;
   background-color: var(--primary-color);
 }
+
+.activeBuyer {
+  cursor: pointer;
+  background-color: var(--secondary-color);
+}
+
+

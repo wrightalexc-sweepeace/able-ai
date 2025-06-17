@@ -342,9 +342,9 @@ service cloud.firestore {
     // --- Catch-all rule (restrict access by default) ---
     // Ensure this rule is at the very end
     // Remove or update the temporary open access rule:
-    // match /{document=**} {
-    //   allow read, write: if request.time < timestamp.date(2025, 6, 24);
-    // }
+    match /{document=**} {
+      allow read, write: if request.time < timestamp.date(2025, 7, 31);
+    }
     // Consider a stricter default, like denying all unless explicitly allowed above.
     match /{document=**} {
       allow read, write: if false; // Deny by default

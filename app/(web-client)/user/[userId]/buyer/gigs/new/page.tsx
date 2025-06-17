@@ -14,6 +14,7 @@ import Loader from "@/app/components/shared/Loader";
 
 import pageStyles from "./page.module.css";
 import { useAuth } from "@/context/AuthContext";
+import { StepInputConfig } from "@/app/types/form";
 
 interface OnboardingStep {
   id: number;
@@ -27,17 +28,12 @@ interface OnboardingStep {
     | "datePicker"
     | "discountCode";
   senderType?: "bot" | "user";
-  content?: string | React.ReactNode;
-  inputType?: "text" | "email" | "number" | "textarea" | "file" | "date";
-  inputName?: string;
-  inputPlaceholder?: string;
-  inputLabel?: string;
+  content?: string | React.ReactNode; // For message-like steps or labels for non-input steps
+  inputConfig?: StepInputConfig;    // Configuration for input fields if the step type involves input
   isComplete?: boolean;
   dependsOn?: number;
-  value?: any;
-  fileLabel?: string;
-  fileMultiple?: boolean;
-  workerData?: WorkerData; // Added workerData to step
+  value?: any; // Stores the submitted value of the input for this step
+  workerData?: WorkerData;
 }
 
 // WorkerData interface and WorkerCard component removed - now imported
@@ -52,10 +48,12 @@ const baseInitialSteps: OnboardingStep[] = [
   {
     id: 2,
     type: "userInput",
-    inputType: "text",
-    inputName: "gigDescription",
-    inputPlaceholder: "e.g., Bartender for a wedding reception",
-    inputLabel: "Gig Description:",
+    inputConfig: {
+      type: "text",
+      name: "gigDescription",
+      placeholder: "e.g., Bartender for a wedding reception",
+      label: "Gig Description:",
+    },
   },
   {
     id: 3,
@@ -67,10 +65,13 @@ const baseInitialSteps: OnboardingStep[] = [
   {
     id: 4,
     type: "userInput",
-    inputType: "textarea",
-    inputName: "additionalInstructions",
-    inputPlaceholder: "e.g., Cocktail making experience would be ideal",
-    inputLabel: "Additional Instructions:",
+    inputConfig: {
+      type: "textarea",
+      name: "additionalInstructions",
+      placeholder: "e.g., Cocktail making experience would be ideal",
+      label: "Additional Instructions:",
+      rows: 3,
+    },
     dependsOn: 2,
   },
   {
@@ -83,10 +84,12 @@ const baseInitialSteps: OnboardingStep[] = [
   {
     id: 6,
     type: "userInput",
-    inputType: "number",
-    inputName: "hourlyRate",
-    inputPlaceholder: "£15",
-    inputLabel: "Hourly Rate:",
+    inputConfig: {
+      type: "number",
+      name: "hourlyRate",
+      placeholder: "£15",
+      label: "Hourly Rate:",
+    },
     dependsOn: 4,
   },
   {
@@ -99,26 +102,30 @@ const baseInitialSteps: OnboardingStep[] = [
   {
     id: 8,
     type: "userInput",
-    inputType: "text",
-    inputName: "gigLocation",
-    inputPlaceholder: "e.g., The Green Tavern, Rye Lane, Peckham, SE15 5AR",
-    inputLabel: "Gig Location:",
+    inputConfig: {
+      type: "text",
+      name: "gigLocation",
+      placeholder: "e.g., The Green Tavern, Rye Lane, Peckham, SE15 5AR",
+      label: "Gig Location:",
+    },
     dependsOn: 6,
   },
   {
     id: 9,
-    type: "userInput",
-    inputType: "date",
-    inputName: "gigDate",
-    inputLabel: "Date of Gig:",
+    type: "userInput", // Or "datePicker" if it has distinct UI/logic beyond a standard input
+    inputConfig: {
+      type: "date",
+      name: "gigDate",
+      label: "Date of Gig:",
+    },
     dependsOn: 8,
   },
   {
     id: 10,
-    type: "discountCode",
+    type: "discountCode", // This implies a specific UI or handling logic, not a standard input field
     content: "I have a discount code 2FREEABLE",
     dependsOn: 9,
-  }, // This will be rendered as a MessageBubble
+  },
   {
     id: 11,
     type: "botMessage",
@@ -159,7 +166,7 @@ const baseInitialSteps: OnboardingStep[] = [
       title: "Bartender",
       gigs: 11,
       experience: "2 years experience",
-      keywords: "charming, peaceful and kind",
+      keywords: "reliable, friendly and experienced",
       hourlyRate: 15,
       totalHours: 6,
       totalPrice: 85.55,
@@ -195,22 +202,23 @@ export default function OnboardBuyerPage() {
     if (isQA) {
       const qaFormData: Record<string, any> = {};
       baseInitialSteps.forEach((step) => {
-        if (step.inputName) {
-          switch (step.inputType) {
+        if (step.inputConfig?.name) { // Check if inputConfig and its name exist
+          const inputConf = step.inputConfig; // Safe to use after check
+          switch (inputConf.type) {
             case "file":
-              qaFormData[step.inputName] = `sample-${step.inputName}.pdf`;
+              qaFormData[inputConf.name] = `sample-${inputConf.name}.pdf`;
               break;
             case "date":
-              qaFormData[step.inputName] = new Date()
+              qaFormData[inputConf.name] = new Date()
                 .toISOString()
                 .split("T")[0];
               break;
             case "number":
-              qaFormData[step.inputName] = 15;
+              qaFormData[inputConf.name] = 15;
               break;
-            default:
-              qaFormData[step.inputName] = `QA: ${
-                step.inputLabel || step.inputName || "Sample"
+            default: // text, textarea, email etc.
+              qaFormData[inputConf.name] = `QA: ${
+                inputConf.label || inputConf.name || "Sample"
               }`;
           }
         }
@@ -242,17 +250,18 @@ export default function OnboardBuyerPage() {
         newMessages.push(messageToAdd);
         currentStepIdForDependency = step.id;
         if (
-          step.inputName &&
+          step.inputConfig?.name && // Check if inputConfig and its name exist
           (step.type === "userInput" ||
             step.type === "fileUpload" ||
             step.type === "datePicker" ||
-            step.type === "terms")
+            step.type === "terms") // "terms" might not have inputConfig, needs review if it's an input type
         ) {
-          let qaValue = formData[step.inputName];
+          const inputConf = step.inputConfig; // Safe to use after check
+          let qaValue = formData[inputConf.name];
           if (qaValue === undefined) {
-            switch (step.inputType) {
+            switch (inputConf.type) {
               case "file":
-                qaValue = `sample-${step.inputName}.pdf`;
+                qaValue = `sample-${inputConf.name}.pdf`;
                 break;
               case "date":
                 qaValue = new Date().toISOString().split("T")[0];
@@ -260,9 +269,9 @@ export default function OnboardBuyerPage() {
               case "number":
                 qaValue = 15;
                 break;
-              default:
+              default: // text, textarea, email etc.
                 qaValue = `QA: ${
-                  step.inputLabel || step.inputName || "Sample Answer"
+                  inputConf.label || inputConf.name || "Sample Answer"
                 }`;
             }
           }
@@ -305,7 +314,7 @@ export default function OnboardBuyerPage() {
           break;
         }
       }
-      newMessages.push({ ...step, value: formData[step.inputName || ""] });
+      newMessages.push({ ...step, value: formData[step.inputConfig?.name || ""] });
       if (
         (step.type === "userInput" ||
           step.type === "fileUpload" ||
@@ -315,7 +324,7 @@ export default function OnboardBuyerPage() {
       ) {
         firstUncompletedInputFound = true;
         if (!currentFocusedInputName && !nextFocusTargetSet) {
-          setCurrentFocusedInputName(step.inputName || null);
+          setCurrentFocusedInputName(step.inputConfig?.name || null);
           nextFocusTargetSet = true;
         }
       }
@@ -354,8 +363,8 @@ export default function OnboardBuyerPage() {
     if (formData[inputName] === undefined || formData[inputName] === "") {
       const stepBeingSubmitted = onboardingSteps.find((s) => s.id === stepId);
       if (
-        stepBeingSubmitted?.inputType !== "file" &&
-        stepBeingSubmitted?.inputType !== "date"
+        stepBeingSubmitted?.inputConfig?.type !== "file" &&
+        stepBeingSubmitted?.inputConfig?.type !== "date"
       ) {
         return;
       }
@@ -404,7 +413,7 @@ export default function OnboardBuyerPage() {
           (s) => s.id === nextStepDef.dependsOn
         );
         if ((depStep && depStep.isComplete) || !nextStepDef.dependsOn) {
-          nextFocus = nextStepDef.inputName || null;
+          nextFocus = nextStepDef.inputConfig?.name || null;
           break;
         }
       }
@@ -491,8 +500,8 @@ export default function OnboardBuyerPage() {
       finalChatMessages.push({ ...step, dependsOn: lastIdForDep });
       lastIdForDep = step.id;
       if (
-        step.inputName &&
-        formData[step.inputName] &&
+        step.inputConfig?.name && // Check if inputConfig and its name exist
+        formData[step.inputConfig.name] && // Access formData using config.name
         step.type !== "botMessage" &&
         step.type !== "userResponseDisplay" &&
         step.type !== "workerCard"
@@ -501,7 +510,7 @@ export default function OnboardBuyerPage() {
           id: step.id + 0.5,
           type: "userResponseDisplay",
           senderType: "user",
-          content: String(formData[step.inputName]),
+          content: String(formData[step.inputConfig.name]), // Use config.name
           isComplete: true,
           dependsOn: step.id,
         });
@@ -568,7 +577,7 @@ export default function OnboardBuyerPage() {
       >
         {chatMessages.map((step) => {
           const key = `step-${step.id}-${step.senderType || step.type}-${
-            step.inputName || Math.random()
+            step.inputConfig?.name || Math.random()
           }`;
 
           if (step.type === "botMessage") {
@@ -618,23 +627,25 @@ export default function OnboardBuyerPage() {
             (step.type === "userInput" ||
               step.type === "fileUpload" ||
               step.type === "datePicker") &&
+            step.inputConfig && // Ensure inputConfig exists
             !step.isComplete &&
             !isQA
           ) {
+            const inputConf = step.inputConfig;
             const commonProps = {
-              id: step.inputName,
-              name: step.inputName,
-              label: step.inputLabel,
-              value: formData[step.inputName!] || "",
+              id: inputConf.name,
+              name: inputConf.name,
+              label: inputConf.label,
+              value: formData[inputConf.name] || "",
               disabled: isSubmitting || isQA,
-              onFocus: () => setCurrentFocusedInputName(step.inputName || null),
+              onFocus: () => setCurrentFocusedInputName(inputConf.name || null),
               onBlur: () => {
                 if (
-                  formData[step.inputName!] ||
-                  step.inputType === "date" ||
-                  step.inputType === "file"
+                  formData[inputConf.name] ||
+                  inputConf.type === "date" || // Check against inputConfig.type
+                  inputConf.type === "file"
                 ) {
-                  handleInputSubmit(step.id, step.inputName!);
+                  handleInputSubmit(step.id, inputConf.name);
                 }
               },
               onKeyPress: (
@@ -642,55 +653,70 @@ export default function OnboardBuyerPage() {
               ) => {
                 if (
                   e.key === "Enter" &&
-                  (step.inputType === "text" ||
-                    step.inputType === "email" ||
-                    step.inputType === "number")
+                  (inputConf.type === "text" ||
+                    inputConf.type === "email" ||
+                    inputConf.type === "number")
                 ) {
                   e.preventDefault();
-                  handleInputSubmit(step.id, step.inputName!);
+                  handleInputSubmit(step.id, inputConf.name);
                 }
               },
             };
 
-            if (step.inputType === "textarea") {
+            if (inputConf.type === "textarea") {
               return (
                 <TextAreaBubble
                   key={key}
                   {...commonProps}
-                  placeholder={step.inputPlaceholder}
-                  rows={3}
+                  placeholder={inputConf.placeholder}
+                  rows={inputConf.rows || 3} // Use configured rows or default
                   onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                    handleInputChange(step.inputName!, e.target.value)
+                    handleInputChange(inputConf.name, e.target.value)
                   }
                   ref={(el: HTMLTextAreaElement | null) => {
-                    if (el && currentFocusedInputName === step.inputName)
+                    if (el && currentFocusedInputName === inputConf.name)
                       el.focus();
                   }}
                 />
               );
             }
+            // Handle text, email, number, date inputs
             if (
-              step.inputType === "text" ||
-              step.inputType === "email" ||
-              step.inputType === "number" ||
-              step.inputType === "date"
+              inputConf.type === "text" ||
+              inputConf.type === "email" ||
+              inputConf.type === "number" ||
+              inputConf.type === "date"
             ) {
               return (
                 <InputBubble
                   key={key}
                   {...commonProps}
-                  type={step.inputType}
-                  placeholder={step.inputPlaceholder}
+                  type={inputConf.type}
+                  placeholder={inputConf.placeholder}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    handleInputChange(step.inputName!, e.target.value)
+                    handleInputChange(inputConf.name, e.target.value)
                   }
                   ref={(el: HTMLInputElement | null) => {
-                    if (el && currentFocusedInputName === step.inputName)
+                    if (el && currentFocusedInputName === inputConf.name)
                       el.focus();
                   }}
                 />
               );
             }
+            // Potentially add a case for inputConf.type === "file" here if FileUploadBubble is used
+            // For example:
+            // if (inputConf.type === "file") {
+            //   return (
+            //     <FileUploadBubble
+            //       key={key}
+            //       {...commonProps} // May need adjustments for file specific props
+            //       label={inputConf.label || "Upload File"} // or step.fileLabel if that was distinct
+            //       multiple={inputConf.multiple || false}
+            //       onChange={(e) => handleInputChange(inputConf.name, e.target.files)}
+            //       ref={(el) => { /* ref logic */ }}
+            //     />
+            //   );
+            // }
           }
           return null;
         })}
