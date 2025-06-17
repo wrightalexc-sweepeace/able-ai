@@ -1,24 +1,34 @@
-import { useAuth } from '@/context/AuthContext';
-import styles from './GigActionButton.module.css';
-import { getLastRoleUsed } from '@/lib/last-role-used';
+import styles from "./GigActionButton.module.css";
+import { getLastRoleUsed } from "@/lib/last-role-used";
 
 interface ActionButtonProps {
-    label: string;
-    handleGigAction: () => void;
-    isActive?: boolean;
-    isDisabled?: boolean;
+  label: string;
+  handleGigAction: () => void;
+  isActive?: boolean;
+  isDisabled?: boolean;
 }
 
-const GigActionButton = ({ label, handleGigAction, isActive, isDisabled }: ActionButtonProps) => {
-    const lastRoleUsed = getLastRoleUsed()
+const GigActionButton = ({
+  label,
+  handleGigAction,
+  isActive,
+  isDisabled,
+}: ActionButtonProps) => {
+  const lastRoleUsed = getLastRoleUsed();
   return (
-    <button 
+    <button
       type="button"
-      className={`${styles.actionButton} ${isActive ? (lastRoleUsed === "GIG_WORKER" ? styles.activeWorker : styles.activeBuyer) : ''}`}
+      className={`${styles.actionButton} ${
+        isActive
+          ? lastRoleUsed === "GIG_WORKER"
+            ? styles.activeWorker
+            : styles.activeBuyer
+          : ""
+      }`}
       onClick={handleGigAction}
       disabled={isDisabled}
     >
-      { label }
+      {label}
     </button>
   );
 };

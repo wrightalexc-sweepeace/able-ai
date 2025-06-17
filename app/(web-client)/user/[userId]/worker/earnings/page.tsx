@@ -131,7 +131,7 @@ export default function WorkerEarningsPage() {
     return <Briefcase size={18} className={styles.earningGigIcon} />;
   }
 
-  if (loadingAuth || (user && user?.claims.role !== "QA")) {
+  if (loadingAuth || !user) {
     return <div className={styles.loadingContainer}><Loader2 className="animate-spin" size={32} /> Loading...</div>;
   }
 

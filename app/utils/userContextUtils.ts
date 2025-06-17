@@ -1,15 +1,17 @@
+import { User } from "@/context/AuthContext";
+import { userAppRoleEnum } from "../lib/drizzle/schema";
+
 // app/utils/userContextUtils.ts
 export interface UpdateUserContextUpdates {
   lastRoleUsed?: "BUYER" | "GIG_WORKER";
   lastViewVisited?: string;
 }
-
 // Represents the expected structure of data returned from the backend (e.g., updateUserAppContextFn)
 export type BackendUserUpdateData = {
   lastRoleUsed?: "BUYER" | "GIG_WORKER" | null;
   lastViewVisitedBuyer?: string | null;
   lastViewVisitedWorker?: string | null;
-  appRole?: any | null; // Use the type from ExtendedUser, allow null
+  appRole?: typeof userAppRoleEnum | null; // Use the type from ExtendedUser, allow null
   isBuyer?: boolean;      // Corresponds to canBeBuyer in ExtendedUser
   isGigWorker?: boolean;  // Corresponds to canBeGigWorker in ExtendedUser
 };
@@ -22,7 +24,7 @@ export interface StorageSetterFunctions {
 
 export const handleUpdateUserContextLogic = async (
   updates: UpdateUserContextUpdates,
-  currentUser: any | null,
+  currentUser: User | null,
   idToken: string | null,
   updateUserAppContextFn: (
     updates: UpdateUserContextUpdates,
@@ -36,24 +38,8 @@ export const handleUpdateUserContextLogic = async (
   setOptimisticUserFn: React.Dispatch<React.SetStateAction<any | null>>,
   forceReloadUserFn: () => Promise<void>
 ): Promise<{ ok: boolean; error?: string }> => {
-  if (!currentUser?.isAuthenticated || !idToken) {
+  if (!currentUser || !idToken) {
     return { ok: false, error: "Not authenticated" };
-  }
-
-  // Prevent unnecessary updates if data hasn't changed
-  if (currentUser.lastRoleUsed === updates.lastRoleUsed) {
-    if (
-      updates.lastRoleUsed === "BUYER" &&
-      currentUser.lastViewVisitedBuyer === updates.lastViewVisited
-    ) {
-      return { ok: false, error: "Same view as before" };
-    }
-    if (
-      updates.lastRoleUsed === "GIG_WORKER" &&
-      currentUser.lastViewVisitedWorker === updates.lastViewVisited
-    ) {
-      return { ok: false, error: "Same view as before" };
-    }
   }
 
   try {

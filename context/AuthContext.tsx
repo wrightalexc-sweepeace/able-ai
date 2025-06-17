@@ -18,7 +18,7 @@ type Claims = {
   lastRoleUsed: string
 };
 
-type User = FirebaseUser & {
+export type User = FirebaseUser & {
   token: string;
   claims: Claims;
 };

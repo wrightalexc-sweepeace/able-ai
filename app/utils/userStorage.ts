@@ -1,12 +1,14 @@
 "use client";
 
+import { User } from "@/context/AuthContext";
+
 export const SESSION_STORAGE_KEY_USER = 'extendedUserCache';
 export const CACHE_MAX_AGE_MS = 5 * 60 * 1000; // 5 minutes
 
 // --- Session Storage for ExtendedUser Cache ---
 
 interface CachedUserData {
-  user: any;
+  user: User;
   timestamp: number;
 }
 
@@ -33,7 +35,7 @@ export const getCachedUser = (): CachedUserData | null => {
   }
 };
 
-export const saveUserToCache = (user: any): void => {
+export const saveUserToCache = (user: User): void => {
   if (typeof window === 'undefined') return;
   try {
     const dataToCache: CachedUserData = { user, timestamp: Date.now() };

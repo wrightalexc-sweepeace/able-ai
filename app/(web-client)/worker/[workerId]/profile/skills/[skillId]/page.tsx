@@ -175,7 +175,6 @@ export default function PublicSkillProfilePage() {
   const skillIdToView = params.skillId as string;
 
   // Use this if auth context is needed, e.g., for hire button logic
-  // const { isAuthenticated, isLoading: loadingAuth, user: authUser } = useAppContext();
 
   // const [skillProfile, setSkillProfile] = useState<PublicSkillProfile | null>(null);
   // const [isLoadingProfile, setIsLoadingProfile] = useState(true);

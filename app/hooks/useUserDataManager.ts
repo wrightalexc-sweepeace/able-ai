@@ -7,6 +7,7 @@ import {
   clearUserCache,
   CACHE_MAX_AGE_MS,
 } from '../utils/userStorage';
+import { User } from '@/context/AuthContext';
 
 interface UseUserDataManagerProps {
   firebaseUser: FirebaseUser | null;
@@ -14,7 +15,7 @@ interface UseUserDataManagerProps {
 }
 
 interface UseUserDataManagerReturn {
-  user: null;
+  user: User | null;
   loading: boolean;
   error: Error | null;
   didLoadFromCache: boolean;
@@ -25,7 +26,7 @@ export const useUserDataManager = ({
   firebaseUser,
   idToken,
 }: UseUserDataManagerProps): UseUserDataManagerReturn => {
-  const [user, setUser] = useState< null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<Error | null>(null);
   const [didLoadFromCache, setDidLoadFromCache] = useState(false);
