@@ -5,6 +5,7 @@ import { AlertCircle, Bot, MessageSquare, Edit3 } from 'lucide-react';
 import styles from './ConfirmAmendedGigDetailsPage.module.css';
 import { useAppContext } from '@/app/hooks/useAppContext';
 import { usePathname } from 'next/navigation';
+import UpdateGig from '@/app/components/gigs/UpdateGig';
 
 // Mock data for Buyer view
 const buyerGigDetailsData = {
@@ -12,8 +13,8 @@ const buyerGigDetailsData = {
   date: 'Saturday, 12th November 2023',
   time: '6:00 PM - 1:00 AM',
   payPerHour: '£22',
-  totalCostValue: '£169.40',
-  feesText: 'including Able and payment provider fees',
+  totalPay: '£169.40',
+  summary: 'including Able and payment provider fees',
 };
 
 const buyerNotificationMessage = {
@@ -29,6 +30,7 @@ const workerGigDetailsData = {
   time: '6:00 PM - 1:00 AM',
   payPerHour: '£20',
   totalPay: '£140',
+  summary: 'including Able and payment provider fees',
 };
 
 const workerNotificationMessage = {
@@ -40,6 +42,7 @@ const workerNotificationMessage = {
 export default function ConfirmAmendedGigDetailsPage() {
   const pathname = usePathname()
   const { isLoading: loadingAuth, updateUserContext, user } = useAppContext();
+  const [editedGigDetails, setEditedGigDetails] = React.useState(buyerGigDetailsData); // Default to buyer data
 
   useEffect(() => {
     if (!loadingAuth && user?.isAuthenticated) {
@@ -96,7 +99,7 @@ export default function ConfirmAmendedGigDetailsPage() {
         </section>
 
         {/* Updated Gig Details Block */}
-        <section className={styles.card}>
+        {/* <section className={styles.card}>
           <div className={styles.detailsHeader}>
             <h2 className={styles.detailsTitle}>Updated gig details:</h2>
             {user?.canBeBuyer && (
@@ -137,7 +140,14 @@ export default function ConfirmAmendedGigDetailsPage() {
               </div>
             )}
           </div>
-        </section>
+        </section> */}
+        <UpdateGig
+          gigDetailsData={gigDetailsData}
+          editedGigDetails={gigDetailsData}
+          handleEditDetails={handleEditDetails}
+          setEditedGigDetails={setEditedGigDetails}
+          isOnConfirm={true}
+        />
       </main>
 
       <footer className={styles.actionsFooter}>
