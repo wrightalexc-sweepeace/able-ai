@@ -88,51 +88,6 @@
   color: #8E8E93; /* Medium grey placeholder */
 }
 
-/* Updated Gig Details Block */
-.detailsHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.detailsTitle {
-  font-size: 1.1rem; /* Approx 17-18px */
-  font-weight: bold;
-}
-
-.editIcon {
-  color: #FFFFFF;
-  width: 24px;
-  height: 24px;
-  cursor: pointer;
-}
-
-.detailItem {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.9rem; /* Approx 14px */
-  margin-bottom: 10px;
-  line-height: 1.4;
-}
-
-.detailItemLabel {
-  color: #A0A0A0; /* Lighter grey for labels if distinct style desired */
-  margin-right: 8px; /* Spacing between label and value */
-}
-
-.detailItemValue {
-  text-align: right;
-  font-weight: 500; /* Slightly bolder value */
-}
-
-.detailsSummaryText {
-  margin-top: 16px;
-  font-size: 0.9rem; /* Approx 14px */
-  line-height: 1.5;
-  border-top: 1px dashed #4A4A4A; /* Optional separator */
-  padding-top: 16px; /* Spacing above summary if separator used */
-}
 
 /* Action Button */
 .submitButton {
