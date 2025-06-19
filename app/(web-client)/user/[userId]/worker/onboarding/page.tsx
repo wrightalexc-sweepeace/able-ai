@@ -18,6 +18,7 @@ import CalendarPickerBubble from '@/app/components/onboarding/CalendarPickerBubb
 import VideoRecorderBubble from '@/app/components/onboarding/VideoRecorderBubble';
 import ShareLinkBubble from '@/app/components/onboarding/ShareLinkBubble';
 import { useAuth } from '@/context/AuthContext';
+import { setLastRoleUsed } from '@/lib/last-role-used';
 
 
 export default function OnboardWorkerPage() {
@@ -49,6 +50,7 @@ export default function OnboardWorkerPage() {
       setOnboardingSteps(baseInitialSteps.map(s => ({...s, isComplete: false})));
       setFormData({});
     }
+    setLastRoleUsed('GIG_WORKER'); // Set last role used to GIG_WORKER
   }, []);
 
   useEffect(() => {
