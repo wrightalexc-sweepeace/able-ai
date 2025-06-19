@@ -10,24 +10,22 @@
 }
 
 .header {
-  background-color: #0D0D0D; /* Near-black header background */
-  padding: 20px 16px; /* Internal padding for header */
   margin: 0 -16px 16px -16px; /* Extend to screen edges, add bottom margin */
+  border-bottom: 1px solid rgba(235, 232, 229, 0.5);
+  height: 60px;
+  background-color: #2b2b2b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .headerTitle {
   font-size: 1.25rem; /* Approx 20px */
-  font-weight: bold;
   color: #FFFFFF;
   text-align: center;
   margin: 0;
-}
-
-.headerSeparator {
-  border: 0;
-  height: 1px;
-  background-color: #FFFFFF;
-  margin-top: 16px;
+  font-weight: 700;
+  line-height: 1.5;
 }
 
 .card {
@@ -41,7 +39,9 @@
 .instructionBlock {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 1rem;
+  background-color: #2b2b2b;
+  border-radius: 1.5rem;
 }
 
 .instructionIconContainer {
@@ -57,12 +57,18 @@
 }
 
 .instructionText {
-  font-size: 0.95rem; /* Approx 15px */
-  line-height: 1.5;
+  color: #FFFFFF;
+  font-size: 1rem;
+  line-height: 1.2;
+  font-weight: 500;
+  font-style: italic;
 }
 
-.instructionText strong {
-  font-weight: bold;
+.botCard {
+  background-color: #2b2b2b;
+  border-radius: 1.5rem;
+  margin-bottom: 1.25rem;
+  padding: 1rem;
 }
 
 /* Text Input Block */
@@ -74,10 +80,10 @@
 
 .textareaInput {
   width: 100%;
-  background-color: #3A3A3C; /* Slightly different shade for input background if desired, or same as card */
-  border: 1px solid #4A4A4A; /* Subtle border */
-  border-radius: 8px;
-  padding: 12px;
+  border: none;
+  background: none;
+  outline: none;
+  padding: 0.5rem;
   color: #F0F0F0;
   font-size: 0.9rem; /* Approx 14px */
   min-height: 80px;
@@ -91,20 +97,33 @@
 
 /* Action Button */
 .submitButton {
-  background-color: #4A90E2; /* Bright blue */
-  color: #FFFFFF;
-  font-size: 1rem; /* Approx 16px */
+  color: #0f0f0f;
+  font-size: 0.87rem; /* Approx 16px */
   font-weight: bold;
   border: none;
-  border-radius: 25px; /* Pill-shaped */
+  border-radius: 1.5rem; /* Pill-shaped */
   padding: 14px 20px;
   width: 100%;
   cursor: pointer;
   text-align: center;
-  margin-top: 10px; /* Margin from the last card */
   transition: background-color 0.2s ease-in-out;
+  font-weight: 700;
+  line-height: 1;
+  outline: none;
 }
 
-.submitButton:hover {
-  background-color: #357ABD; /* Darker blue on hover */
-} 
+.workerBtn {
+  background-color: var(--primary-color);
+}
+
+.buyerBtn {
+  background-color: var(--secondary-color);
+}
+
+.buyerBtn:hover {
+  background-color: #6ed5df;
+}
+
+.workerBtn:hover {
+  background-color: #3071bb; /* Lighter blue on hover */
+}

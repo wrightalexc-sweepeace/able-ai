@@ -6,6 +6,7 @@ import styles from "./CancelOrAmendGigDetailsPage.module.css";
 import { useAppContext } from "@/app/hooks/useAppContext"; // Import the hook
 import { usePathname } from "next/navigation";
 import UpdateGig from "@/app/components/gigs/UpdateGig";
+import Logo from "@/app/components/brand/Logo";
 
 // Mock data - replace with actual props or state
 const gigDetailsData = {
@@ -52,25 +53,24 @@ export default function CancelOrAmendGigDetailsPage() {
     <div className={styles.viewContainer}>
       <header className={styles.header}>
         <h1 className={styles.headerTitle}>Cancel or Amend Gig Details</h1>
-        <hr className={styles.headerSeparator} />
       </header>
 
       <main>
         {/* Instruction Block */}
         <section className={`${styles.card} ${styles.instructionBlock}`}>
           <div className={styles.instructionIconContainer}>
-            <Bot className={styles.instructionIcon} strokeWidth={1.5} />
+            <Logo width={60} height={60} />
           </div>
           <p className={styles.instructionText}>
             What changes would you like to make to the gig?{" "}
-            <strong>Tell me or edit using the icon below</strong>
+            Tell me or edit using the icon below
           </p>
         </section>
 
         {/* Text Input Block */}
-        <section className={styles.card}>
+        <section className={styles.botCard}>
           <label htmlFor="benjiMessage" className={styles.textInputBlockLabel}>
-            Benji:
+            {user?.displayName?.toLocaleLowerCase() + ":"}
           </label>
           <textarea
             id="benjiMessage"
@@ -96,7 +96,7 @@ export default function CancelOrAmendGigDetailsPage() {
       {/* Action Button Area */}
       <button
         type="button"
-        className={styles.submitButton}
+        className={`${styles.submitButton} ${user?.isWorkerMode ? styles.workerBtn : styles.buyerBtn}`}
         onClick={handleSubmit}
       >
         Submit for Confirmation
