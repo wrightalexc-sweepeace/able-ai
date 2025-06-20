@@ -7,12 +7,14 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  font-family: var(--font-family);
 }
 
 .header {
-  background-color: #0D0D0D; /* Near-black header background */
+  background-color: #2b2b2b;
+  border-bottom: 1px solid rgb(229, 231, 235, 0.5);
   padding: 18px 16px; /* Internal padding for header */
-  margin: 0 -16px 20px -16px; /* Extend to screen edges, add bottom margin */
+  margin: 0 -1rem 0.75rem;
 }
 
 .headerContent {
@@ -51,7 +53,6 @@
   background-color: #2C2C2E; /* Slightly lighter dark grey for cards */
   border-radius: 16px; /* Consistent rounded corners */
   padding: 20px;
-  margin-bottom: 20px;
 }
 
 /* Notification Block */
@@ -78,18 +79,26 @@
 }
 
 .notificationText {
-  font-size: 0.95rem; /* Approx 15px */
-  line-height: 1.5;
+  font-size: 1rem; /* Approx 15px */
+  line-height: 1.2;
   flex-grow: 1;
+  color: #ffffff;
+  font-weight: 500;
+}
+
+.chatIconContainer {
+  display: flex;
+  align-items: center; /* Center the chat icon vertically */
+  justify-content: flex-end;
+  margin: 0.5rem 0 1rem; /* Slight adjustment for visual alignment */
 }
 
 .chatIcon {
   color: #FFFFFF;
-  width: 28px;
-  height: 28px;
+  width: 40px;
+  height: 40px;
   flex-shrink: 0;
   cursor: pointer;
-  margin-top: 2px; /* Slight adjustment for visual alignment */
 }
 
 /* Updated Gig Details Block */
@@ -159,33 +168,42 @@
   display: flex;
   flex-direction: column;
   gap: 12px; /* Space between buttons */
-  margin-top: 10px; /* Margin from the last card */
 }
 
 .actionButton {
+  color: #0f0f0f;
   border: none;
-  border-radius: 25px; /* Pill-shaped */
+  outline: none;
+  border-radius: 1.5rem; /* Pill-shaped */
   padding: 14px 20px;
-  font-size: 1rem; /* Approx 16px */
-  font-weight: bold;
+  font-size: 0.87rem; /* Approx 16px */
+  font-weight: 700;
   width: 100%;
   cursor: pointer;
   text-align: center;
   transition: background-color 0.2s ease-in-out, opacity 0.2s ease-in-out;
 }
 
-.confirmButton {
-  background-color: #60DFFF; /* Bright cyan/light blue */
-  color: #121212; /* Dark text for contrast */
+.workerConfirmButton {
+  background-color: var(--primary-color); /* Bright cyan/light blue */
 }
-.confirmButton:hover {
+
+.workerConfirmButton:hover {
+  background-color: #4BCBE0; /* Slightly darker on hover */
+}
+
+.buyerConfirmButton {
+  background-color: var(--secondary-color); /* Bright cyan/light blue */
+}
+
+.buyerConfirmButton:hover {
   background-color: #4BCBE0;
 }
 
 .suggestButton,
 .declineButton {
-  background-color: #5A5A5F; /* Muted medium grey */
-  color: #FFFFFF;
+  background-color: #808080; /* Muted medium grey */
+  color: #000000;
 }
 .suggestButton:hover,
 .declineButton:hover {

@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { Bot, Edit3 } from "lucide-react"; // Icons: Bot for friendly face, Edit3 for pencil
 import styles from "./CancelOrAmendGigDetailsPage.module.css";
 import { useAppContext } from "@/app/hooks/useAppContext"; // Import the hook
 import { usePathname } from "next/navigation";
@@ -70,7 +69,7 @@ export default function CancelOrAmendGigDetailsPage() {
         {/* Text Input Block */}
         <section className={styles.botCard}>
           <label htmlFor="benjiMessage" className={styles.textInputBlockLabel}>
-            {user?.displayName?.toLocaleLowerCase() + ":"}
+            {user?.displayName && user.displayName.toLocaleLowerCase() + ":"}
           </label>
           <textarea
             id="benjiMessage"

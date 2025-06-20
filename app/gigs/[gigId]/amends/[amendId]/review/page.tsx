@@ -6,6 +6,7 @@ import styles from './ConfirmAmendedGigDetailsPage.module.css';
 import { useAppContext } from '@/app/hooks/useAppContext';
 import { usePathname } from 'next/navigation';
 import UpdateGig from '@/app/components/gigs/UpdateGig';
+import Logo from '@/app/components/brand/Logo';
 
 // Mock data for Buyer view
 const buyerGigDetailsData = {
@@ -78,26 +79,24 @@ export default function ConfirmAmendedGigDetailsPage() {
     <div className={styles.viewContainer}>
       <header className={styles.header}>
         <div className={styles.headerContent}>
-          <AlertCircle className={styles.headerIcon} strokeWidth={2} />
+          <AlertCircle className={styles.headerIcon} strokeWidth={2} color='#ffffff'/>
           <h1 className={styles.headerTitle}>Confirm amended Gig Details</h1>
         </div>
-        <hr className={styles.headerSeparator} />
       </header>
 
       <main className={styles.mainContent}>
         {/* Information/Notification Block */}
         <section className={`${styles.card} ${styles.notificationCard}`}>
           <div className={styles.notificationMain}>
-            <Bot className={styles.friendlyIcon} strokeWidth={1.5} />
+            <Logo width={60} height={60} />
             <p className={styles.notificationText}>
               {notificationMessage.user} has {notificationMessage.change}, the update details are below. {notificationMessage.prompt}
             </p>
           </div>
-          {user?.canBeBuyer && (
-            <MessageSquare className={styles.chatIcon} strokeWidth={1.5} onClick={() => console.log("Chat icon clicked")} />
-          )}
         </section>
-
+        <div className={styles.chatIconContainer}>
+          <MessageSquare fill='#ffffff' className={styles.chatIcon} strokeWidth={1.5} onClick={() => console.log("Chat icon clicked")} />
+        </div>
         {/* Updated Gig Details Block */}
         {/* <section className={styles.card}>
           <div className={styles.detailsHeader}>
@@ -153,29 +152,25 @@ export default function ConfirmAmendedGigDetailsPage() {
       <footer className={styles.actionsFooter}>
         <button
           type="button"
-          className={`${styles.actionButton} ${user?.canBeBuyer ? styles.confirmButton : styles.suggestButton /* Using suggestButton style for worker confirm */}`}
+          className={`${styles.actionButton} ${user?.isBuyerMode ? styles.buyerConfirmButton : styles.workerConfirmButton}`}
           onClick={handleConfirm}
         >
           Confirm changes
+        </button>  
+        <button
+          type="button"
+          className={`${styles.actionButton} ${styles.suggestButton}`}
+          onClick={handleSuggestNew}
+        >
+          Suggest new changes
         </button>
-        {user?.canBeBuyer && (
-          <>
-            <button
-              type="button"
-              className={`${styles.actionButton} ${styles.suggestButton}`}
-              onClick={handleSuggestNew}
-            >
-              Suggest new changes
-            </button>
-            <button
-              type="button"
-              className={`${styles.actionButton} ${styles.declineButton}`}
-              onClick={handleDecline}
-            >
-              Decline changes
-            </button>
-          </>
-        )}
+        <button
+          type="button"
+          className={`${styles.actionButton} ${styles.declineButton}`}
+          onClick={handleDecline}
+        >
+          Decline changes
+        </button>
       </footer>
     </div>
   );
