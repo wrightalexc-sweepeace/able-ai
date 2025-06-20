@@ -34,7 +34,7 @@ interface GigOffer {
 // Mock function to fetch data - returns both offers and accepted gigs
 async function fetchWorkerData(
   userId: string,
-  filters?: any
+  filters?: string[],
 ): Promise<{ offers: GigOffer[]; acceptedGigs: GigOffer[] }> {
   console.log(
     "Fetching worker data for workerId:",
@@ -171,9 +171,7 @@ export default function WorkerOffersPage() {
       (lastRoleUsed === "GIG_WORKER" || user?.claims.role === "QA")
     ) {
       setIsLoadingData(true);
-      fetchWorkerData(pageUserId, {
-        /* pass filters if any */
-      })
+      fetchWorkerData(pageUserId)
         .then((data) => {
           setOffers(data.offers);
           setAcceptedGigs(data.acceptedGigs);

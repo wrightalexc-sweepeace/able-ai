@@ -41,8 +41,7 @@ export default function WorkerDashboardPage() {
   const pageUserId = params.userId as string;
 
   const {
-    user,
-    loading: loadingAuth,
+    user
     // TODO: Handle authError if necessary
   } = useAuth();
   const authUserId = user?.uid;

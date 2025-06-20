@@ -58,7 +58,7 @@ export default function PublicRecommendationPage() {
             setError("Could not load worker details to recommend.");
           }
         })
-        .catch(err => setError("Error fetching worker details."))
+        .catch(() => setError("Error fetching worker details."))
         .finally(() => setIsLoadingWorker(false));
     }
   }, [workerToRecommendId]);
@@ -109,8 +109,12 @@ export default function PublicRecommendationPage() {
       // Optionally clear form
       // setFormData({ recommendationText: '', relationship: '', recommenderName: '', recommenderEmail: '' });
 
-    } catch (err: any) {
-      setError(err.message || 'An unexpected error occurred.');
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message || 'Failed to submit recommendation.');
+      } else {
+        setError('An unexpected error occurred.');
+      }
     } finally {
       setIsSubmitting(false);
     }

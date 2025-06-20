@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, FormEvent } from "react";
-import { useRouter, useParams, usePathname } from "next/navigation";
+import { useRouter } from "next/navigation";
 import {
   updatePassword,
   sendPasswordResetEmail,
@@ -10,21 +10,15 @@ import {
 
 // Assuming shared components are structured like this
 import InputField from "@/app/components/form/InputField"; // Corrected path
-import SwitchControl from "@/app/components/shared/SwitchControl";
 // import Logo from '@/app/components/brand/Logo'; // Corrected path, if needed
 
 import styles from "./SettingsPage.module.css";
 import {
   User,
   Shield,
-  Bell,
-  FileText,
   LogOut,
-  MessageSquare,
   Save,
   CreditCard,
-  EyeOff,
-  Info,
   CircleMinus,
   AlertTriangle,
   CheckCircle,
@@ -32,6 +26,7 @@ import {
 import Loader from "@/app/components/shared/Loader";
 import { useAuth } from "@/context/AuthContext";
 import { authClient } from "@/lib/firebase/clientApp";
+import { FirebaseError } from "firebase/app";
 
 // Define a type for user settings fetched from backend
 interface UserSettingsData {
@@ -69,9 +64,6 @@ interface UserSettingsData {
 
 export default function SettingsPage() {
   const router = useRouter();
-  const params = useParams();
-  const pathname = usePathname();
-  const pageUserId = params.userId as string; // userId from the URL
 
   const {
     user,
@@ -79,9 +71,6 @@ export default function SettingsPage() {
   } = useAuth();
 
   const authUserId = user?.uid; // Get user ID from the user object
-  const firebaseUser = user; // Alias user as firebaseUser for consistency with original code
-  const userPublicProfile = user; // Alias user as userPublicProfile for consistency with original code
-
   const [userSettings, setUserSettings] = useState<UserSettingsData | null>(
     null
   );
@@ -90,7 +79,6 @@ export default function SettingsPage() {
   const [isSavingNotifications, setIsSavingNotifications] = useState(false);
 
   // Stripe Connect related states
-  const [showStripePromptModal, setShowStripePromptModal] = useState(false);
   const [isConnectingStripe, setIsConnectingStripe] = useState(false);
 
   // Delete Account related states
@@ -163,8 +151,12 @@ export default function SettingsPage() {
           // setSmsGigAlerts(data.notificationPreferences.sms.gigAlerts); // SMS commented out
           setProfileVisibility(data.privacySettings.profileVisibility); // Set initial state for privacy setting
           // setPhone(data.phone || ''); // Set initial state for phone
-        } catch (err: any) {
-          setError(err.message || "Could not load settings.");
+        } catch (err: unknown) {
+          if (err instanceof Error) {
+            setError(err.message || "Could not load settings.");
+          } else {
+            setError("Could not load settings.");
+          }
         } finally {
           setIsLoadingSettings(false);
         }
@@ -191,8 +183,12 @@ export default function SettingsPage() {
       await new Promise((res) => setTimeout(res, 1000));
       setSuccessMessage("Profile updated successfully!");
       // Optionally, trigger a refetch if name changes often or rely on context update if displayName is part of User object
-    } catch (err: any) {
-      setError(err.message || "Failed to update profile.");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message || "Failed to update profile.");
+      } else {
+        setError("Failed to update profile.");
+      }
     } finally {
       setIsSavingProfile(false);
     }
@@ -227,13 +223,20 @@ export default function SettingsPage() {
       setCurrentPassword("");
       setNewPassword("");
       setConfirmNewPassword("");
-    } catch (err: any) {
-      console.error("Password change error:", err);
-      setError(
-        err.code === "auth/wrong-password"
-          ? "Incorrect current password."
-          : err.message || "Failed to change password."
-      );
+    } catch (err: unknown) {
+      if (err instanceof FirebaseError) {
+        console.error("Password change error:", err);
+        setError(
+          err.code === "auth/wrong-password"
+            ? "Incorrect current password."
+            : err.message || "Failed to change password."
+        );
+      }
+      else {
+        console.error("Password change error:", err);
+        setError("Failed to change password.");
+      }
+
     } finally {
       setIsSavingProfile(false);
     }
@@ -281,8 +284,12 @@ export default function SettingsPage() {
     try {
       await firebaseSignOut(authClient);
       router.push("/signin");
-    } catch (err: any) {
-      setError(err.message || "Logout failed.");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message || "Logout failed.");
+      } else {
+        setError("Logout failed.");
+      }
     }
   };
 
@@ -337,8 +344,13 @@ export default function SettingsPage() {
       // On success, logout and redirect
       await firebaseSignOut(authClient);
       router.push("/signin"); // Or home page
-    } catch (err: any) {
-      setError(err.message || "Failed to delete account.");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message || "Failed to delete account.");
+      }
+      else {
+        setError("Failed to delete account.");
+      }
     } finally {
       setIsDeletingAccount(false);
       setShowDeleteAccountModal(false); // Close modal regardless of success/failure
@@ -346,6 +358,7 @@ export default function SettingsPage() {
   };
 
   // Handle Profile Visibility Change
+  /*
   const handleProfileVisibilityChange = async (checked: boolean) => {
     clearMessages();
     // setIsSavingProfile(true); // Use a different loading state if needed
@@ -355,14 +368,20 @@ export default function SettingsPage() {
       console.log("Updating profile visibility:", checked);
       await new Promise((res) => setTimeout(res, 500)); // Simulate API
       setSuccessMessage("Profile visibility updated!");
-    } catch (err: any) {
-      setError(err.message || "Failed to update profile visibility.");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message || "Failed to update profile visibility.");
+      }
+      else {
+        setError("Failed to update profile visibility.");
+      }
       // Revert state if API fails
       setProfileVisibility(!checked);
     } finally {
       // setIsSavingProfile(false); // Reset loading state
     }
   };
+  */
 
   if (isLoadingSettings) {
     console.error({isLoading, isLoadingSettings, user, userSettings});

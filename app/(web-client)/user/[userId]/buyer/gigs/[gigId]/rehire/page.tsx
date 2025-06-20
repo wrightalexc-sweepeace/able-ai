@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { useRouter, useParams, usePathname } from "next/navigation";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 
 import ChatBotLayout from "@/app/components/onboarding/ChatBotLayout"; // Reusing
@@ -80,13 +80,10 @@ async function fetchRehireData(
 }
 
 export default function RehirePage() {
-  const router = useRouter();
   const params = useParams();
-  const pageBuyerUserId = params.userId as string;
   const gigId = params.gigId as string;
 
   const { user, loading: loadingAuth } = useAuth();
-  const pathname = usePathname(); // Added for potential redirect query param
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
   const [originalGigInfo, setOriginalGigInfo] =
@@ -133,7 +130,7 @@ export default function RehirePage() {
             setError("Could not load details for rehire.");
           }
         })
-        .catch((err) => setError("Error loading rehire information."))
+        .catch(() => setError("Error loading rehire information."))
         .finally(() => setIsLoadingData(false));
     }
   }, [user, user?.uid, gigId]);

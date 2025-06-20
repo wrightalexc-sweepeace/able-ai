@@ -15,7 +15,7 @@ interface CalendarEvent {
   start: Date;
   end: Date;
   allDay?: boolean;
-  resource?: any;
+  resource?: string;
   status?: 'PENDING' | 'ACCEPTED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'UNAVAILABLE' | 'OFFER';
   eventType?: 'gig' | 'offer' | 'unavailability';
   buyerName?: string;

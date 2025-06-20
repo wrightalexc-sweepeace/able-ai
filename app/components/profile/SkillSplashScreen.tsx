@@ -26,7 +26,7 @@ type Profile = {
   badges: {
     id: string | number;
     icon: React.ElementType;
-    textLines: string;
+    textLines: string[] | string;
   }[];
   qualifications: string[];
   buyerReviews: {
@@ -41,7 +41,7 @@ type Profile = {
   };
 };
 
-const SkillSplashScreen = ({profile}: {profile: any}) => {
+const SkillSplashScreen = ({profile}: {profile: Profile}) => {
     const params = useParams();
     const skill = params?.skillId as string;
 

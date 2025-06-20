@@ -20,9 +20,7 @@ import { useAiSuggestionBanner } from "@/hooks/useAiSuggestionBanner";
 
 export default function BuyerDashboardPage() {
   const {
-    user: userPublicProfile,
-    loading: loadingAuth,
-    // TODO: Handle authError if necessary
+    user: userPublicProfile
   } = useAuth();
 
   const uid = userPublicProfile?.uid;

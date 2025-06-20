@@ -123,13 +123,6 @@ export default function Feedback() {
     }));
   };
 
-  const handleGigAmend = () => {
-    console.log("Amending gig timing or adding tips...");
-    // Implement the logic to handle gig amendments here
-    // For now, just redirecting to the earnings page
-    
-  }
-
   // if (loading) {
   //     return <div className={styles.loadingContainer}>Loading...</div>;
   // }

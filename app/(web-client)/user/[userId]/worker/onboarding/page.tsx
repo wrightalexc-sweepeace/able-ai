@@ -35,7 +35,7 @@ export default function OnboardWorkerPage() {
 
   useEffect(() => {
     if (user?.claims.role === "QA") {
-      const qaFormData: Record<string, any> = {};
+      const qaFormData: Record<string, string | number | Date | File | null> = {};
       baseInitialSteps.forEach(step => {
         if (step.inputConfig?.name) {
           switch (step.inputConfig.type) {
