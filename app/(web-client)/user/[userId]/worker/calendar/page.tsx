@@ -78,7 +78,7 @@ const WorkerCalendarPage = () => {
         setView('day');
       }
     }
-  }, [activeFilter]);
+  }, [activeFilter, realEvents]);
 
   // Calendar navigation handler
   const handleNavigate = (action: 'TODAY' | 'PREV' | 'NEXT') => {

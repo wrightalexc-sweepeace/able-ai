@@ -98,7 +98,8 @@ export default function Feedback() {
     }
 
     setLastRoleUsed("GIG_WORKER");
-  }, [user, loadingAuth, authUserId, pageUserId, router, pathname]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.claims.role, loadingAuth, authUserId, pageUserId, router, pathname, lastRoleUsed]);
 
   const handleThumbsUp = () =>
     setFormData({ ...formData, wouldWorkAgain: true });

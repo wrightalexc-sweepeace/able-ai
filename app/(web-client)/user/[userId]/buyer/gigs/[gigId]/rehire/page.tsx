@@ -196,12 +196,20 @@ export default function RehirePage() {
         },
       ]);
       // router.push(`/user/${newGig.id}`); // Navigate to new gig details
-    } catch (err: any) {
-      setError(err.message);
-      setChatMessages((prev) => [
-        ...prev,
-        { id: Date.now(), type: "bot", content: `Error: ${err.message}` },
-      ]);
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+        setChatMessages((prev) => [
+          ...prev,
+          { id: Date.now(), type: "bot", content: `Error: ${err.message}` },
+        ]);
+      } else {
+        setError("An unknown error occurred while booking the worker.");
+        setChatMessages((prev) => [
+          ...prev,
+          { id: Date.now(), type: "bot", content: "Error: An unknown error occurred." },
+        ]);
+      }
     } finally {
       setIsBooking(false);
     }

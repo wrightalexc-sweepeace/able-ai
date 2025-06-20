@@ -54,7 +54,7 @@ const BuyerCalendarPage = () => {
   });
   const [date, setDate] = useState<Date>(new Date());
   const [activeFilter, setActiveFilter] = useState<string>(FILTERS[1]);
-  const [events, _setEvents] = useState<CalendarEvent[]>(realEvents);
+  const [events, setEvents] = useState<CalendarEvent[]>(realEvents);
 
   useEffect(() => {
     if (loadingAuth) {

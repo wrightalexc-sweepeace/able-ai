@@ -234,6 +234,7 @@ const UserMgmtPage: React.FC = () => {
       }
       setIsLoading(false);
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
 
@@ -273,6 +274,7 @@ const UserMgmtPage: React.FC = () => {
         setUiState("error");
         setIsLoading(false);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     searchParams,
     handleResetPassword,

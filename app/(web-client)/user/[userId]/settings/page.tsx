@@ -70,6 +70,7 @@ export default function SettingsPage() {
     loading: isLoading,
   } = useAuth();
 
+  
   const authUserId = user?.uid; // Get user ID from the user object
   const [userSettings, setUserSettings] = useState<UserSettingsData | null>(
     null
@@ -107,7 +108,6 @@ export default function SettingsPage() {
   // Fetch user settings from backend API
   useEffect(() => {
     if (user) {
-      console.log("Fetching user settings for user:", authUserId);
       // authUserId is now derived from user?.uid
       setIsLoadingSettings(true);
       // Replace with your actual API call
@@ -251,8 +251,12 @@ export default function SettingsPage() {
     try {
       await sendPasswordResetEmail(authClient, userSettings.email);
       setSuccessMessage("Password reset email sent. Please check your inbox.");
-    } catch (err: any) {
-      setError(err.message || "Failed to send password reset email.");
+    } catch (err) {
+      if (err instanceof FirebaseError) {
+        setError(err.message || "Failed to send password reset email.");
+      } else {
+        setError("Failed to send password reset email.");
+      }
     }
   };
 
@@ -272,8 +276,12 @@ export default function SettingsPage() {
       console.log("Updating notification preferences:", preferences);
       await new Promise((res) => setTimeout(res, 1000)); // Simulate API
       setSuccessMessage("Notification preferences saved!");
-    } catch (err: any) {
-      setError(err.message || "Failed to save notification preferences.");
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message || "Failed to save notification preferences.");
+      } else {
+        setError("Failed to save notification preferences.");
+      }
     } finally {
       setIsSavingNotifications(false);
     }
@@ -305,8 +313,12 @@ export default function SettingsPage() {
       const mockStripeOnboardingUrl =
         "https://connect.stripe.com/setup/acct_123abc"; // Replace with actual URL from API
       window.location.href = mockStripeOnboardingUrl;
-    } catch (err: any) {
-      setError(err.message || "Failed to initiate Stripe Connect.");
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message || "Failed to initiate Stripe Connect.");
+      } else {
+        setError("Failed to initiate Stripe Connect.");
+      }
     } finally {
       setIsConnectingStripe(false);
     }
@@ -324,8 +336,12 @@ export default function SettingsPage() {
       const mockStripePortalUrl =
         "https://billing.stripe.com/p/session/test_..."; // Replace with actual URL from API
       window.location.href = mockStripePortalUrl;
-    } catch (err: any) {
-      setError(err.message || "Failed to open Stripe Portal.");
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message || "Failed to open Stripe Portal.");
+      } else {
+        setError("Failed to open Stripe Portal.");
+      }
     } finally {
       // setIsConnectingStripe(false); // Reset loading state
     }
@@ -384,8 +400,6 @@ export default function SettingsPage() {
   */
 
   if (isLoadingSettings) {
-    console.error({isLoading, isLoadingSettings, user, userSettings});
-    // Use isLoading
     return <Loader />;
   }
 

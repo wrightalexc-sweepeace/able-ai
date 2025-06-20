@@ -204,7 +204,7 @@ export default function WorkerOffersPage() {
       setAcceptedGigs([]);
       // Error message or redirect is handled by the primary auth useEffect
     }
-  }, [user, loadingAuth, authUserId, pageUserId /* add filter state if any */]);
+  }, [user, loadingAuth, authUserId, pageUserId, lastRoleUsed]);
 
   const handleAcceptOffer = async (
     e: React.MouseEvent<HTMLButtonElement>,

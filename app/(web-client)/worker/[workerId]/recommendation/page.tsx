@@ -138,7 +138,7 @@ export default function PublicRecommendationPage() {
 
         <div className={styles.recommendationCard}>
           <p className={styles.prompt}>
-            {workerDetails.name} is available for hire on Able! Please provide a reference for {workerDetails.name}'s skills as a {workerDetails.primarySkill}.
+            {workerDetails.name} is available for hire on Able! Please provide a reference for {workerDetails.name}&apos;s skills as a {workerDetails.primarySkill}.
             Your feedback will be added to their public profile after review.
           </p>
 
@@ -173,7 +173,7 @@ export default function PublicRecommendationPage() {
             </div>
 
             <div className={styles.inputGroup}>
-              <label className={styles.label}>Your Details (won't be public on their profile) <span style={{color: 'var(--error-color)'}}>*</span></label>
+              <label className={styles.label}>Your Details (won&apos;t be public on their profile) <span style={{color: 'var(--error-color)'}}>*</span></label>
               <div className={styles.nameEmailGroup}>
                 <InputField
                     id="recommenderName"
