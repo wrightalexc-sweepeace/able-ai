@@ -5,6 +5,7 @@ import { AlertCircle, Bot, MessageSquare } from 'lucide-react';
 import styles from './ConfirmAmendedGigDetailsPage.module.css';
 import { getLastRoleUsed } from '@/lib/last-role-used';
 import UpdateGig from '@/app/components/gigs/UpdateGig';
+import Logo from '@/app/components/brand/Logo';
 
 // Mock data for Buyer view
 const buyerGigDetailsData = {
@@ -69,17 +70,16 @@ export default function ConfirmAmendedGigDetailsPage() {
     <div className={styles.viewContainer}>
       <header className={styles.header}>
         <div className={styles.headerContent}>
-          <AlertCircle className={styles.headerIcon} strokeWidth={2} />
+          <AlertCircle className={styles.headerIcon} strokeWidth={2} color='#ffffff'/>
           <h1 className={styles.headerTitle}>Confirm amended Gig Details</h1>
         </div>
-        <hr className={styles.headerSeparator} />
       </header>
 
       <main className={styles.mainContent}>
         {/* Information/Notification Block */}
         <section className={`${styles.card} ${styles.notificationCard}`}>
           <div className={styles.notificationMain}>
-            <Bot className={styles.friendlyIcon} strokeWidth={1.5} />
+            <Logo width={60} height={60} />
             <p className={styles.notificationText}>
               {notificationMessage.user} has {notificationMessage.change}, the update details are below. {notificationMessage.prompt}
             </p>
@@ -88,7 +88,9 @@ export default function ConfirmAmendedGigDetailsPage() {
             <MessageSquare className={styles.chatIcon} strokeWidth={1.5} onClick={() => console.log("Chat icon clicked")} />
           )}
         </section>
-
+        <button className={styles.chatButton} onClick={() => console.log("Chat icon clicked")} >
+          <MessageSquare fill='#ffffff' className={styles.chatIcon} strokeWidth={1.5} />
+        </button>
         {/* Updated Gig Details Block */}
         {/* <section className={styles.card}>
           <div className={styles.detailsHeader}>
@@ -148,6 +150,20 @@ export default function ConfirmAmendedGigDetailsPage() {
           onClick={handleConfirm}
         >
           Confirm changes
+        </button>  
+        <button
+          type="button"
+          className={`${styles.actionButton} ${styles.suggestButton}`}
+          onClick={handleSuggestNew}
+        >
+          Suggest new changes
+        </button>
+        <button
+          type="button"
+          className={`${styles.actionButton} ${styles.declineButton}`}
+          onClick={handleDecline}
+        >
+          Decline changes
         </button>
         {lastRoleUsed == "BUYER" && (
           <>

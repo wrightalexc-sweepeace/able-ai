@@ -19,7 +19,7 @@ const gigDetailsData = {
 };
 
 export default function CancelOrAmendGigDetailsPage() {
-  const {loading: loadingAuth, user } = useAuth();
+  const { user } = useAuth();
   const [userMessage, setUserMessage] = useState("");
   const [isEditingDetails, setIsEditingDetails] = useState(false); // Add state for edit mode
   const [editedGigDetails, setEditedGigDetails] = useState(gigDetailsData); // State for edited details
@@ -66,7 +66,7 @@ export default function CancelOrAmendGigDetailsPage() {
         {/* Text Input Block */}
         <section className={styles.botCard}>
           <label htmlFor="benjiMessage" className={styles.textInputBlockLabel}>
-            {user?.displayName?.toLocaleLowerCase() + ":"}
+            {user?.displayName && user.displayName.toLocaleLowerCase() + ":"}
           </label>
           <textarea
             id="benjiMessage"
