@@ -86,11 +86,15 @@
   font-weight: 500;
 }
 
-.chatIconContainer {
+.chatButton {
+  margin: 0.5rem 0 1rem;
+  outline: none;
+  border: none;
+  background-color: transparent; /* No background for the button */
   display: flex;
-  align-items: center; /* Center the chat icon vertically */
+  align-items: center;
   justify-content: flex-end;
-  margin: 0.5rem 0 1rem; /* Slight adjustment for visual alignment */
+  width: 100%;
 }
 
 .chatIcon {

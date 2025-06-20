@@ -94,9 +94,9 @@ export default function ConfirmAmendedGigDetailsPage() {
             </p>
           </div>
         </section>
-        <div className={styles.chatIconContainer}>
-          <MessageSquare fill='#ffffff' className={styles.chatIcon} strokeWidth={1.5} onClick={() => console.log("Chat icon clicked")} />
-        </div>
+        <button className={styles.chatButton} onClick={() => console.log("Chat icon clicked")} >
+          <MessageSquare fill='#ffffff' className={styles.chatIcon} strokeWidth={1.5} />
+        </button>
         {/* Updated Gig Details Block */}
         {/* <section className={styles.card}>
           <div className={styles.detailsHeader}>
