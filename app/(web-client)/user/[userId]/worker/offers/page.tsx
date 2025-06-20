@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter, useParams, usePathname } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 
 import GigOfferCard from "@/app/components/shared/GigOfferCard"; // Assuming shared location
@@ -10,10 +10,10 @@ import AiSuggestionBanner from "@/app/components/shared/AiSuggestionBanner";
 import { Loader2, Inbox, Calendar } from "lucide-react";
 import styles from "./OffersPage.module.css"; // Import styles
 import Logo from "@/app/components/brand/Logo";
-import { useAiSuggestionBanner } from "@/app/hooks/useAiSuggestionBanner";
 import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
 import { getLastRoleUsed } from "@/lib/last-role-used";
+import { useAiSuggestionBanner } from "@/hooks/useAiSuggestionBanner";
 
 interface GigOffer {
   id: string;
