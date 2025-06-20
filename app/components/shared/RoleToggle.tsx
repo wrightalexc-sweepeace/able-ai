@@ -29,12 +29,11 @@ const RoleToggle: React.FC<{ lastViewVisited?: string }> = ({
       if (newRole === "GIG_WORKER" && !userHasWorkerRole) {
         toast.error("You cannot switch to worker mode, please complete onboarding first.");
         router.push(`/user/${user?.uid}/worker/onboarding`);
-        setLastRoleUsed("GIG_WORKER");
         return;
       }
 
-      const path = newRole === "GIG_WORKER" ? `/user/${user?.uid}/worker` : `/user/${user?.uid}/buyer`;
-      await setLastRoleUsed("BUYER");
+      const path = `/user/${user?.uid}/${newRole === "GIG_WORKER" ? "worker" : "buyer"}`;
+      await setLastRoleUsed(newRole);
       router.push(lastViewVisited || path);
     } catch (error) {
       console.error("Failed to switch role:", error);
