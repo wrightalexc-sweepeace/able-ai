@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { auth } from "@/app/lib/firebase/clientApp";
 import {
   verifyPasswordResetCode,
   confirmPasswordReset,
@@ -14,6 +13,7 @@ import {
 } from "firebase/auth";
 import { FirebaseError } from "firebase/app";
 import styles from "./usermgmt.module.css";
+import { authClient } from "@/lib/firebase/clientApp";
 
 const UserMgmtPage: React.FC = () => {
   const router = useRouter();
@@ -34,7 +34,7 @@ const UserMgmtPage: React.FC = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const email = await verifyPasswordResetCode(auth, currentActionCode);
+      const email = await verifyPasswordResetCode(authClient, currentActionCode);
       setUserEmail(email);
       setUiState("inputPassword");
       setMessage(
@@ -65,7 +65,7 @@ const UserMgmtPage: React.FC = () => {
     setIsLoading(true);
     setError(null);
     try {
-      await confirmPasswordReset(auth, actionCode, newPassword);
+      await confirmPasswordReset(authClient, actionCode, newPassword);
       setMessage(
         "Password has been reset successfully! Attempting to sign you in..."
       );
@@ -78,7 +78,7 @@ const UserMgmtPage: React.FC = () => {
           setUiState("success"); // Still a success for password reset
           return;
         }
-        await signInWithEmailAndPassword(auth, userEmail, newPassword);
+        await signInWithEmailAndPassword(authClient, userEmail, newPassword);
         setMessage("Password reset and signed in successfully!");
         setUiState("success");
         if (continueUrl) {
@@ -117,9 +117,9 @@ const UserMgmtPage: React.FC = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const info = await checkActionCode(auth, currentActionCode);
+      const info = await checkActionCode(authClient, currentActionCode);
       const oldEmail = info.data.email; // Email being restored
-      await applyActionCode(auth, currentActionCode);
+      await applyActionCode(authClient, currentActionCode);
       setUserEmail(oldEmail || "");
       setMessage(
         `Your email has been successfully reverted to ${oldEmail}. If you did not request this, please secure your account.`
@@ -147,7 +147,7 @@ const UserMgmtPage: React.FC = () => {
       setIsLoading(true);
       setError(null);
       try {
-        await applyActionCode(auth, currentActionCode);
+        await applyActionCode(authClient, currentActionCode);
         setMessage("Your email address has been verified successfully!");
         setUiState("success");
         if (currentContinueUrl) {
@@ -181,7 +181,7 @@ const UserMgmtPage: React.FC = () => {
       setIsLoading(true);
       setError(null);
       try {
-        if (isSignInWithEmailLink(auth, window.location.href)) {
+        if (isSignInWithEmailLink(authClient, window.location.href)) {
           // Additional state parameters can also be passed via URL.
           // This can be used to continue the user's intended action before triggering
           // the sign-in operation.
@@ -190,7 +190,7 @@ const UserMgmtPage: React.FC = () => {
           let email = window.localStorage.getItem("emailForSignIn");
           if (!email) {
             // User opened the link on a different device. To prevent session fixation attacks,
-            const info = await checkActionCode(auth, currentActionCode);
+            const info = await checkActionCode(authClient, currentActionCode);
             const firebaseEmail = info.data.email;
             if (firebaseEmail) {
               email = firebaseEmail;
@@ -208,7 +208,7 @@ const UserMgmtPage: React.FC = () => {
             return;
           }
           // The client SDK will parse the code from the link for you.
-          signInWithEmailLink(auth, email, window.location.href)
+          signInWithEmailLink(authClient, email, window.location.href)
             .then((result) => {
               // Clear email from storage.
               window.localStorage.removeItem("emailForSignIn");

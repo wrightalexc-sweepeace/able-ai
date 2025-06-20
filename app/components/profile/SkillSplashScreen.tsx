@@ -41,7 +41,7 @@ type Profile = {
   };
 };
 
-const SkillSplashScreen = ({profile}: {profile: Profile}) => {
+const SkillSplashScreen = ({profile}: {profile: any}) => {
     const params = useParams();
     const skill = params?.skillId as string;
 
@@ -108,7 +108,7 @@ const SkillSplashScreen = ({profile}: {profile: Profile}) => {
       {/* Image placeholders */}
       <div className={styles.supportingImages}>
         <div className={styles.images}>
-          { profile.supportingImages.map((image, index) => (
+          { profile.supportingImages.map((image: string, index: number) => (
               <Image key={index} src={image} alt={`Supporting image ${index + 2}`} width={109} height={68} />
           ))}
         </div>
@@ -123,7 +123,7 @@ const SkillSplashScreen = ({profile}: {profile: Profile}) => {
         <h3 className={styles.sectionTitle}>Badges Awarded</h3>
         <div className={styles.badges}>
           
-            {profile.badges.map((badge) => {
+            {profile.badges.map((badge: any) => {
               return (
                 <div className={styles.badge} key={badge.id}>
                   <AwardDisplayBadge
@@ -149,7 +149,7 @@ const SkillSplashScreen = ({profile}: {profile: Profile}) => {
       <div className={styles.section}>
         <h3 className={styles.sectionTitle}>Buyer Reviews</h3>
         {
-          profile.buyerReviews.map((review, index) => (
+          profile.buyerReviews.map((review: any, index: number) => (
             // <div className={styles.reviewCard} key={index}>
             //   <p><strong>{review.name} - {review.date}</strong></p>
             //   <p>“{review.text}”</p>

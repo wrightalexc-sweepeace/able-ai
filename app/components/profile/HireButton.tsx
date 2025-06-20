@@ -1,10 +1,10 @@
 import { useRouter } from 'next/navigation';
 import styles from './HireButton.module.css';
-import { useAppContext } from '@/app/hooks/useAppContext';
+import { useAuth } from '@/context/AuthContext';
 
 const HireButton = ({workerName, workerId}: {workerName: string, workerId: string}) => {
     const router = useRouter();
-    const { user: authUser } = useAppContext();
+    const { user: authUser } = useAuth();
     const handleHireWorker = () => {
     if (!workerName || !authUser?.uid) return; // Ensure authUser is available for booking
     router.push(`/user/${authUser.uid}/buyer/book-gig?workerId=${workerId}`);

@@ -1,6 +1,7 @@
 import { Pencil } from 'lucide-react';
 import styles from './UpdateGig.module.css';
-import { useUser } from '@/app/context/UserContext';
+import { useAuth } from '@/context/AuthContext';
+import { getLastRoleUsed } from '@/lib/last-role-used';
 
 interface GigDetailsData {
     location: string;
@@ -21,7 +22,8 @@ interface GigDetailsProps {
 }
 
 const AmendGig = ({gigDetailsData, editedGigDetails, handleEditDetails, isEditingDetails, setEditedGigDetails, isOnConfirm }: GigDetailsProps) => {
-    const { user } = useUser();
+    const { user } = useAuth();
+  const lastRoleUsed = getLastRoleUsed()
 
     const handleInputChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -50,7 +52,7 @@ const AmendGig = ({gigDetailsData, editedGigDetails, handleEditDetails, isEditin
                     value={editedGigDetails.location}
                     onChange={handleInputChange}
                     className={styles.textareaInput} // Reuse input style
-                    disabled={user?.isWorkerMode} // Disable for workers
+                    disabled={lastRoleUsed === "GIG_WORKER"} // Disable for workers
                 />
                 </div>
                 <div className={styles.detailItem}>
@@ -61,7 +63,7 @@ const AmendGig = ({gigDetailsData, editedGigDetails, handleEditDetails, isEditin
                     value={editedGigDetails.date}
                     onChange={handleInputChange}
                     className={styles.textareaInput} // Reuse input style
-                    disabled={user?.isWorkerMode} // Disable for workers
+                    disabled={lastRoleUsed === "GIG_WORKER"} // Disable for workers
                 />
                 </div>
                 <div className={styles.detailItem}>
@@ -82,11 +84,11 @@ const AmendGig = ({gigDetailsData, editedGigDetails, handleEditDetails, isEditin
                     value={editedGigDetails.payPerHour}
                     onChange={handleInputChange}
                     className={styles.textareaInput} // Reuse input style
-                    disabled={user?.isWorkerMode} // Disable for workers
+                    disabled={lastRoleUsed === "GIG_WORKER"} // Disable for workers
                 />
                 </div>
                 <div className={styles.detailItem}>
-                <span className={styles.detailItemLabel}>{user?.isBuyerMode ? "Total Cost:" : "Total Pay:"}</span>
+                <span className={styles.detailItemLabel}>{lastRoleUsed === "BUYER" ? "Total Cost:" : "Total Pay:"}</span>
                 <input
                     type="text"
                     name="totalPay"
@@ -127,7 +129,7 @@ const AmendGig = ({gigDetailsData, editedGigDetails, handleEditDetails, isEditin
                     </span>
                 </div>
                 <div className={styles.detailItem}>
-                    <span className={styles.detailItemLabel}>{user?.isBuyerMode ? "Total Cost:" : "Total Pay:"}</span>
+                    <span className={styles.detailItemLabel}>{lastRoleUsed === "BUYER" ? "Total Cost:" : "Total Pay:"}</span>
                     <span className={styles.detailItemValue}>
                         &#8364;{gigDetailsData.totalPay}
                     </span>

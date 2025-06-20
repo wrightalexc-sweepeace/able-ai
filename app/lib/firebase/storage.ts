@@ -1,8 +1,7 @@
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
-import { storage } from "./clientApp";
-
 import { getUserData } from "./firestore";
+import { storage } from "@/lib/firebase/clientApp";
 
 export async function uploadFile(file: File, userId: string) {
   const userData = await getUserData(userId);

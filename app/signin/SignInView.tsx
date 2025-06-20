@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState } from "react";
 import InputField from "@/app/components/form/InputField";
 import SubmitButton from "@/app/components/form/SubmitButton";
 import styles from "@/app/signin/SignInPage.module.css";
-import { signInWithEmailPassword, validateClientPassword } from "@/app/lib/auth/authActions";
 import { useRouter } from 'next/navigation';
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { signInWithFirebaseAction } from "@/actions/auth/singin";
+import { authClient } from "@/lib/firebase/clientApp";
 
 interface SignInViewProps {
   onToggleRegister: () => void;
@@ -18,40 +20,46 @@ const SignInView: React.FC<SignInViewProps> = ({ onToggleRegister, onError }) =>
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const handleSubmit = async (event: FormEvent) => {
-    event.preventDefault();
-    onError(null); // Clear previous errors
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     setLoading(true);
-    const validationResult = await validateClientPassword(password);
-    if (!validationResult.success) {
-        onError(validationResult.error);
-        setLoading(false);
-        return;
-    }
-    const result = await signInWithEmailPassword(email, password);
-    setLoading(false);
+    onError(null); // Limpiar errores anteriores
 
-    if (!result.success) {
+    try {
+      const userCredential = await signInWithEmailAndPassword(authClient, email, password);
+      const user = userCredential.user;
+
+      if (!user?.uid) throw new Error("User UID not found");
+
+      const response = await signInWithFirebaseAction(user.uid);
+
+      if (response?.error) {
+        onError(
+          <>
+            {response.error || "Email or password is incorrect."}
+            <a href="/reset-password" className={styles.errorLink}>
+              Reset password?
+            </a>
+          </>
+        );
+      } else {
+        await user.getIdToken(true);
+        await user.getIdTokenResult();
+
+        router.push("/select-role");
+      }
+    } catch (err: any) {
+      console.error("Login failed:", err);
       onError(
-        result.error ? (
-          <>
-            {result.error}
-            <a href="/reset-password" className={styles.errorLink}>
-              Reset password?
-            </a>
-          </>
-        ) : (
-          <>
-            Email or password is incorrect.{" "}
-            <a href="/reset-password" className={styles.errorLink}>
-              Reset password?
-            </a>
-          </>
-        )
+        <>
+          {err?.message || "An unexpected error occurred."}
+          <a href="/reset-password" className={styles.errorLink}>
+            Reset password?
+          </a>
+        </>
       );
-    } else {
-      // Assuming successful sign-in should redirect
-      router.push("/select-role"); // Or your desired post-signin page
+    } finally {
+      setLoading(false);
     }
   };
 

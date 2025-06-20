@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 import React from 'react';
 import { Calendar as BigCalendar, momentLocalizer, View } from 'react-big-calendar';
 import moment from 'moment';
@@ -36,7 +37,7 @@ const AppCalendar = <TEvent extends object>({
   hideToolbar = false,
 }: AppCalendarProps<TEvent>) => {
   const defaultEventPropGetter = (event: TEvent) => {
-    let style: any = {
+    const style: any = {
       backgroundColor: '#3a3a3a',
       borderRadius: '8px',
       color: '#e0e0e0',

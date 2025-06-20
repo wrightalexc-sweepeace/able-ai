@@ -5,9 +5,8 @@ import { StepInputConfig } from "../types/form";
 import InputField from "@/app/components/form/InputField";
 import SubmitButton from "@/app/components/form/SubmitButton";
 import styles from "@/app/signin/SignInPage.module.css";
-import { registerWithEmailPassword, validateClientPassword } from "@/app/lib/auth/authActions";
 import { useRouter } from 'next/navigation';
-import { isPasswordCommon } from "@/app/signin/actions";
+import { registerUserAction } from "@/actions/auth/signup";
 
 interface RegisterViewProps {
     onToggleRegister: () => void;
@@ -72,21 +71,10 @@ const RegisterView: React.FC<RegisterViewProps> = ({ onToggleRegister, onError }
             setLoading(false);
             return;
         }
-        const validationResult = await validateClientPassword(password.trim());
-        if (!validationResult.success) {
-            onError(validationResult.error);
-            setLoading(false);
-            return;
-        }
-        if (await isPasswordCommon(password.trim())) { // server side validation
-            onError("Password is too common based on NIST 800-63 requirements. Please choose a stronger one.");
-            setLoading(false);
-            return;
-        }
-        const result = await registerWithEmailPassword(email.trim(), password.trim(), name.trim(), phone.trim());
+        const result = await registerUserAction({email: email.trim(), password: password.trim(), name: name.trim(), phone: phone.trim()});
         setLoading(false);
 
-        if (!result.success) {
+        if (!result.ok) {
             onError(result.error);
             setLoading(false);
             return;

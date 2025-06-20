@@ -1,8 +1,8 @@
 "use client";
 
+import { authClient } from "@/lib/firebase/clientApp";
 import { getIdToken, onAuthStateChanged, User, signOut } from "firebase/auth";
 import { useEffect, useState } from "react";
-import { auth } from "../lib/firebase/clientApp";
 
 export function useFirebaseAuth() {
   const [user, setUser] = useState<User | null>(null);
@@ -10,7 +10,7 @@ export function useFirebaseAuth() {
   const [idToken, setIdToken] = useState<string | null>(null);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (authUser) => {
+    const unsubscribe = onAuthStateChanged(authClient, (authUser) => {
       setUser(authUser);
       setLoading(false);
       if (!authUser) {

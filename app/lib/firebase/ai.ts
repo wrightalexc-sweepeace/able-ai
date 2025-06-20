@@ -1,6 +1,6 @@
 // Gemini AI Agent Utility - Scaffolding
 
-import { ai } from "@/app/lib/firebase/clientApp";
+import { ai } from "@/lib/firebase/clientApp";
 import { getGenerativeModel } from "@firebase/ai";
 import { logClient, logServer, ERROR_CODES, AppLogError } from "@/app/lib/log";
 

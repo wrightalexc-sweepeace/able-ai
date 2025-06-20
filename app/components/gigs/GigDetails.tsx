@@ -5,9 +5,10 @@ import { useRouter } from 'next/navigation';
 import GigActionButton from '../shared/GigActionButton';
 import Link from 'next/link';
 import { useState } from 'react';
-import { useUser } from '@/app/context/UserContext';
 import type GigDetails from '@/app/types/GigDetailsTypes';
 import Image from 'next/image';
+import { useAuth } from '@/context/AuthContext';
+import { getLastRoleUsed } from '@/lib/last-role-used';
 
 
 const formatGigDate = (isoDate: string) => new Date(isoDate).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
@@ -43,7 +44,8 @@ const workerName = worker.name.split(" ")[0];
 const GigDetailsComponent = ({ gig, setGig }: GigDetailsProps) => {
     const router = useRouter();
     const [isActionLoading, setIsActionLoading] = useState(false);
-    const { user } = useUser();
+    const { user } = useAuth();
+    const lastRoleUsed = getLastRoleUsed()
 
     const gigDuration = calculateDuration(gig.startTime, gig.endTime);
 
@@ -53,26 +55,26 @@ const GigDetailsComponent = ({ gig, setGig }: GigDetailsProps) => {
         const status = gig.status;
         switch (action) {
         case 'accept':
-            return status === 'PENDING' ? (user?.isWorkerMode ? 'Accept Gig' : 'Offer Sent-awaiting acceptance') : 'Gig Accepted';
+            return status === 'PENDING' ? ( lastRoleUsed === "GIG_WORKER" ? 'Accept Gig' : 'Offer Sent-awaiting acceptance') : 'Gig Accepted';
         case 'start':
-            return status === 'PENDING' || status === 'ACCEPTED'  ? (user?.isWorkerMode ? 'Mark as you started the gig' : 'Mark as started') : (user?.isWorkerMode ? 'Gig Started' : `${workerName} has started the gig`);
+            return status === 'PENDING' || status === 'ACCEPTED'  ? (lastRoleUsed === "GIG_WORKER" ? 'Mark as you started the gig' : 'Mark as started') : (lastRoleUsed === "GIG_WORKER" ? 'Gig Started' : `${workerName} has started the gig`);
         case 'complete':
             if (!gig.isWorkerSubmittedFeedback && !gig.isBuyerSubmittedFeedback) {
-                if (user?.isWorkerMode) {
+                if ( lastRoleUsed === "GIG_WORKER") {
                     return status === 'PENDING' || status === 'ACCEPTED' || status === 'IN_PROGRESS' ? 'Mark as complete' : 'Gig Completed';   
                 } else {
                     return status === 'PENDING' || status === 'ACCEPTED' || status === 'IN_PROGRESS' ? `Mark as complete, pay ${workerName}` : `${workerName} has completed the gig`;
                 }
             }
-            else if (gig.isBuyerSubmittedFeedback && user?.isWorkerMode) {
+            else if (gig.isBuyerSubmittedFeedback && lastRoleUsed === "GIG_WORKER") {
                return status === 'PENDING' || status === 'ACCEPTED' || status === 'IN_PROGRESS' ? 'Buyer confirmed & paid: leave feedback' : 'Gig Completed';
             }
-            else if (gig.isWorkerSubmittedFeedback && user?.isBuyerMode) {
+            else if (gig.isWorkerSubmittedFeedback && lastRoleUsed === "GIG_WORKER") {
                return status === 'PENDING' || status === 'ACCEPTED' || status === 'IN_PROGRESS' ? `🕒Confirm, pay and review ${workerName}` : 'Gig Completed';
             }
 
         case 'awaiting':
-            if (user?.isWorkerMode) {
+            if (lastRoleUsed === "GIG_WORKER") {
                 return status === 'PENDING' || status === 'ACCEPTED' || status === 'IN_PROGRESS' || status === 'COMPLETED' ? 'Request payment' : 'Payment requested';
             }
             return status === 'PENDING' || status === 'ACCEPTED' || status === 'IN_PROGRESS' || status === 'COMPLETED' ? 'Pay' : 'Payment done';
@@ -103,7 +105,7 @@ const GigDetailsComponent = ({ gig, setGig }: GigDetailsProps) => {
             // Show success message
         } else if (action === 'complete' && gig) {
             setGig({ ...gig, status: 'COMPLETED' });
-            if (user?.isWorkerMode) {
+            if (lastRoleUsed === "GIG_WORKER") {
                 // Redirect to feedback page if worker
                 router.push(`/user/${user?.uid}/worker/gigs/${gig.id}/feedback`);
             } else {
@@ -113,7 +115,7 @@ const GigDetailsComponent = ({ gig, setGig }: GigDetailsProps) => {
 
         }
         else if (action === 'awaiting') {
-            if (user?.isWorkerMode) {
+            if (lastRoleUsed === "GIG_WORKER") {
             setGig({ ...gig, status: 'REQUESTED' });
             // Show success message
             }
@@ -180,7 +182,7 @@ const GigDetailsComponent = ({ gig, setGig }: GigDetailsProps) => {
                 </div>
                 {/* Hiring Manager Info - Placeholder as it's not in current GigDetails interface */}
 
-                {user?.isWorkerMode && (
+                {lastRoleUsed === "GIG_WORKER"&& (
                     <div className={styles.gigDetailsRow}>
                         <span className={styles.label}>Hiring manager:</span>
                         <span className={styles.detailValue}>{gig.hiringManager} <br/> {gig.hiringManagerUsername}</span>
@@ -189,7 +191,7 @@ const GigDetailsComponent = ({ gig, setGig }: GigDetailsProps) => {
 
             </section>
 
-            {user?.isBuyerMode && (
+            {lastRoleUsed === "GIG_WORKER" && (
                 <section
                     className={`${styles.gigDetailsSection} ${styles.workerSection}`}
                 >
@@ -214,7 +216,7 @@ const GigDetailsComponent = ({ gig, setGig }: GigDetailsProps) => {
 
             {/* Negotiation Button - Kept from new structure */}
             {/* Added a check to only show if gig is accepted */}
-            {(user?.isWorkerMode && (gig.status === 'PENDING' || gig.status === 'IN_PROGRESS' || gig.status === 'ACCEPTED')) && (
+            {(lastRoleUsed === "GIG_WORKER" && (gig.status === 'PENDING' || gig.status === 'IN_PROGRESS' || gig.status === 'ACCEPTED')) && (
                 <button className={styles.negotiationButton} onClick={() => handleGigAction('requestAmendment')}>
                     Negotiate, cancel or change gig details
                 </button>
@@ -279,7 +281,7 @@ const GigDetailsComponent = ({ gig, setGig }: GigDetailsProps) => {
 
             {/* Secondary Actions Section - Adapted to new structure */}
 
-            {user?.isBuyerMode && (
+            {lastRoleUsed === "GIG_WORKER" && (
                 <button className={styles.negotiationButton} disabled>
                     Cancel, amend gig timing or add tips
                 </button>

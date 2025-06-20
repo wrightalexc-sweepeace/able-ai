@@ -1,3 +1,4 @@
+import { authClient } from "@/lib/firebase/clientApp";
 import {
     // Core Auth methods
     createUserWithEmailAndPassword,
@@ -17,7 +18,6 @@ import {
 } from "firebase/auth";
 
 // Import the initialized client-side auth instance
-import { auth } from "@/app/lib/firebase/clientApp"; // Adjusted path for Next.js App Router
 
 // --- AUTH STATE OBSERVERS ---
 
@@ -27,7 +27,7 @@ import { auth } from "@/app/lib/firebase/clientApp"; // Adjusted path for Next.j
  * @returns Unsubscribe function.
  */
 export function onAuthStateChanged(cb: (user: User | null) => void) {
-    return _onAuthStateChanged(auth, cb);
+    return _onAuthStateChanged(authClient, cb);
 }
 
 /**
@@ -36,7 +36,7 @@ export function onAuthStateChanged(cb: (user: User | null) => void) {
  * @returns Unsubscribe function.
  */
 export function onIdTokenChanged(cb: (user: User | null) => void) {
-    return _onIdTokenChanged(auth, cb);
+    return _onIdTokenChanged(authClient, cb);
 }
 
 // --- AUTHENTICATION ACTIONS ---
@@ -49,7 +49,7 @@ export function onIdTokenChanged(cb: (user: User | null) => void) {
  */
 export async function signInUserWithEmailAndPassword(email: string, password: string): Promise<UserCredential> {
     try {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const userCredential = await signInWithEmailAndPassword(authClient, email, password);
         return userCredential;
     } catch (error: any) {
         console.error("Error signing in with email and password:", error.message);
@@ -72,7 +72,7 @@ export async function registerUserWithEmailAndPassword(
     displayName?: string
 ): Promise<UserCredential> {
     try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const userCredential = await createUserWithEmailAndPassword(authClient, email, password);
         if (displayName && userCredential.user) {
             await updateProfile(userCredential.user, { displayName });
             // You might want to refresh the user object or reload if needed,
@@ -91,7 +91,7 @@ export async function registerUserWithEmailAndPassword(
  */
 export async function signOut(): Promise<void> {
     try {
-        return await firebaseSignOut(auth);
+        return await firebaseSignOut(authClient);
     } catch (error: any) {
         console.error("Error signing out:", error.message);
         throw error;
@@ -105,7 +105,7 @@ export async function signOut(): Promise<void> {
  */
 export async function sendUserPasswordResetEmail(email: string): Promise<void> {
     try {
-        await sendPasswordResetEmail(auth, email);
+        await sendPasswordResetEmail(authClient, email);
     } catch (error: any) {
         console.error("Error sending password reset email:", error.message);
         throw error;
@@ -119,7 +119,7 @@ export async function sendUserPasswordResetEmail(email: string): Promise<void> {
  * @returns The current Firebase User object or null if not signed in.
  */
 export function getCurrentUser(): User | null {
-    return auth.currentUser;
+    return authClient.currentUser;
 }
 
 /**

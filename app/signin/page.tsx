@@ -1,27 +1,27 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from 'next/navigation';
-import { Toaster, toast } from 'sonner';
+import { toast, Toaster } from 'sonner';
 import Logo from "@/app/components/brand/Logo";
-import { useUser } from '@/app/context/UserContext';
 import styles from "./SignInPage.module.css";
 import SignInView from "@/app/signin/SignInView";
 import RegisterView from "@/app/signin/RegisterView";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/context/AuthContext";
 
 export default function SignInPage() {
   const router = useRouter();
-  const { user, loading: loadingAuth /* TODO: Handle authError if necessary */ } = useUser();
+  const { user, loading: loadingAuth} = useAuth();
   const [isRegistering, setIsRegistering] = useState(false);
   const [error, setError] = useState<React.ReactNode | null>(null);
 
   useEffect(() => {
-    if (!loadingAuth && user?.isAuthenticated) {
+    if (!loadingAuth && user) {
       toast.success(`Welcome back ${user?.displayName || user?.email || 'user'}!`);
       router.push("/select-role");
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user?.isAuthenticated, loadingAuth]);
+  }, [user, loadingAuth]);
 
   const handleCloseError = () => {
     setError(null);

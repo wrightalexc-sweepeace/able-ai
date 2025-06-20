@@ -1,3 +1,4 @@
+import { db } from "@/lib/firebase/clientApp";
 import {
   collection,
   onSnapshot,
@@ -13,8 +14,6 @@ import {
   deleteDoc,
   setDoc,
 } from "firebase/firestore";
-
-import { db } from "../clientApp";
 
 // Types
 export type FirestoreTimestamp = Timestamp;
