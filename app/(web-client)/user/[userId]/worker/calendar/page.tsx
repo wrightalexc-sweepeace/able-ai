@@ -15,7 +15,7 @@ interface CalendarEvent {
   start: Date;
   end: Date;
   allDay?: boolean;
-  resource?: any;
+  resource?: string;
   status?: 'PENDING' | 'ACCEPTED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'UNAVAILABLE' | 'OFFER';
   eventType?: 'gig' | 'offer' | 'unavailability';
   buyerName?: string;
@@ -69,7 +69,7 @@ const WorkerCalendarPage = () => {
   const [events, setEvents] = useState<CalendarEvent[]>(realEvents);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && !realEvents.length) {
       const isViewQA = localStorage.getItem('isViewQA') === 'true';
       const baseEvents = isViewQA ? MOCK_EVENTS : realEvents;
       setEvents(filterEvents(baseEvents, activeFilter));
@@ -78,6 +78,7 @@ const WorkerCalendarPage = () => {
         setView('day');
       }
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeFilter]);
 
   // Calendar navigation handler

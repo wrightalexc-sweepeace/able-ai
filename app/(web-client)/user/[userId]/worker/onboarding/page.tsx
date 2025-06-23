@@ -18,6 +18,7 @@ import CalendarPickerBubble from '@/app/components/onboarding/CalendarPickerBubb
 import VideoRecorderBubble from '@/app/components/onboarding/VideoRecorderBubble';
 import ShareLinkBubble from '@/app/components/onboarding/ShareLinkBubble';
 import { useAuth } from '@/context/AuthContext';
+import { setLastRoleUsed } from '@/lib/last-role-used';
 
 
 export default function OnboardWorkerPage() {
@@ -34,7 +35,7 @@ export default function OnboardWorkerPage() {
 
   useEffect(() => {
     if (user?.claims.role === "QA") {
-      const qaFormData: Record<string, any> = {};
+      const qaFormData: Record<string, string | number | Date | File | null> = {};
       baseInitialSteps.forEach(step => {
         if (step.inputConfig?.name) {
           switch (step.inputConfig.type) {
@@ -49,7 +50,8 @@ export default function OnboardWorkerPage() {
       setOnboardingSteps(baseInitialSteps.map(s => ({...s, isComplete: false})));
       setFormData({});
     }
-  }, []);
+    setLastRoleUsed('GIG_WORKER'); // Set last role used to GIG_WORKER
+  }, [user?.claims.role]);
 
   useEffect(() => {
     const newMessages: OnboardingStep[] = [];
@@ -112,7 +114,8 @@ export default function OnboardWorkerPage() {
       }
     }
     setChatMessages(newMessages);
-  }, [onboardingSteps, formData]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [onboardingSteps, user?.claims.role, currentFocusedInputName]);
 
   useEffect(() => {
     if (chatContainerRef.current) {
@@ -122,7 +125,7 @@ export default function OnboardWorkerPage() {
         const inputElement = document.querySelector(`[name="${currentFocusedInputName}"]`) as HTMLElement;
         inputElement?.focus();
     }
-  }, [chatMessages, currentFocusedInputName]);
+  }, [chatMessages, currentFocusedInputName, user?.claims.role]);
 
   // const handleInputChange = (name: string, value: any) => {
   //   if (user?.isQA) return;

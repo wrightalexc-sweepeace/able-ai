@@ -11,13 +11,13 @@ import styles from "./BuyerCalendarPage.module.css";
 import { useAuth } from "@/context/AuthContext";
 
 // Define the interface for calendar events (should be consistent with WorkerCalendarPage)
-interface CalendarEvent {
+export interface CalendarEvent {
   id?: string;
   title: string;
   start: Date;
   end: Date;
   allDay?: boolean;
-  resource?: any;
+  resource?: Record<string, unknown>;
   status?:
     | "PENDING"
     | "ACCEPTED"
@@ -34,30 +34,6 @@ interface CalendarEvent {
 }
 
 const FILTERS = ["Manage availability", "Accepted gigs", "See gig offers"];
-
-const MOCK_EVENTS: CalendarEvent[] = [
-  {
-    title: "Gig Accepted",
-    start: new Date(2023, 11, 18, 9, 0),
-    end: new Date(2023, 11, 18, 10, 30),
-    status: "ACCEPTED",
-    isBuyerAccepted: true,
-    buyerName: "Jerimiah Jones",
-  },
-  {
-    title: "Bartender, Central Station",
-    start: new Date(2023, 11, 18, 13, 0),
-    end: new Date(2023, 11, 18, 21, 0),
-    status: "OFFER",
-  },
-  {
-    title: "Bartender, Central Station",
-    start: new Date(2023, 11, 18, 13, 0),
-    end: new Date(2023, 11, 18, 21, 0),
-    status: "ACCEPTED",
-    workerName: "Jessica Hersey",
-  },
-];
 
 const BuyerCalendarPage = () => {
   const pathname = usePathname();
@@ -94,6 +70,7 @@ const BuyerCalendarPage = () => {
       router.push(`/signin?error=unauthorized`); // Or user's own profile, or a generic error page
       return;
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   },[])
 
   // Calendar navigation handler
@@ -132,9 +109,9 @@ const BuyerCalendarPage = () => {
           onView={setView}
           onNavigate={setDate}
           components={{
-            event: (props: any) => (
-              <CalendarEventComponent {...props} userRole="buyer" />
-            ),
+            event: ((props: CalendarEvent) => (
+              <CalendarEventComponent event={props}/>
+            )) as React.ComponentType<unknown>,
           }}
           hideToolbar={true}
         />
