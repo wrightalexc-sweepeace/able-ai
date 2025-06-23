@@ -2,8 +2,8 @@
 
 import { eq } from 'drizzle-orm';
 import { stripeApi } from '@/lib/stripe-server';
-import { db } from "@/app/lib/drizzle/db";
-import { UsersTable } from "@/app/lib/drizzle/schema";
+import { db } from "@/lib/drizzle/db";
+import { UsersTable } from "@/lib/drizzle/schema";
 
 export async function createAccountLink(firebaseUid: string) {
   try {

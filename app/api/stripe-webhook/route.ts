@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { default as stripe, default as Stripe } from "stripe";
-import { db } from "@/app/lib/drizzle/db";
-import { UsersTable } from "@/app/lib/drizzle/schema";
+import { db } from "@/lib/drizzle/db";
+import { UsersTable } from "@/lib/drizzle/schema";
 import { eq } from 'drizzle-orm';
 
 export async function POST(req: Request) {
