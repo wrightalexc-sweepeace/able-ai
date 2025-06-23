@@ -66,12 +66,9 @@ export default function SettingsPage() {
   const router = useRouter();
 
   const {
-    user,
-    loading: isLoading,
+    user
   } = useAuth();
 
-  
-  const authUserId = user?.uid; // Get user ID from the user object
   const [userSettings, setUserSettings] = useState<UserSettingsData | null>(
     null
   );

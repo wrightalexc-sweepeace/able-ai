@@ -11,7 +11,7 @@ import styles from "./BuyerCalendarPage.module.css";
 import { useAuth } from "@/context/AuthContext";
 
 // Define the interface for calendar events (should be consistent with WorkerCalendarPage)
-interface CalendarEvent {
+export interface CalendarEvent {
   id?: string;
   title: string;
   start: Date;
@@ -108,9 +108,9 @@ const BuyerCalendarPage = () => {
           onView={setView}
           onNavigate={setDate}
           components={{
-            event: (props: any) => (
-              <CalendarEventComponent {...props} userRole="buyer" />
-            ),
+            event: ((props: CalendarEvent) => (
+              <CalendarEventComponent event={props}/>
+            )) as React.ComponentType<unknown>,
           }}
           hideToolbar={true}
         />

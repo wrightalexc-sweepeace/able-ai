@@ -7,7 +7,7 @@ import styles from './AppCalendar.module.css';
 
 const localizer = momentLocalizer(moment);
 
-export type AppCalendarProps<TEvent extends object = any> = {
+type AppCalendarProps<TEvent> = {
   events: TEvent[];
   view?: View;
   defaultView?: View;
@@ -16,8 +16,8 @@ export type AppCalendarProps<TEvent extends object = any> = {
   onView?: (view: View) => void;
   minTime?: Date;
   maxTime?: Date;
-  eventPropGetter?: (event: TEvent) => any;
-  components?: any;
+  eventPropGetter?: (event: TEvent) => { style: React.CSSProperties };
+  components?: Record<string, React.ComponentType<unknown>>;
   height?: string;
   hideToolbar?: boolean;
 };
@@ -37,7 +37,7 @@ const AppCalendar = <TEvent extends object>({
   hideToolbar = false,
 }: AppCalendarProps<TEvent>) => {
   const defaultEventPropGetter = (event: TEvent) => {
-    const style: any = {
+    const style: React.CSSProperties = {
       backgroundColor: '#3a3a3a',
       borderRadius: '8px',
       color: '#e0e0e0',
@@ -112,10 +112,10 @@ const AppCalendar = <TEvent extends object>({
         localizer={localizer}
         events={events}
         view={view}
-        startAccessor={(event: any) => event.start}
-        endAccessor={(event: any) => event.end}
-        allDayAccessor={(event: any) => event.allDay}
-        titleAccessor={(event: any) => event.title}
+        startAccessor={(event: TEvent) => (event as { start: Date }).start}
+        endAccessor={(event: TEvent) => (event as { end: Date }).end}
+        allDayAccessor={(event: { allDay?: boolean }) => event.allDay || false}
+        titleAccessor={(event: TEvent & { title?: string }) => event.title || ''}
         defaultView={defaultView}
         views={['month', 'week', 'day', 'agenda']}
         selectable={false}
