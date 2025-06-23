@@ -6,13 +6,13 @@ import styles from "./CalendarEventComponent.module.css";
 // Optionally import an icon library for checkmark, etc.
 // import { FaCheckCircle } from "react-icons/fa";
 
-interface CalendarEvent {
+export interface CalendarEvent {
   id?: string;
   title: string;
   start: Date;
   end: Date;
   allDay?: boolean;
-  resource?: any;
+  resource?: Record<string, unknown>;
   status?:
     | "PENDING"
     | "ACCEPTED"

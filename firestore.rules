@@ -346,8 +346,8 @@ service cloud.firestore {
       allow read, write: if request.time < timestamp.date(2025, 7, 31);
     }
     // Consider a stricter default, like denying all unless explicitly allowed above.
-    match /{document=**} {
-      allow read, write: if false; // Deny by default
-    }
+    // match /{document=**} {
+    //   allow read, write: if false; // Deny by default
+    // }
   }
 }
