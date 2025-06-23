@@ -70,6 +70,7 @@ const BuyerCalendarPage = () => {
       router.push(`/signin?error=unauthorized`); // Or user's own profile, or a generic error page
       return;
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   },[])
 
   // Calendar navigation handler

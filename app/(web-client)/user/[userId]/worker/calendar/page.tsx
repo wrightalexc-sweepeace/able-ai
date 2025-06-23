@@ -69,7 +69,7 @@ const WorkerCalendarPage = () => {
   const [events, setEvents] = useState<CalendarEvent[]>(realEvents);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== 'undefined' && !realEvents.length) {
       const isViewQA = localStorage.getItem('isViewQA') === 'true';
       const baseEvents = isViewQA ? MOCK_EVENTS : realEvents;
       setEvents(filterEvents(baseEvents, activeFilter));
@@ -78,7 +78,8 @@ const WorkerCalendarPage = () => {
         setView('day');
       }
     }
-  }, [activeFilter, realEvents]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeFilter]);
 
   // Calendar navigation handler
   const handleNavigate = (action: 'TODAY' | 'PREV' | 'NEXT') => {
