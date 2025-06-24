@@ -1,8 +1,8 @@
 'use client'; // Si usas componentes de cliente
 
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams, useParams } from 'next/navigation';
-import React, { useEffect, useState } from 'react';
 import styles from "../SettingsPage.module.css";
 import onboardingSuccessStyles from "./onboarding-success.module.css";
 import { stripeStatus } from '@/app/actions/stripe/stripe-status';
@@ -21,15 +21,14 @@ export default function OnboardingSuccessPage() {
         if (!accountId) throw new Error('Error: No Stripe account ID found in the URL.');
 
         const response = await stripeStatus(accountId);
-        console.log({ response })
         setStatusMessage('Stripe account connected successfully!');
         setLoading(false);
 
-        // const timer = setTimeout(() => {
-        //   router.push(`/user/${userId}/settings`);
-        // }, 3000);
+        const timer = setTimeout(() => {
+          router.push(`/user/${userId}/settings`);
+        }, 3000);
 
-        // return () => clearTimeout(timer);
+        return () => clearTimeout(timer);
 
       } catch (error: any) {
         setStatusMessage(error?.message);
