@@ -6,34 +6,27 @@ import AppCalendar from "@/app/components/shared/AppCalendar";
 import CalendarHeader from "@/app/components/shared/CalendarHeader";
 import CalendarEventComponent from "@/app/components/shared/CalendarEventComponent";
 import { View } from "react-big-calendar";
+import { useAuth } from "@/context/AuthContext";
+import { CalendarEvent } from "@/app/types/CalendarEventTypes";
 // Import the CSS module for this page
 import styles from "./BuyerCalendarPage.module.css";
-import { useAuth } from "@/context/AuthContext";
-
-// Define the interface for calendar events (should be consistent with WorkerCalendarPage)
-export interface CalendarEvent {
-  id?: string;
-  title: string;
-  start: Date;
-  end: Date;
-  allDay?: boolean;
-  resource?: Record<string, unknown>;
-  status?:
-    | "PENDING"
-    | "ACCEPTED"
-    | "IN_PROGRESS"
-    | "COMPLETED"
-    | "CANCELLED"
-    | "UNAVAILABLE"
-    | "OFFER";
-  eventType?: "gig" | "offer" | "unavailability";
-  buyerName?: string;
-  workerName?: string;
-  isMyGig?: boolean;
-  isBuyerAccepted?: boolean;
-}
+import { MOCK_EVENTS } from "../../worker/calendar/mockData";
 
 const FILTERS = ["Manage availability", "Accepted gigs", "See gig offers"];
+
+// Helper to filter events based on active filter
+function filterEvents(events: CalendarEvent[], filter: string): CalendarEvent[] {
+  switch (filter) {
+    case 'Manage availability':
+      return events.filter(e => e.status === 'UNAVAILABLE');
+    case 'Accepted gigs':
+      return events.filter(e => e.status === 'ACCEPTED');
+    case 'See gig offers':
+      return events.filter(e => e.status === 'OFFER');
+    default:
+      return events;
+  }
+}
 
 const BuyerCalendarPage = () => {
   const pathname = usePathname();
@@ -42,8 +35,6 @@ const BuyerCalendarPage = () => {
   const pageUserId = params.userId as string;
   const { user, loading: loadingAuth } = useAuth();
   const authUserId = user?.uid;
-  // Real events would be fetched or passed in here
-  const realEvents: CalendarEvent[] = useMemo(() => [], []);
 
   // Set default view based on screen size
   const [view, setView] = useState<View>(() => {
@@ -54,11 +45,11 @@ const BuyerCalendarPage = () => {
   });
   const [date, setDate] = useState<Date>(new Date());
   const [activeFilter, setActiveFilter] = useState<string>(FILTERS[1]);
-  const [events, setEvents] = useState<CalendarEvent[]>(realEvents);
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
 
   useEffect(() => {
     if (loadingAuth) {
-      return; // Wait for user data to load
+      return;
     }
 
     if (!user) {
@@ -70,8 +61,32 @@ const BuyerCalendarPage = () => {
       router.push(`/signin?error=unauthorized`); // Or user's own profile, or a generic error page
       return;
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      if (!user) return;
+
+      const isViewQA = localStorage.getItem('isViewQA') === 'true';
+
+      if (isViewQA) {
+        setEvents(filterEvents(MOCK_EVENTS, activeFilter));
+        return;
+      }
+
+      // Replace with your API endpoint and auth logic
+      const res = await fetch(`/api/calendar/events?role=worker&userId=${user.uid}`);
+      const data = await res.json();
+
+      // Convert date strings to Date objects
+      const parsed = data.events.map((event: any) => ({ ...event, start: new Date(event.start), end: new Date(event.end) }));
+      setEvents(filterEvents(parsed, activeFilter));
+    };
+
+    fetchEvents();
+  }, [activeFilter]);
+
 
   // Calendar navigation handler
   const handleNavigate = (action: "TODAY" | "PREV" | "NEXT") => {
@@ -110,7 +125,7 @@ const BuyerCalendarPage = () => {
           onNavigate={setDate}
           components={{
             event: ((props: CalendarEvent) => (
-              <CalendarEventComponent event={props}/>
+              <CalendarEventComponent event={props} />
             )) as React.ComponentType<unknown>,
           }}
           hideToolbar={true}
