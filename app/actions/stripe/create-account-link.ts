@@ -7,7 +7,6 @@ import { UsersTable } from "@/lib/drizzle/schema";
 
 export async function createAccountLink(firebaseUid: string) {
   try {
-    console.log({ firebaseUid })
     if (!firebaseUid) {
       return { error: 'User ID is required.', status: 400 }
     }
@@ -21,9 +20,6 @@ export async function createAccountLink(firebaseUid: string) {
     let stripeAccountId = userRecord?.stripeConnectAccountId;
 
     if (!stripeAccountId) {
-      console.log({ userRecord })
-      console.log({ stripeAccountId })
-
       const account = await stripeApi.accounts.create({
         type: 'express', // account type connected
         country: 'US', // adjust country
