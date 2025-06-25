@@ -8,9 +8,9 @@ import CalendarEventComponent from "@/app/components/shared/CalendarEventCompone
 import { View } from "react-big-calendar";
 import { useAuth } from "@/context/AuthContext";
 import { CalendarEvent } from "@/app/types/CalendarEventTypes";
+import { getCalendarEvents } from "@/actions/events/get-calendar-events";
 // Import the CSS module for this page
 import styles from "./BuyerCalendarPage.module.css";
-import { MOCK_EVENTS } from "../../worker/calendar/mockData";
 
 const FILTERS = ["Manage availability", "Accepted gigs", "See gig offers"];
 
@@ -69,18 +69,14 @@ const BuyerCalendarPage = () => {
       if (!user) return;
 
       const isViewQA = localStorage.getItem('isViewQA') === 'true';
+      const res = await getCalendarEvents({ userId: user.uid, isViewQA });
 
-      if (isViewQA) {
-        setEvents(filterEvents(MOCK_EVENTS, activeFilter));
-        return;
-      }
+      if(res.error) throw new Error(res.error);
 
-      // Replace with your API endpoint and auth logic
-      const res = await fetch(`/api/calendar/events?role=buyer&userId=${user.uid}`);
-      const data = await res.json();
+      const data: CalendarEvent[] = res.events;
 
       // Convert date strings to Date objects
-      const parsed = data.events.map((event: any) => ({ ...event, start: new Date(event.start), end: new Date(event.end) }));
+      const parsed = data.map((event: any) => ({ ...event, start: new Date(event.start), end: new Date(event.end) }));
       setEvents(filterEvents(parsed, activeFilter));
     };
 
