@@ -15,6 +15,6 @@ export async function GET(request: NextRequest) {
 
   } catch (error: any) {
     console.error("Error registering user:", error);
-    return { ok: false, error: error.message };
+    return NextResponse.json({ error: error.message, ok: false }, { status: 500 });
   }
 }

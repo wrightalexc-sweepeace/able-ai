@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter, usePathname, useParams } from "next/navigation";
 import AppCalendar from "@/app/components/shared/AppCalendar";
 import CalendarHeader from "@/app/components/shared/CalendarHeader";
