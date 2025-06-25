@@ -76,7 +76,7 @@ const BuyerCalendarPage = () => {
       }
 
       // Replace with your API endpoint and auth logic
-      const res = await fetch(`/api/calendar/events?role=worker&userId=${user.uid}`);
+      const res = await fetch(`/api/calendar/events?role=buyer&userId=${user.uid}`);
       const data = await res.json();
 
       // Convert date strings to Date objects
