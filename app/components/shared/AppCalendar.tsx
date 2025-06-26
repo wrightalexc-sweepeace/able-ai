@@ -9,6 +9,7 @@ const localizer = momentLocalizer(moment);
 
 type AppCalendarProps<TEvent> = {
   events: TEvent[];
+  date: Date;
   view?: View;
   defaultView?: View;
   onSelectEvent?: (event: TEvent) => void;
@@ -25,6 +26,7 @@ type AppCalendarProps<TEvent> = {
 const AppCalendar = <TEvent extends object>({
   events = [],
   view,
+  date,
   defaultView = 'month',
   onSelectEvent,
   onNavigate,
@@ -111,6 +113,7 @@ const AppCalendar = <TEvent extends object>({
       <BigCalendar
         localizer={localizer}
         events={events}
+        date={date}
         view={view}
         startAccessor={(event: TEvent) => (event as { start: Date }).start}
         endAccessor={(event: TEvent) => (event as { end: Date }).end}

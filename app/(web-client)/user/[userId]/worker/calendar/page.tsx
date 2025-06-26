@@ -109,6 +109,7 @@ const WorkerCalendarPage = () => {
       />
       <main className={styles.mainContent}>
         <AppCalendar
+          date={date}
           events={events}
           view={view}
           onView={setView}

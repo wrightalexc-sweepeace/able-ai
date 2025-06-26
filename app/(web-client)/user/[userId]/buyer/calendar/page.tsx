@@ -116,6 +116,7 @@ const BuyerCalendarPage = () => {
       <main className={styles.mainContent}>
         <AppCalendar
           events={events}
+          date={date}
           view={view}
           onView={setView}
           onNavigate={setDate}
