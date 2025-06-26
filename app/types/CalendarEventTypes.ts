@@ -1,4 +1,15 @@
+export enum EventStatusEnum {
+  PENDING = 'PENDING',
+  ACCEPTED = 'ACCEPTED',
+  IN_PROGRESS = 'IN_PROGRESS',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED',
+  UNAVAILABLE = 'UNAVAILABLE',
+  OFFER = 'OFFER',
+}
+
 // Define the interface for calendar events (should be consistent with BuyerCalendarPage)
+export type EventStatusEnumType = `${EventStatusEnum}`
 export interface CalendarEvent {
   id?: string;
   title: string;
@@ -6,7 +17,7 @@ export interface CalendarEvent {
   end: Date;
   allDay?: boolean;
   resource?: Record<string, unknown>;
-  status?: 'PENDING' | 'ACCEPTED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'UNAVAILABLE' | 'OFFER';
+  status?: EventStatusEnumType;
   eventType?: 'gig' | 'offer' | 'unavailability';
   buyerName?: string;
   workerName?: string;
