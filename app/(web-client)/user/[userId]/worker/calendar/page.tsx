@@ -56,7 +56,6 @@ const WorkerCalendarPage = () => {
 
       const data: CalendarEvent[] = res.events;
 
-      // Convert date strings to Date objects
       const parsed = data.map((event: any) => ({ ...event, start: new Date(event.start), end: new Date(event.end) }));
       setEvents(filterEvents(parsed, activeFilter));
     };

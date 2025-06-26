@@ -71,11 +71,10 @@ const BuyerCalendarPage = () => {
       const isViewQA = localStorage.getItem('isViewQA') === 'true';
       const res = await getCalendarEvents({ userId: user.uid, role: 'buyer', isViewQA });
 
-      if(res.error) throw new Error(res.error);
+      if (res.error) throw new Error(res.error);
 
       const data: CalendarEvent[] = res.events;
 
-      // Convert date strings to Date objects
       const parsed = data.map((event: any) => ({ ...event, start: new Date(event.start), end: new Date(event.end) }));
       setEvents(filterEvents(parsed, activeFilter));
     };
@@ -121,8 +120,8 @@ const BuyerCalendarPage = () => {
           onView={setView}
           onNavigate={setDate}
           components={{
-            event: ((props: CalendarEvent) => (
-              <CalendarEventComponent event={props} />
+            event: (({ event }: { event: CalendarEvent; title: string }) => (
+              <CalendarEventComponent event={event} />
             )) as React.ComponentType<unknown>,
           }}
           hideToolbar={true}

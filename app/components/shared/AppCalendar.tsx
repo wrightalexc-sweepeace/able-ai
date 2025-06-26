@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import React from 'react';
-import { Calendar as BigCalendar, momentLocalizer, View } from 'react-big-calendar';
+import { Calendar as BigCalendar, Formats, momentLocalizer, View } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import styles from './AppCalendar.module.css';
@@ -21,6 +21,7 @@ type AppCalendarProps<TEvent> = {
   components?: Record<string, React.ComponentType<unknown>>;
   height?: string;
   hideToolbar?: boolean;
+  formats?: Formats | undefined;
 };
 
 const AppCalendar = <TEvent extends object>({
@@ -37,6 +38,9 @@ const AppCalendar = <TEvent extends object>({
   components,
   height = "70vh",
   hideToolbar = false,
+  formats = {
+    eventTimeRangeFormat: () => ''
+  },
 }: AppCalendarProps<TEvent>) => {
   const defaultEventPropGetter = (event: TEvent) => {
     const style: React.CSSProperties = {
@@ -129,6 +133,7 @@ const AppCalendar = <TEvent extends object>({
         max={maxTime}
         eventPropGetter={handleEventPropGetter}
         components={calendarComponents}
+        formats={formats}
         popup
       />
     </div>
