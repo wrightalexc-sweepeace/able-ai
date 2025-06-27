@@ -446,7 +446,7 @@ export default function SettingsPage() {
                   id="phone"
                   name="phone"
                   type="tel" // Use type="tel" for phone numbers
-                  value={user?.phone || phone}
+                  value={userSettings.phone || phone}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     setPhone(e.target.value)
                   }
