@@ -28,6 +28,7 @@ import { FirebaseError } from "firebase/app";
 import SwitchControl from "@/app/components/shared/SwitchControl";
 import Logo from "@/app/components/brand/Logo";
 import { toast } from "sonner";
+import { getProfileInfoUserAction } from "@/actions/user/user";
 
 interface UserSettingsData {
   displayName: string;
@@ -42,6 +43,7 @@ interface UserSettingsData {
     | "restricted"
     | "disabled"
     | null;
+  stripeConnectAccountId: string | null;
   canReceivePayouts: boolean; // Derived on backend, true if Stripe account is fully setup and can receive payouts
 
   notificationPreferences: {
@@ -91,7 +93,7 @@ export default function SettingsPage() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
 
-  const [showStripeModal, setShowStripeModal] = useState(true);
+  const [showStripeModal, setShowStripeModal] = useState(false);
 
   // Notification preferences
   const [emailGigUpdates, setEmailGigUpdates] = useState(false);
@@ -104,19 +106,21 @@ export default function SettingsPage() {
 
   const fetchSettings = async () => {
     try {
-      // const response = await fetch(`/api/users/settings`); // API would use authUserId from token
-      // if (!response.ok) throw new Error('Failed to fetch settings');
-      // const data = await response.json();
+      let userProfile = null
+      if (user?.uid) {
+        userProfile = await getProfileInfoUserAction(user?.uid);
+      }
 
       // MOCK DATA FOR NOW - Replace with API call
       await new Promise((res) => setTimeout(res, 500)); // Simulate delay
       const data: UserSettingsData = {
-        displayName: user?.displayName || "User", // Access displayName from user object
-        email: user?.email || "", // Access email from user object
-        phone: user?.phoneNumber || "", // Added mock phone data
+        displayName: user?.displayName || "",
+        email: user?.email || "",
+        phone: userProfile?.phone || "",
         // Added mock Stripe data
-        stripeAccountId: null, // Or a mock ID like 'acct_123abc'
-        stripeAccountStatus: null, // Or 'connected', 'pending_verification', etc.
+        stripeAccountId: userProfile?.stripeCustomerId|| null, // Or a mock ID like 'acct_123abc'
+        stripeAccountStatus: "incomplete",
+        stripeConnectAccountId: userProfile?.stripeConnectAccountId || null, // Or 'connected', 'pending_verification', etc.
         canReceivePayouts: false, // Or true
 
         privacySettings: {
@@ -139,6 +143,9 @@ export default function SettingsPage() {
       setEmailPlatformAnnouncements(
         data.notificationPreferences.email.platformAnnouncements
       );
+      if (!data.stripeAccountId || !data.stripeAccountStatus) {
+        setShowStripeModal(true)
+      }
       // setSmsGigAlerts(data.notificationPreferences.sms.gigAlerts); // SMS commented out
       setProfileVisibility(data.privacySettings.profileVisibility); // Set initial state for privacy setting
       // setPhone(data.phone || ''); // Set initial state for phone
@@ -176,7 +183,6 @@ export default function SettingsPage() {
     // TODO: API call to update profile (e.g., PUT /api/users/profile)
     // This API would update both PostgreSQL and relevant Firestore public profile fields
     try {
-      console.log("Updating profile with name:", displayName);
       // Simulate API call
       await new Promise((res) => setTimeout(res, 1000));
       setSuccessMessage("Profile updated successfully!");
@@ -223,15 +229,14 @@ export default function SettingsPage() {
       setCurrentPassword("");
       setNewPassword("");
       setConfirmNewPassword("");
+      toast.success(`Password changed successfully.`);
     } catch (err: unknown) {
       if (err instanceof FirebaseError) {
         console.error("Error changing password", err);
         if (err.code === "auth/wrong-password.") {
           setError("Current password incorrect.");
         } else if (err.code === "auth/requires-recent-login") {
-          setError(
-            "For security login again"
-          );
+          setError("For security login again");
         } else {
           setError(err.message || "rror changing password.");
         }
@@ -245,9 +250,22 @@ export default function SettingsPage() {
   };
 
   const handleForgotPassword = async () => {
-    console.log("handleForgotPassword");
-
-    toast.success(`Check your email to reset your password.`);
+    clearMessages();
+    if (!userSettings?.email) {
+      setError("Email address not found.");
+      return;
+    }
+    try {
+      await sendPasswordResetEmail(authClient, userSettings.email);
+      setSuccessMessage("Password reset email sent. Please check your inbox.");
+      toast.success(`Check your email to reset your password.`);
+    } catch (err) {
+      if (err instanceof FirebaseError) {
+        setError(err.message || "Failed to send password reset email.");
+      } else {
+        setError("Failed to send password reset email.");
+      }
+    }
   };
 
   const handleLogout = async () => {
@@ -659,20 +677,35 @@ export default function SettingsPage() {
               className={styles.modalContent}
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 className={styles.modalTitle}>Get Paid with Stripe!</h3>
+              <div className={styles.modalHeader}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                  }}
+                >
+                  <div className={styles.stripeIconWrapper}>
+                    <AlertTriangle size={28} color="#ffc107" />
+                  </div>
+                  <h3 className={styles.modalTitle}>Get Paid with Stripe!</h3>
+                </div>
+                <button
+                  onClick={() => setShowStripeModal(false)}
+                  className={styles.closeButton}
+                  aria-label="Close"
+                >
+                  ×
+                </button>
+              </div>
+
               <p>
-                To receive payments for your gigs, you must connect your bnak
+                To receive payments for your gigs, you must connect your bank
                 account through our payment provider, Stripe. This is secure,
                 free, and only takes a minute.
               </p>
+
               <div className={styles.modalActions}>
-                <button
-                  onClick={() => setShowStripeModal(false)}
-                  className={`${styles.button} ${styles.secondary}`}
-                  disabled={isDeletingAccount}
-                >
-                  Cancel
-                </button>
                 <button
                   onClick={handleStripeConnect}
                   className={styles.stripeButton}
@@ -682,8 +715,9 @@ export default function SettingsPage() {
                     ? "Connecting..."
                     : "Connect My Bank Account"}
                 </button>
-                <br />
               </div>
+
+              <AlertTriangle size={20} color="#ffc107" />
               <p>Not connected</p>
             </div>
           </div>
