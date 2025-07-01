@@ -18,12 +18,12 @@ export const NotificationPreferencesTable = pgTable("notification_preferences", 
     .references(() => UsersTable.id, { onDelete: "cascade" }),
 
   // Email preferences
-  emailGigUpdates: boolean("email_gig_updates").default(true).notNull(),
-  emailPlatformAnnouncements: boolean("email_platform_announcements").default(true).notNull(),
+  emailGigUpdates: boolean("email_gig_updates").default(false).notNull(),
+  emailPlatformAnnouncements: boolean("email_platform_announcements").default(false).notNull(),
   emailMarketing: boolean("email_marketing").default(false).notNull(),
 
   // SMS preferences
-  smsGigAlerts: boolean("sms_gig_alerts").default(true).notNull(),
+  smsGigAlerts: boolean("sms_gig_alerts").default(false).notNull(),
 
   // FCM preferences
   fcmUpdates: boolean("fcm_updates").default(true).notNull(),

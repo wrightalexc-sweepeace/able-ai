@@ -7,6 +7,9 @@ export const  getProfileInfoUserAction = async (firebaseUid: string) => {
     try {
         const pgUser = await db.query.UsersTable.findFirst({
           where: eq(UsersTable.firebaseUid, firebaseUid),
+          with: {
+            notificationPreferences: true,
+          },
         });
     
         return pgUser
