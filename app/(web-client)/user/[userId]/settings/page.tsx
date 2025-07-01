@@ -338,21 +338,30 @@ export default function SettingsPage() {
 
   async function handleToggleEmailNotification() {
     const result = await updateNotificationEmailAction({emailProferences: !notificationEmail}, user?.uid)
-    console.log(result);
-    
-    setNotificationEmail(result || notificationEmail);
+    if (result !== undefined) {
+      setNotificationEmail(result);
+    }else {
+      setNotificationEmail(notificationEmail);
+    }
   }
 
   async function handleToggleSmsNotification() {
     const result = await updateNotificationSmsAction({smsGigAlerts: !notificationSms}, user?.uid)
-    console.log(result);
+    if (result !== undefined) {
+      setNotificationSms(result);
+    } else {
+      setNotificationSms(notificationSms)
+    }
 
-    setNotificationSms(result || notificationSms);
   }
 
   async function handleToggleProfileVisibility() {
     const result = await updateProfileVisibilityAction({profileVisibility: !profileVisibility}, user?.uid)
-    setProfileVisibility(result || profileVisibility);
+    if (result !== undefined) {
+      setProfileVisibility(result);
+    }else {
+      setProfileVisibility(profileVisibility)
+    }
   }
 
 

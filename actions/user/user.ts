@@ -49,7 +49,7 @@ export const updateProfileVisibilityAction = async (
       .where(eq(UsersTable.firebaseUid, firebaseUid))
       .returning();
       
-    return updatedUsers[0].profileVisibility || null;
+    return updatedUsers[0].profileVisibility;
   } catch (error) {
     console.log("Error updating user profile");
   }
@@ -76,11 +76,8 @@ export const updateNotificationEmailAction = async (
       .set({emailGigUpdates: updateData.emailProferences} )
       .where(eq(NotificationPreferencesTable.userId, pgUser.id))
       .returning();
-
-      console.log(updatedUsers[0]);
       
-      
-    return updatedUsers[0].emailGigUpdates || null;
+    return updatedUsers[0].emailGigUpdates;
   } catch (error) {
     console.log("Error updating user profile");
   }
@@ -108,7 +105,7 @@ export const updateNotificationSmsAction = async (
       .where(eq(NotificationPreferencesTable.userId, pgUser?.id))
       .returning();
       
-    return updatedUsers[0].smsGigAlerts || null;
+    return updatedUsers[0].smsGigAlerts;
   } catch (error) {
     console.log("Error updating user profile");
   }
