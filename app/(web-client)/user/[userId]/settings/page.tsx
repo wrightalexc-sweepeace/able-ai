@@ -28,7 +28,7 @@ import { FirebaseError } from "firebase/app";
 import SwitchControl from "@/app/components/shared/SwitchControl";
 import Logo from "@/app/components/brand/Logo";
 import { toast } from "sonner";
-import { getProfileInfoUserAction } from "@/actions/user/user";
+import { getProfileInfoUserAction, updateNotificationEmailAction, updateNotificationSmsAction, updateProfileVisibilityAction, updateUserProfileAction } from "@/actions/user/user";
 
 interface UserSettingsData {
   displayName: string;
@@ -84,7 +84,10 @@ export default function SettingsPage() {
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
 
   // Privacy Settings related states
-  const [profileVisibility, setProfileVisibility] = useState(false); // State for profile visibility
+  const [profileVisibility, setProfileVisibility] = useState(false);
+  const [notificationEmail, setNotificationEmail] = useState(false);
+  const [notificationSms, setNotificationSms] = useState(false);
+
 
   const [displayName, setDisplayName] = useState("");
   const [phone, setPhone] = useState(""); // Added state for phone number
@@ -111,8 +114,6 @@ export default function SettingsPage() {
         userProfile = await getProfileInfoUserAction(user?.uid);
       }
 
-      // MOCK DATA FOR NOW - Replace with API call
-      await new Promise((res) => setTimeout(res, 500)); // Simulate delay
       const data: UserSettingsData = {
         displayName: user?.displayName || "",
         email: user?.email || "",
@@ -138,7 +139,8 @@ export default function SettingsPage() {
         },
       };
       setUserSettings(data);
-      setDisplayName(data.displayName);
+      setDisplayName(userProfile?.fullName || "");
+      setPhone(userProfile?.phone || "");
       setEmailGigUpdates(data.notificationPreferences.email.gigUpdates);
       setEmailPlatformAnnouncements(
         data.notificationPreferences.email.platformAnnouncements
@@ -147,7 +149,9 @@ export default function SettingsPage() {
         setShowStripeModal(true)
       }
       // setSmsGigAlerts(data.notificationPreferences.sms.gigAlerts); // SMS commented out
-      setProfileVisibility(data.privacySettings.profileVisibility); // Set initial state for privacy setting
+      setProfileVisibility(userProfile?.profileVisibility || false);
+      setNotificationEmail(userProfile?.notificationPreferences.emailGigUpdates || false)
+      setNotificationSms(userProfile?.notificationPreferences.smsGigAlerts || false)
       // setPhone(data.phone || ''); // Set initial state for phone
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -184,7 +188,9 @@ export default function SettingsPage() {
     // This API would update both PostgreSQL and relevant Firestore public profile fields
     try {
       // Simulate API call
-      await new Promise((res) => setTimeout(res, 1000));
+      await updateUserProfileAction({fullName: displayName, phone: phone},user?.uid)
+      await getProfileInfoUserAction(user?.uid)
+      toast.success("Profile updated successfully")
       setSuccessMessage("Profile updated successfully!");
       // Optionally, trigger a refetch if name changes often or rely on context update if displayName is part of User object
     } catch (err: unknown) {
@@ -330,6 +336,26 @@ export default function SettingsPage() {
     }
   };
 
+  async function handleToggleEmailNotification() {
+    const result = await updateNotificationEmailAction({emailProferences: !notificationEmail}, user?.uid)
+    console.log(result);
+    
+    setNotificationEmail(result || notificationEmail);
+  }
+
+  async function handleToggleSmsNotification() {
+    const result = await updateNotificationSmsAction({smsGigAlerts: !notificationSms}, user?.uid)
+    console.log(result);
+
+    setNotificationSms(result || notificationSms);
+  }
+
+  async function handleToggleProfileVisibility() {
+    const result = await updateProfileVisibilityAction({profileVisibility: !profileVisibility}, user?.uid)
+    setProfileVisibility(result || profileVisibility);
+  }
+
+
   if (isLoadingSettings) {
     return <Loader />;
   }
@@ -368,40 +394,6 @@ export default function SettingsPage() {
                 <CheckCircle size={20} /> Stripe account connected and active.
               </div>
             )}
-          {userSettings &&
-            (!userSettings.stripeAccountId ||
-              !userSettings.canReceivePayouts) && (
-              <div className={`${styles.section} ${styles.stripePromptInline}`}>
-                <div className={styles.stripePromptHeader}>
-                  <div className={styles.stripeIconWrapper}>
-                    <AlertTriangle size={28} color="#ffc107" />
-                  </div>
-                  <h3>Get Paid with Stripe!</h3>
-                </div>
-                <p>
-                  To receive payments for your gigs, you must connect your bnak
-                  account through our payment provider, Stripe. This is secure,
-                  free, and only takes a minute.
-                </p>
-                <button
-                  onClick={handleStripeConnect}
-                  className={styles.stripeButton}
-                  disabled={isConnectingStripe}
-                >
-                  {isConnectingStripe
-                    ? "Connecting..."
-                    : "Connect My Bank Account"}
-                </button>
-                <div className={styles.stripeStatus}>
-                  <AlertTriangle size={20} color="#ffc107" />
-                  <span>
-                    {userSettings.stripeAccountStatus
-                      ? userSettings.stripeAccountStatus.replace("_", " ")
-                      : "Not Connected"}
-                  </span>
-                </div>
-              </div>
-            )}
 
           {/* Profile Information Section */}
           <section className={styles.section}>
@@ -416,7 +408,7 @@ export default function SettingsPage() {
                   id="displayName"
                   name="displayName"
                   type="text"
-                  value={user.claims.name}
+                  value={displayName}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     setDisplayName(e.target.value)
                   }
@@ -446,7 +438,7 @@ export default function SettingsPage() {
                   id="phone"
                   name="phone"
                   type="tel" // Use type="tel" for phone numbers
-                  value={userSettings.phone || phone}
+                  value={phone}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     setPhone(e.target.value)
                   }
@@ -478,6 +470,7 @@ export default function SettingsPage() {
               id="card"
               name="card"
               type="text"
+              disabled
               value={"Visa **** 1234"}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => () => {
                 console.log(e);
@@ -489,12 +482,18 @@ export default function SettingsPage() {
           {/* Payment Settings Section */}
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>Notification Preferences</h2>
-            <label htmlFor="phone" className={styles.label}>
-              Email Notifications
-            </label>
-            <label htmlFor="phone" className={styles.label}>
-              SMS Notifications
-            </label>
+            <SwitchControl
+              id="emailNotification"
+              label="Email Notifications"
+              checked={notificationEmail}
+              onCheckedChange={() => handleToggleEmailNotification()}
+            />
+            <SwitchControl
+              id="smsNotification"
+              label="SMS Notifications"
+              checked={notificationSms}
+              onCheckedChange={() => handleToggleSmsNotification()}
+            />
           </section>
 
           {/* Payment Settings Section */}
@@ -504,7 +503,7 @@ export default function SettingsPage() {
               id="profileVisibility"
               label="Profile Visibility (Public/Private for search)"
               checked={profileVisibility}
-              onCheckedChange={() => {}}
+              onCheckedChange={() => handleToggleProfileVisibility()}
             />
           </section>
 
@@ -613,7 +612,7 @@ export default function SettingsPage() {
             >
               <p
                 className={styles2.dismissedText}
-                onClick={() => router.push("/gigs/1/chat")}
+                onClick={() => router.replace(`able-ai`)}
               >
                 How can i help?
               </p>
