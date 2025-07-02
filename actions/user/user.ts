@@ -51,7 +51,7 @@ export const updateProfileVisibilityAction = async (
       
     return updatedUsers[0].profileVisibility;
   } catch (error) {
-    console.log("Error updating user profile");
+    console.log("Error updating user profile",  error);
   }
 };
 
@@ -79,7 +79,7 @@ export const updateNotificationEmailAction = async (
       
     return updatedUsers[0].emailGigUpdates;
   } catch (error) {
-    console.log("Error updating user profile");
+    console.log("Error updating user profile",  error);
   }
 };
 
@@ -107,6 +107,6 @@ export const updateNotificationSmsAction = async (
       
     return updatedUsers[0].smsGigAlerts;
   } catch (error) {
-    console.log("Error updating user profile");
+    console.log("Error updating user profile",  error);
   }
 };
