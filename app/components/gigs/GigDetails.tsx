@@ -32,11 +32,11 @@ interface GigDetailsProps {
 }
 
 const worker = {
-  name: "Benji Asamoah",
-  avatarUrl: "/images/benji.jpeg",
-  gigs: 15,
-  experience: 3,
-  isStar: true,
+    name: "Benji Asamoah",
+    avatarUrl: "/images/benji.jpeg",
+    gigs: 15,
+    experience: 3,
+    isStar: true,
 };
 
 const workerName = worker.name.split(" ")[0];
@@ -49,41 +49,39 @@ const GigDetailsComponent = ({ gig, setGig }: GigDetailsProps) => {
 
     const gigDuration = calculateDuration(gig.startTime, gig.endTime);
 
-
-
     const getButtonLabel = (action: string) => {
         const status = gig.status;
         switch (action) {
-        case 'accept':
-            return status === 'PENDING' ? ( lastRoleUsed === "GIG_WORKER" ? 'Accept Gig' : 'Offer Sent-awaiting acceptance') : 'Gig Accepted';
-        case 'start':
-            return status === 'PENDING' || status === 'ACCEPTED'  ? (lastRoleUsed === "GIG_WORKER" ? 'Mark as you started the gig' : 'Mark as started') : (lastRoleUsed === "GIG_WORKER" ? 'Gig Started' : `${workerName} has started the gig`);
-        case 'complete':
-            if (!gig.isWorkerSubmittedFeedback && !gig.isBuyerSubmittedFeedback) {
-                if ( lastRoleUsed === "GIG_WORKER") {
-                    return status === 'PENDING' || status === 'ACCEPTED' || status === 'IN_PROGRESS' ? 'Mark as complete' : 'Gig Completed';   
-                } else {
-                    return status === 'PENDING' || status === 'ACCEPTED' || status === 'IN_PROGRESS' ? `Mark as complete, pay ${workerName}` : `${workerName} has completed the gig`;
+            case 'accept':
+                return status === 'PENDING' ? (lastRoleUsed === "GIG_WORKER" ? 'Accept Gig' : 'Offer Sent-awaiting acceptance') : 'Gig Accepted';
+            case 'start':
+                return status === 'PENDING' || status === 'ACCEPTED' ? (lastRoleUsed === "GIG_WORKER" ? 'Mark as you started the gig' : 'Mark as started') : (lastRoleUsed === "GIG_WORKER" ? 'Gig Started' : `${workerName} has started the gig`);
+            case 'complete':
+                if (!gig.isWorkerSubmittedFeedback && !gig.isBuyerSubmittedFeedback) {
+                    if (lastRoleUsed === "GIG_WORKER") {
+                        return status === 'PENDING' || status === 'ACCEPTED' || status === 'IN_PROGRESS' ? 'Mark as complete' : 'Gig Completed';
+                    } else {
+                        return status === 'PENDING' || status === 'ACCEPTED' || status === 'IN_PROGRESS' ? `Mark as complete, pay ${workerName}` : `${workerName} has completed the gig`;
+                    }
                 }
-            }
-            else if (gig.isBuyerSubmittedFeedback && lastRoleUsed === "GIG_WORKER") {
-               return status === 'PENDING' || status === 'ACCEPTED' || status === 'IN_PROGRESS' ? 'Buyer confirmed & paid: leave feedback' : 'Gig Completed';
-            }
-            else if (gig.isWorkerSubmittedFeedback && lastRoleUsed === "GIG_WORKER") {
-               return status === 'PENDING' || status === 'ACCEPTED' || status === 'IN_PROGRESS' ? `🕒Confirm, pay and review ${workerName}` : 'Gig Completed';
-            }
+                else if (gig.isBuyerSubmittedFeedback && lastRoleUsed === "GIG_WORKER") {
+                    return status === 'PENDING' || status === 'ACCEPTED' || status === 'IN_PROGRESS' ? 'Buyer confirmed & paid: leave feedback' : 'Gig Completed';
+                }
+                else if (gig.isWorkerSubmittedFeedback && lastRoleUsed === "GIG_WORKER") {
+                    return status === 'PENDING' || status === 'ACCEPTED' || status === 'IN_PROGRESS' ? `🕒Confirm, pay and review ${workerName}` : 'Gig Completed';
+                }
 
-        case 'awaiting':
-            if (lastRoleUsed === "GIG_WORKER") {
-                return status === 'PENDING' || status === 'ACCEPTED' || status === 'IN_PROGRESS' || status === 'COMPLETED' ? 'Request payment' : 'Payment requested';
-            }
-            return status === 'PENDING' || status === 'ACCEPTED' || status === 'IN_PROGRESS' || status === 'COMPLETED' ? 'Pay' : 'Payment done';
-        case 'requested':
-            return 'Payment requested';
-        case 'confirmed':
-            return 'Payment done';
-        default:
-            return '';
+            case 'awaiting':
+                if (lastRoleUsed === "GIG_WORKER") {
+                    return status === 'PENDING' || status === 'ACCEPTED' || status === 'IN_PROGRESS' || status === 'COMPLETED' ? 'Request payment' : 'Payment requested';
+                }
+                return status === 'PENDING' || status === 'ACCEPTED' || status === 'IN_PROGRESS' || status === 'COMPLETED' ? 'Pay' : 'Payment done';
+            case 'requested':
+                return 'Payment requested';
+            case 'confirmed':
+                return 'Payment done';
+            default:
+                return '';
         }
     };
 
@@ -94,37 +92,37 @@ const GigDetailsComponent = ({ gig, setGig }: GigDetailsProps) => {
         // TODO: API call to backend, e.g., POST /api/gigs/worker/${gig.id}/action
         // Body: { action: 'start' } or { action: 'complete', details: {...} }
         try {
-        await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API
-        // On success, update gig state locally or refetch
-        if (action === 'accept' && gig) {
-            setGig({ ...gig, status: 'ACCEPTED' });
-            // Show success message
-        }
-        else if (action === 'start' && gig) {
-            setGig({ ...gig, status: 'IN_PROGRESS' });
-            // Show success message
-        } else if (action === 'complete' && gig) {
-            setGig({ ...gig, status: 'COMPLETED' });
-            if (lastRoleUsed === "GIG_WORKER") {
-                // Redirect to feedback page if worker
-                router.push(`/user/${user?.uid}/worker/gigs/${gig.id}/feedback`);
-            } else {
-                // Redirect to payment page if buyer
-                router.push(`/user/${user?.uid}/buyer/gigs/${gig.id}/feedback`);
+            await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API
+            // On success, update gig state locally or refetch
+            if (action === 'accept' && gig) {
+                setGig({ ...gig, status: 'ACCEPTED' });
+                // Show success message
             }
+            else if (action === 'start' && gig) {
+                setGig({ ...gig, status: 'IN_PROGRESS' });
+                // Show success message
+            } else if (action === 'complete' && gig) {
+                setGig({ ...gig, status: 'COMPLETED' });
+                if (lastRoleUsed === "GIG_WORKER") {
+                    // Redirect to feedback page if worker
+                    router.push(`/user/${user?.uid}/worker/gigs/${gig.id}/feedback`);
+                } else {
+                    // Redirect to payment page if buyer
+                    router.push(`/user/${user?.uid}/buyer/gigs/${gig.id}/feedback`);
+                }
 
-        }
-        else if (action === 'awaiting') {
-            if (lastRoleUsed === "GIG_WORKER") {
-            setGig({ ...gig, status: 'REQUESTED' });
-            // Show success message
             }
-        }
-        else if (action === 'confirmed') {
-            setGig({ ...gig, status: 'CONFIRMED' });
-            // Show success message
-        }
-        // Handle other actions
+            else if (action === 'awaiting') {
+                if (lastRoleUsed === "GIG_WORKER") {
+                    setGig({ ...gig, status: 'REQUESTED' });
+                    // Show success message
+                }
+            }
+            else if (action === 'confirmed') {
+                setGig({ ...gig, status: 'CONFIRMED' });
+                // Show success message
+            }
+            // Handle other actions
         } catch (err: unknown) {
             if (err instanceof Error) {
                 console.error(err.message || `Failed to ${action} gig.`);
@@ -144,7 +142,7 @@ const GigDetailsComponent = ({ gig, setGig }: GigDetailsProps) => {
                 </button> */}
                 <Logo width={70} height={70} />
                 <h1 className={styles.pageTitle}>{gig.role} Gig</h1>
-            {/* <span className={`${styles.statusBadge} ${getStatusBadgeClass(gig.status)}`}>{gig.status.replace('_', ' ')}</span> */}
+                {/* <span className={`${styles.statusBadge} ${getStatusBadgeClass(gig.status)}`}>{gig.status.replace('_', ' ')}</span> */}
                 <button onClick={() => router.push(`/chat?gigId=${gig.id}`)} className={styles.chatButton}>
                     <MessageSquare size={40} fill="#ffffff" className={styles.icon} />
                 </button>
@@ -154,9 +152,9 @@ const GigDetailsComponent = ({ gig, setGig }: GigDetailsProps) => {
             <section className={styles.gigDetailsSection}>
                 <div className={styles.gigDetailsHeader}>
                     <h2 className={styles.sectionTitle}>Gig Details</h2>
-                    <Calendar size={26} color='#ffffff'/>
+                    <Calendar size={26} color='#ffffff' />
                 </div>
-            
+
                 {/* <div className={styles.gigDetailsRow}>
                     <span className={styles.label}>Buyer:</span>
                     <span className={styles.detailValue}>{gig.buyerName}</span>
@@ -165,7 +163,7 @@ const GigDetailsComponent = ({ gig, setGig }: GigDetailsProps) => {
                     <span className={styles.label}>Location:</span>
                     <span className={styles.detailValue}>
                         {gig.location}
-                        <a href={`https://maps.google.com/?q=${encodeURIComponent(gig.location)}`} target="_blank" rel="noopener noreferrer" style={{marginLeft: '0.5rem'}}>(View Map)</a>
+                        <a href={`https://maps.google.com/?q=${encodeURIComponent(gig.location)}`} target="_blank" rel="noopener noreferrer" style={{ marginLeft: '0.5rem' }}>(View Map)</a>
                     </span>
                 </div>
                 <div className={styles.gigDetailsRow}>
@@ -186,10 +184,10 @@ const GigDetailsComponent = ({ gig, setGig }: GigDetailsProps) => {
                 </div>
                 {/* Hiring Manager Info - Placeholder as it's not in current GigDetails interface */}
 
-                {lastRoleUsed === "GIG_WORKER"&& (
+                {lastRoleUsed === "GIG_WORKER" && (
                     <div className={styles.gigDetailsRow}>
                         <span className={styles.label}>Hiring manager:</span>
-                        <span className={styles.detailValue}>{gig.hiringManager} <br/> {gig.hiringManagerUsername}</span>
+                        <span className={styles.detailValue}>{gig.hiringManager} <br /> {gig.hiringManagerUsername}</span>
                     </div>
                 )}
 
@@ -209,7 +207,7 @@ const GigDetailsComponent = ({ gig, setGig }: GigDetailsProps) => {
                     <div className={styles.workerDetailsContainer}>
                         <div className={styles.workerDetails}>
                             <span className={styles.workerName}>
-                            {worker.name}
+                                {worker.name}
                             </span>
                             {worker.gigs} Able gigs, {worker.experience} years experience
                         </div>
@@ -229,7 +227,7 @@ const GigDetailsComponent = ({ gig, setGig }: GigDetailsProps) => {
             {/* Special Instructions Section */}
             {gig.specialInstructions && (
                 <section className={styles.instructionsSection}>
-                    <h2 className={styles.specialInstTitle}><Info size={18}/>Special Instructions</h2>
+                    <h2 className={styles.specialInstTitle}><Info size={18} />Special Instructions</h2>
                     <p className={styles.specialInstructions}>{gig.specialInstructions}</p>
                 </section>
             )}
@@ -266,7 +264,7 @@ const GigDetailsComponent = ({ gig, setGig }: GigDetailsProps) => {
                     isActive={gig.status === 'COMPLETED'}
                     isDisabled={gig.status !== 'COMPLETED'}
                 />
-                
+
                 {/* Info messages for other statuses
                 {gig.status === 'AWAITING_BUYER_CONFIRMATION' && (
                 <p className={styles.actionInfoText}>Waiting for buyer to confirm completion.</p>
@@ -297,12 +295,12 @@ const GigDetailsComponent = ({ gig, setGig }: GigDetailsProps) => {
                 <button onClick={() => handleGigAction('reportIssue')} className={styles.secondaryActionButton} disabled={isActionLoading}>
                     Report an Issue
                 </button>
-                    {/* <button onClick={() => handleGigAction('delegate')} className={styles.secondaryActionButton} disabled={isActionLoading}>
+                {/* <button onClick={() => handleGigAction('delegate')} className={styles.secondaryActionButton} disabled={isActionLoading}>
                         <Share2 size={16} style={{marginRight: '8px'}}/> Delegate Gig
                     </button> */}
             </section>
-            
-            
+
+
 
             {/* Footer (Home Button) */}
             {/* <footer className={styles.footer}>
