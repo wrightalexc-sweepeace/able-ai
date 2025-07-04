@@ -2,6 +2,7 @@
 import { db } from "@/lib/drizzle/db"; // Correct path to your Drizzle instance
 import { UsersTable, GigWorkerProfilesTable, BuyerProfilesTable, userAppRoleEnum, activeRoleContextEnum, NotificationPreferencesTable } from "@/lib/drizzle/schema";
 import { eq } from "drizzle-orm";
+import admin from "./firebase/firebase-server";
 
 // Define a comprehensive AppUser type
 export interface AppUser {
@@ -180,57 +181,71 @@ export function getPgUserLastViewVisited(pgUser: PgUserSelect | null, currentRol
   return currentRoleContext === 'BUYER' ? pgUser.lastViewVisitedBuyer : pgUser.lastViewVisitedWorker;
 }
 
-export function isPgUserAdmin(pgUser: PgUserSelect | null): boolean {
-  return pgUser?.appRole === 'ADMIN';
-}
-
-export function isPgUserSuperAdmin(pgUser: PgUserSelect | null): boolean {
-  return pgUser?.appRole === 'SUPER_ADMIN';
-}
-
-export function isPgUserQA(pgUser: PgUserSelect | null): boolean {
-  return pgUser?.appRole === 'QA';
-}
-
-export function isPgUserActualBuyer(pgUser: PgUserSelect | null): boolean {
-  return !!pgUser?.isBuyer;
-}
-
-export function isPgUserActualGigWorker(pgUser: PgUserSelect | null): boolean {
-  return !!pgUser?.isGigWorker;
-}
-
 // --- UTILITY FUNCTIONS BASED ON APP USER ---
 
-export function getUserLastRoleUsed(user: AppUser | null): typeof activeRoleContextEnum.enumValues[number] | null {
-  return user?.lastRoleUsed || null;
+export async function isUserAuthenticated(idToken: string) {
+  try {
+    const data = await admin.auth().verifyIdToken(idToken);
+    return {data: true, uid: data.uid};
+  } catch (error) {
+    console.error("Invalid or expired token:", error);
+    throw "Invalid or expired token"
+  }
 }
 
-export function getUserLastViewVisited(user: AppUser | null, currentRoleContext?: typeof activeRoleContextEnum.enumValues[number] | null): string | null {
-  if (!user) return null;
-  const roleToUse = currentRoleContext || user.lastRoleUsed;
-  if (!roleToUse) return null;
-  return roleToUse === 'BUYER' ? user.lastViewVisitedBuyer : user.lastViewVisitedWorker;
+export async function isUserAdmin(idToken: string) {
+  try {
+    const data = await admin.auth().verifyIdToken(idToken);
+
+    return {data: data?.role === 'ADMIN', uid: data.uid};
+  } catch (error) {
+    console.error("Invalid or expired token:", error);
+    throw "Invalid or expired token"
+  }
 }
 
-export function isUserAdmin(user: AppUser | null): boolean {
-  return user?.appRole === 'ADMIN';
+export async function isUserSuperAdmin(idToken: string): Promise<boolean> {
+  try {
+    const data = await admin.auth().verifyIdToken(idToken);
+
+    return data?.role === 'SUPER_ADMIN';
+  } catch (error) {
+    console.error("Invalid or expired token:", error);
+    throw "Invalid or expired token"
+  }
 }
 
-export function isUserSuperAdmin(user: AppUser | null): boolean {
-  return user?.appRole === 'SUPER_ADMIN';
+export async function isUserQA(idToken: string): Promise<boolean> {
+  try {
+    const data = await admin.auth().verifyIdToken(idToken);
+
+    return data?.role === 'QA';
+  } catch (error) {
+    console.error("Invalid or expired token:", error);
+    throw "Invalid or expired token"
+  }
 }
 
-export function isUserQA(user: AppUser | null): boolean {
-  return user?.appRole === 'QA';
+export async function isUserBuyer(idToken: string): Promise<boolean> {
+  try {
+    const data = await admin.auth().verifyIdToken(idToken);
+
+    return data?.role === 'BUYER';
+  } catch (error) {
+    console.error("Invalid or expired token:", error);
+    throw "Invalid or expired token"
+  }
 }
 
-export function isUserBuyer(user: AppUser | null): boolean {
-  return !!user?.isBuyer;
-}
+export async function isUserGigWorker(idToken: string): Promise<boolean> {
+  try {
+    const data = await admin.auth().verifyIdToken(idToken);
 
-export function isUserGigWorker(user: AppUser | null): boolean {
-  return !!user?.isGigWorker;
+    return data?.role === 'GIG_WORKER';
+  } catch (error) {
+    console.error("Invalid or expired token:", error);
+    throw "Invalid or expired token"
+  }
 }
 
 // --- FUNCTION TO UPDATE USER CONTEXT IN POSTGRESQL (lastRoleUsed, lastViewVisited) ---

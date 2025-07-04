@@ -111,7 +111,9 @@ export default function SettingsPage() {
     try {
       let userProfile = null
       if (user?.uid) {
-        userProfile = await getProfileInfoUserAction(user?.uid);
+        const { success, data, error } = await getProfileInfoUserAction(user?.token);
+        if (!success) throw error;
+        userProfile = data;
       }
 
       const data: UserSettingsData = {
@@ -184,25 +186,27 @@ export default function SettingsPage() {
     event.preventDefault();
     clearMessages();
     setIsSavingProfile(true);
-    // TODO: API call to update profile (e.g., PUT /api/users/profile)
-    // This API would update both PostgreSQL and relevant Firestore public profile fields
+  
     try {
-      // Simulate API call
-      await updateUserProfileAction({fullName: displayName, phone: phone},user?.uid)
-      await getProfileInfoUserAction(user?.uid)
-      toast.success("Profile updated successfully")
+      const { success: updateSuccess, error: updateError } = await updateUserProfileAction(
+        { fullName: displayName, phone: phone },
+        user?.token
+      );
+  
+      if (!updateSuccess) throw updateError;
+  
+      const { success: fetchSuccess, error: fetchError } = await getProfileInfoUserAction(user?.token);
+      if (!fetchSuccess) throw fetchError;
+  
+      toast.success("Profile updated successfully");
       setSuccessMessage("Profile updated successfully!");
-      // Optionally, trigger a refetch if name changes often or rely on context update if displayName is part of User object
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message || "Failed to update profile.");
-      } else {
-        setError("Failed to update profile.");
-      }
+      const message = err instanceof Error ? err.message : "Failed to update profile.";
+      setError(message);
     } finally {
       setIsSavingProfile(false);
     }
-  };
+  };  
 
   const handleChangePassword = async (event: FormEvent) => {
     event.preventDefault();
@@ -337,32 +341,47 @@ export default function SettingsPage() {
   };
 
   async function handleToggleEmailNotification() {
-    const result = await updateNotificationEmailAction({emailProferences: !notificationEmail}, user?.uid)
-    if (result !== undefined) {
-      setNotificationEmail(result);
-    }else {
-      setNotificationEmail(notificationEmail);
-    }
-  }
-
-  async function handleToggleSmsNotification() {
-    const result = await updateNotificationSmsAction({smsGigAlerts: !notificationSms}, user?.uid)
-    if (result !== undefined) {
-      setNotificationSms(result);
+    const { success, data, error } = await updateNotificationEmailAction(
+      { emailProferences: !notificationEmail },
+      user?.token
+    );
+  
+    if (success) {
+      setNotificationEmail(data || notificationEmail);
     } else {
-      setNotificationSms(notificationSms)
+      console.error("Failed to update email notifications", error);
+      setNotificationEmail(notificationEmail); // Revert to current value
     }
-
   }
-
+  
+  async function handleToggleSmsNotification() {
+    const { success, data, error } = await updateNotificationSmsAction(
+      { smsGigAlerts: !notificationSms },
+      user?.token
+    );
+  
+    if (success) {
+      setNotificationSms(data || notificationSms);
+    } else {
+      console.error("Failed to update SMS notifications", error);
+      setNotificationSms(notificationSms);
+    }
+  }
+  
   async function handleToggleProfileVisibility() {
-    const result = await updateProfileVisibilityAction({profileVisibility: !profileVisibility}, user?.uid)
-    if (result !== undefined) {
-      setProfileVisibility(result);
-    }else {
-      setProfileVisibility(profileVisibility)
+    const { success, data, error } = await updateProfileVisibilityAction(
+      { profileVisibility: !profileVisibility },
+      user?.token
+    );
+  
+    if (success) {
+      setProfileVisibility(data || profileVisibility);
+    } else {
+      console.error("Failed to update profile visibility", error);
+      setProfileVisibility(profileVisibility);
     }
   }
+  
 
 
   if (isLoadingSettings) {
