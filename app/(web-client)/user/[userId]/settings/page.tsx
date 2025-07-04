@@ -709,13 +709,15 @@ export default function SettingsPage() {
                   style={{
                     display: "flex",
                     alignItems: "center",
-                    gap: "0.5rem",
+                    justifyContent: "center",
                   }}
                 >
                   <div className={styles.stripeIconWrapper}>
                     <AlertTriangle size={28} color="#ffc107" />
                   </div>
-                  <h3 className={styles.modalTitle}>Get Paid with Stripe!</h3>
+                  <h3 style={{
+                    marginLeft: "10px"
+                  }}>Get Paid with Stripe!</h3>
                 </div>
                 <button
                   onClick={() => setShowStripeModal(false)}
@@ -743,9 +745,16 @@ export default function SettingsPage() {
                     : "Connect My Bank Account"}
                 </button>
               </div>
-
+              <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+              >
               <AlertTriangle size={20} color="#ffc107" />
               <p>Not connected</p>
+              </div>
             </div>
           </div>
         )}
