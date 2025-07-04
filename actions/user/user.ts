@@ -83,7 +83,7 @@ export const updateProfileVisibilityAction = async (
     return { success: true, data: updatedUsers[0]?.profileVisibility };
   } catch (error) {
     console.error("Error updating profile visibility", error);
-    return { success: false, error };
+    return { success: false, error, data: !updateData.profileVisibility };
   }
 };
 
@@ -116,10 +116,18 @@ export const updateNotificationEmailAction = async (
       .where(eq(NotificationPreferencesTable.userId, pgUser.id))
       .returning();
 
-    return { success: true, data: updatedUsers[0]?.emailGigUpdates };
+    const changed = updatedUsers[0]?.emailGigUpdates === updateData.emailProferences
+
+    if (changed) {
+      return { success: true, data: updatedUsers[0]?.emailGigUpdates };
+    }
+    else {
+      throw "Error updating notification email preferences"
+    }
+
   } catch (error) {
     console.error("Error updating email preferences", error);
-    return { success: false, error };
+    return { success: false, error, data: !updateData.emailProferences };
   }
 };
 
@@ -155,6 +163,6 @@ export const updateNotificationSmsAction = async (
     return { success: true, data: updatedUsers[0]?.smsGigAlerts };
   } catch (error) {
     console.error("Error updating SMS preferences", error);
-    return { success: false, error };
+    return { success: false, error, data: updateData.smsGigAlerts };
   }
 };

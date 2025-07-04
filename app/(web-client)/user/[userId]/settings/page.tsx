@@ -341,44 +341,44 @@ export default function SettingsPage() {
   };
 
   async function handleToggleEmailNotification() {
-    const { success, data, error } = await updateNotificationEmailAction(
-      { emailProferences: !notificationEmail },
-      user?.token
-    );
-  
-    if (success) {
-      setNotificationEmail(data || notificationEmail);
-    } else {
+    try {
+      const { data, error } = await updateNotificationEmailAction(
+        { emailProferences: !notificationEmail },
+        user?.token
+      );
+        setNotificationEmail(error ? notificationEmail : data);
+        toast.success("Email notification updated")
+    } catch (error) {
       console.error("Failed to update email notifications", error);
-      setNotificationEmail(notificationEmail); // Revert to current value
+      setNotificationEmail(notificationEmail); // Revert to current value 
     }
   }
   
   async function handleToggleSmsNotification() {
-    const { success, data, error } = await updateNotificationSmsAction(
-      { smsGigAlerts: !notificationSms },
-      user?.token
-    );
-  
-    if (success) {
-      setNotificationSms(data || notificationSms);
-    } else {
+    try {
+      const {data, error } = await updateNotificationSmsAction(
+        { smsGigAlerts: !notificationSms },
+        user?.token
+      );
+        setNotificationSms(error ? notificationSms : data);
+    } catch (error) {
       console.error("Failed to update SMS notifications", error);
       setNotificationSms(notificationSms);
     }
   }
   
   async function handleToggleProfileVisibility() {
-    const { success, data, error } = await updateProfileVisibilityAction(
-      { profileVisibility: !profileVisibility },
-      user?.token
-    );
-  
-    if (success) {
-      setProfileVisibility(data || profileVisibility);
-    } else {
+    try {
+      const { data, error } = await updateProfileVisibilityAction(
+        { profileVisibility: !profileVisibility },
+        user?.token
+      );
+
+      setProfileVisibility(error ? profileVisibility : data);
+    } catch (error) {
       console.error("Failed to update profile visibility", error);
       setProfileVisibility(profileVisibility);
+      
     }
   }
   
