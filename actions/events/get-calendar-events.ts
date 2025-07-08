@@ -113,7 +113,7 @@ export async function getCalendarEvents({ userId, role, isViewQA }: { userId: st
     return { events: calendarEvents };
 
   } catch (error: any) {
-    console.error("Error registering user:", error);
+    console.error("Error fetching events:", error);
     return { error: error.message, events: [], status: 500 };
   }
 }
