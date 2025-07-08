@@ -15,7 +15,7 @@ async function fetchBuyerGigDetails(userId: string, gigId: string): Promise<GigD
 
   const { gig, status } = await getGigDetails({ gigId, userId, role: 'buyer', isViewQA });
 
-  if (!gig && status !== 200) return null;
+  if (!gig || status !== 200) return null;
 
   return gig;
 }
@@ -36,7 +36,7 @@ export default function BuyerGigDetailsPage() {
     const shouldFetch = (user?.claims.role === "QA" && pageUserId && gigId) ||
       (user && authUserId === pageUserId && gigId);
 
-    if (shouldFetch) {
+    if (!shouldFetch) {
       setIsLoadingGig(true);
       fetchBuyerGigDetails(pageUserId, gigId) // pageUserId is correct here (worker's ID from URL)
         .then(data => {

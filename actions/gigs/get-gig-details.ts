@@ -74,7 +74,6 @@ function getMappedStatus(internalStatus: string): GigDetails['status'] {
 
 export async function getGigDetails({ gigId, userId, role, isViewQA }: { gigId: string; userId: string; role?: 'buyer' | 'worker'; isViewQA?: boolean; }) {
 
-  console.log('getting details')
   if (isViewQA) return { gig: getMockedQAData(gigId) as GigDetails, status: 200 };
 
   if (!userId) {
