@@ -4,6 +4,7 @@ import { Calendar as BigCalendar, Formats, momentLocalizer, View } from 'react-b
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import styles from './AppCalendar.module.css';
+import { CalendarEvent } from './CalendarEventComponent';
 
 const localizer = momentLocalizer(moment);
 
@@ -12,7 +13,7 @@ type AppCalendarProps<TEvent> = {
   date: Date;
   view?: View;
   defaultView?: View;
-  onSelectEvent?: (event: TEvent) => void;
+  onSelectEvent?: (event: CalendarEvent) => void;
   onNavigate?: (date: Date) => void;
   onView?: (view: View) => void;
   minTime?: Date;
@@ -104,7 +105,7 @@ const AppCalendar = <TEvent extends object>({
 
   // Wrap onSelectEvent to match the expected signature
   const handleSelectEvent = onSelectEvent
-    ? (event: object) => onSelectEvent(event as TEvent)
+    ? (event: object) => onSelectEvent(event as CalendarEvent)
     : undefined;
 
   // Wrap eventPropGetter to match the expected signature
