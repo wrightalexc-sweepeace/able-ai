@@ -9,6 +9,7 @@ import type GigDetails from '@/app/types/GigDetailsTypes';
 import Image from 'next/image';
 import { useAuth } from '@/context/AuthContext';
 import { getLastRoleUsed } from '@/lib/last-role-used';
+import { updateGigOfferStatus } from '@/actions/gigs/update-gig-offer-status';
 
 
 const formatGigDate = (isoDate: string) => new Date(isoDate).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
@@ -27,6 +28,8 @@ const calculateDuration = (startIso: string, endIso: string): string => {
 };
 
 interface GigDetailsProps {
+    userId: string;
+    role: 'buyer' | 'worker';
     gig: GigDetails;
     setGig: (gig: GigDetails) => void; // Function to update gig state
 }
@@ -41,7 +44,7 @@ const worker = {
 
 const workerName = worker.name.split(" ")[0];
 
-const GigDetailsComponent = ({ gig, setGig }: GigDetailsProps) => {
+const GigDetailsComponent = ({ userId, role, gig, setGig }: GigDetailsProps) => {
     const router = useRouter();
     const [isActionLoading, setIsActionLoading] = useState(false);
     const { user } = useAuth();
@@ -95,6 +98,7 @@ const GigDetailsComponent = ({ gig, setGig }: GigDetailsProps) => {
             await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API
             // On success, update gig state locally or refetch
             if (action === 'accept' && gig) {
+                await updateGigOfferStatus({ gigId: gig.id, userId, role, action });
                 setGig({ ...gig, status: 'ACCEPTED' });
                 // Show success message
             }

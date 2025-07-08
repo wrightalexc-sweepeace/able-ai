@@ -7,57 +7,20 @@ import { Loader2 } from 'lucide-react';
 import styles from './GigDetailsPage.module.css';
 import GigDetailsComponent from '@/app/components/gigs/GigDetails';
 import type GigDetails from '@/app/types/GigDetailsTypes'; // Adjust import path as needed
+import { getGigDetails } from '@/actions/gigs/get-gig-details';
 
-
-// Define interface for Gig details
-
-// Mock function to fetch gig details - replace with actual API call
 async function fetchWorkerGigDetails(userId: string, gigId: string): Promise<GigDetails | null> {
   console.log("Fetching gig details for worker:", userId, "gig:", gigId);
-  // API call: GET /api/gigs/worker/${gigId} (ensure backend auth checks worker owns this gig)
-  // Or: GET /api/gigs/${gigId} and then verify workerId matches on client
-  await new Promise(resolve => setTimeout(resolve, 700));
 
-  // Example Data (should match the actual GigDetails interface)
-  if (gigId === "gig123-accepted") {
-    return {
-      id: "gig123-accepted", 
-      role: "Lead Bartender", 
-      gigTitle: "Corporate Mixer Event",
-      buyerName: "Innovate Solutions Ltd.", buyerAvatarUrl: "/images/logo-placeholder.svg",
-      date: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(), // In 2 days
-      startTime: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).setHours(18,0,0,0).toString(),
-      endTime: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).setHours(23,0,0,0).toString(),
-      location: "123 Business Rd, Tech Park, London, EC1A 1BB",
-      hourlyRate: 25, estimatedEarnings: 125,
-      specialInstructions: "Focus on high-quality cocktails. Dress code: smart black. Setup starts 30 mins prior. Contact person on site: Jane (07xxxxxxxxx).",
-      status: "IN_PROGRESS", // Initially pending
-      hiringManager: "Jane Smith",
-      hiringManagerUsername: "@janesmith",
-      isBuyerSubmittedFeedback: true,
-      isWorkerSubmittedFeedback: false,
-    };
-  }
-  if (gigId === "gig456-inprogress") {
-     return {
-      id: "gig456-inprogress", 
-      role: "Event Server", 
-      gigTitle: "Wedding Reception",
-      buyerName: "Alice & Bob",
-      date: new Date().toISOString(), // Today
-      startTime: new Date(new Date().setHours(16, 0, 0, 0)).toISOString(),
-      endTime: new Date(new Date().setHours(22, 0, 0, 0)).toISOString(),
-      location: "The Manor House, Countryside Lane, GU21 5ZZ",
-      hourlyRate: 18, estimatedEarnings: 108,
-      specialInstructions: "Silver service required. Liaise with the event coordinator Sarah upon arrival.",
-      status: "IN_PROGRESS", // Initially completed
-      hiringManager: "Sarah Johnson",
-      hiringManagerUsername: "@sarahjohnson",
-      isBuyerSubmittedFeedback: true,
-      isWorkerSubmittedFeedback: false,
-    };
-  }
-  return null; // Or throw an error
+  const isViewQA = localStorage.getItem('isViewQA') === 'true';
+
+  if (isViewQA) await new Promise(resolve => setTimeout(resolve, 700));
+
+  const { gig, status } = await getGigDetails({ gigId, userId, role: 'worker', isViewQA });
+
+  if (!gig && status !== 200) return null;
+
+  return gig;
 }
 
 export default function WorkerGigDetailsPage() {
@@ -76,8 +39,8 @@ export default function WorkerGigDetailsPage() {
   useEffect(() => {
     if (loadingAuth) return; // Wait for auth state to be clear
 
-    const shouldFetch = (user?.claims.role === "QA" && pageUserId && gigId) || 
-                        (user && authUserId === pageUserId && gigId);
+    const shouldFetch = (user?.claims.role === "QA" && pageUserId && gigId) ||
+      (user && authUserId === pageUserId && gigId);
 
     if (shouldFetch) {
       setIsLoadingGig(true);
@@ -123,9 +86,7 @@ export default function WorkerGigDetailsPage() {
     return <div className={styles.container}><div className={styles.pageWrapper}><p className={styles.emptyState}>Gig details not found.</p></div></div>;
   }
 
-  
-
   return (
-    <GigDetailsComponent gig={gig} setGig={setGig} />
+    <GigDetailsComponent userId={pageUserId} role="worker" gig={gig} setGig={setGig} />
   );
 } 
