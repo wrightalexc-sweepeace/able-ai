@@ -31,14 +31,14 @@ export default function BuyerGigDetailsPage() {
   const [gig, setGig] = useState<GigDetails | null>(null);
 
   useEffect(() => {
-    if (loadingAuth) return; // Wait for auth state to be clear
+    if (loadingAuth || !authUserId) return; // Wait for auth state to be clear
 
     const shouldFetch = (user?.claims.role === "QA" && pageUserId && gigId) ||
       (user && authUserId === pageUserId && gigId);
 
     if (!shouldFetch) {
       setIsLoadingGig(true);
-      fetchBuyerGigDetails(pageUserId, gigId) // pageUserId is correct here (worker's ID from URL)
+      fetchBuyerGigDetails(authUserId, gigId) // pageUserId is correct here (worker's ID from URL)
         .then(data => {
           if (data) {
             setGig(data);

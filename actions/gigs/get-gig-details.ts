@@ -2,7 +2,7 @@
 
 import { db } from "@/lib/drizzle/db";
 import { and, eq } from "drizzle-orm";
-import { GigsTable } from "@/lib/drizzle/schema";
+import { GigsTable, UsersTable } from "@/lib/drizzle/schema";
 import moment from "moment";
 import GigDetails from "@/app/types/GigDetailsTypes";
 
@@ -56,7 +56,7 @@ function getMappedStatus(internalStatus: string): GigDetails['status'] {
 
   switch (internalStatus) {
     case 'PENDING_WORKER_ACCEPTANCE':
-      return 'REQUESTED';
+      return 'PENDING';
     case 'ACCEPTED':
       return 'ACCEPTED';
     case 'COMPLETED':
@@ -81,9 +81,20 @@ export async function getGigDetails({ gigId, userId, role, isViewQA }: { gigId: 
   }
 
   try {
+    const user = await db.query.UsersTable.findFirst({
+      where: eq(UsersTable.firebaseUid, userId),
+      columns: {
+        id: true,
+      }
+    });
+
+    if (!user) {
+      return { error: 'User is not found', gig: {} as GigDetails, status: 404 };
+    }
+
     const columnConditionId = role === 'buyer' ? GigsTable.buyerUserId : GigsTable.workerUserId;
     const gig = await db.query.GigsTable.findFirst({
-      where: and(eq(columnConditionId, userId), eq(GigsTable.id, gigId)),
+      where: and(eq(columnConditionId, user.id), eq(GigsTable.id, gigId)),
       with: {
         buyer: {
           columns: {
@@ -133,7 +144,7 @@ export async function getGigDetails({ gigId, userId, role, isViewQA }: { gigId: 
       isBuyerSubmittedFeedback: isBuyerSubmittedFeedback,
     };
 
-    return { gig: gigDetails };
+    return { gig: gigDetails, status: 200 };
 
   } catch (error: any) {
     console.error("Error fetching gig:", error);

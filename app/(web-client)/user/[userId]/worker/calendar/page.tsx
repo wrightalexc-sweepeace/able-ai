@@ -78,7 +78,7 @@ const WorkerCalendarPage = () => {
   const redirectGigOfferHandler = (event: CalendarEvent) => {
     if (event?.status !== 'OFFER') return;
 
-    router.push(`/user/${pageUserId}/buyer/gigs/${event.id || 'gig123-accepted'}`);
+    router.push(`/user/${pageUserId}/worker/gigs/${event.id || 'gig123-accepted'}`);
   };
 
   // Calendar navigation handler

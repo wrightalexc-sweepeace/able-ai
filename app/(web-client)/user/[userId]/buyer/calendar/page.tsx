@@ -83,9 +83,7 @@ const BuyerCalendarPage = () => {
   }, [activeFilter]);
 
   const redirectGigOfferHandler = (event: CalendarEvent) => {
-    if(event?.status !== 'OFFER') return;
-
-    router.push(`/user/${pageUserId}/worker/gigs/${event.id}`);
+    router.push(`/user/${pageUserId}/buyer/gigs/${event.id}`);
   };
 
   // Calendar navigation handler
