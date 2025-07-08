@@ -25,7 +25,7 @@ const mapEventStatus = (status: string): EventStatusEnumType => {
 
   
   const mappedStatus: Record<string, EventStatusEnumType> = {
-    [PENDING_WORKER_ACCEPTANCE]: EventStatusEnum.PENDING,
+    [PENDING_WORKER_ACCEPTANCE]: EventStatusEnum.OFFER,
     [ACCEPTED]: EventStatusEnum.ACCEPTED,
     [DECLINED_BY_WORKER]: EventStatusEnum.UNAVAILABLE,
     [IN_PROGRESS]: EventStatusEnum.IN_PROGRESS,
