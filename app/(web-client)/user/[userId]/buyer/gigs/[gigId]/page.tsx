@@ -36,7 +36,7 @@ export default function BuyerGigDetailsPage() {
     const shouldFetch = (user?.claims.role === "QA" && pageUserId && gigId) ||
       (user && authUserId === pageUserId && gigId);
 
-    if (!shouldFetch) {
+    if (shouldFetch) {
       setIsLoadingGig(true);
       fetchBuyerGigDetails(authUserId, gigId) // pageUserId is correct here (worker's ID from URL)
         .then(data => {
