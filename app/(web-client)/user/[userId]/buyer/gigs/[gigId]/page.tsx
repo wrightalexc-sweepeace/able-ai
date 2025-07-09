@@ -1,19 +1,19 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useAuth } from "@/context/AuthContext";
+import { useAuth, User } from "@/context/AuthContext";
 import { useParams } from "next/navigation"; // Added useParams
 import GigDetailsComponent from "@/app/components/gigs/GigDetails";
 import type GigDetails from "@/app/types/GigDetailsTypes"; // Assuming you have this type defined
 import { getGigDetails } from "@/actions/gigs/get-gig-details";
 
-async function fetchBuyerGigDetails(userId: string, gigId: string): Promise<GigDetails | null> {
-  console.log("Fetching gig details for worker:", userId, "gig:", gigId);
-  const isViewQA = localStorage.getItem('isViewQA') === 'true';
+async function fetchBuyerGigDetails(user: User, gigId: string): Promise<GigDetails | null> {
+  console.log("Fetching gig details for buyer:", user?.uid, "gig:", gigId);
+  const isViewQA = user?.claims.role === "QA";
 
   if (isViewQA) await new Promise(resolve => setTimeout(resolve, 700));
 
-  const { gig, status } = await getGigDetails({ gigId, userId, role: 'buyer', isViewQA });
+  const { gig, status } = await getGigDetails({ gigId, userId: user?.uid, role: 'buyer', isViewQA });
 
   if (!gig || status !== 200) return null;
 
@@ -38,7 +38,7 @@ export default function BuyerGigDetailsPage() {
 
     if (shouldFetch) {
       setIsLoadingGig(true);
-      fetchBuyerGigDetails(authUserId, gigId) // pageUserId is correct here (worker's ID from URL)
+      fetchBuyerGigDetails(user, gigId) // pageUserId is correct here (worker's ID from URL)
         .then(data => {
           if (data) {
             setGig(data);

@@ -2,21 +2,20 @@
 
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext';
+import { useAuth, User } from '@/context/AuthContext';
 import { Loader2 } from 'lucide-react';
 import styles from './GigDetailsPage.module.css';
 import GigDetailsComponent from '@/app/components/gigs/GigDetails';
 import type GigDetails from '@/app/types/GigDetailsTypes'; // Adjust import path as needed
 import { getGigDetails } from '@/actions/gigs/get-gig-details';
 
-async function fetchWorkerGigDetails(userId: string, gigId: string): Promise<GigDetails | null> {
-  console.log("Fetching gig details for worker:", userId, "gig:", gigId);
-
-  const isViewQA = localStorage.getItem('isViewQA') === 'true';
+async function fetchWorkerGigDetails(user: User, gigId: string): Promise<GigDetails | null> {
+  console.log("Fetching gig details for worker:", user?.uid, "gig:", gigId);
+  const isViewQA = user?.claims.role === "QA";
 
   if (isViewQA) await new Promise(resolve => setTimeout(resolve, 700));
 
-  const { gig, status } = await getGigDetails({ gigId, userId, role: 'worker', isViewQA });
+  const { gig, status } = await getGigDetails({ gigId, userId: user?.uid, role: 'buyer', isViewQA });
 
   if (!gig || status !== 200) return null;
 
@@ -44,7 +43,7 @@ export default function WorkerGigDetailsPage() {
 
     if (shouldFetch) {
       setIsLoadingGig(true);
-      fetchWorkerGigDetails(pageUserId, gigId) // pageUserId is correct here (worker's ID from URL)
+      fetchWorkerGigDetails(user, gigId) // pageUserId is correct here (worker's ID from URL)
         .then(data => {
           if (data) {
             setGig(data);
