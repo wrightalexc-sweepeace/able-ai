@@ -112,6 +112,8 @@ export async function getGigDetails({ gigId, userId, role, isViewQA }: { gigId: 
       },
     });
 
+    if (isViewQA && !gig) return { gig: getMockedQAData(gigId) as GigDetails, status: 200 };
+
     if (!gig) {
       return { error: 'gig not found', gig: {} as GigDetails, status: 404 };
     }
