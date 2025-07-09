@@ -6,10 +6,32 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { signOut } from "firebase/auth";
 import { authClient } from "@/lib/firebase/clientApp";
+import useFCM from "@/lib/firebase/fcm/useFCM";
+import { sendPushNotificationAction } from "@/actions/notifications/notifications";
 
 export default function Home() {
   const { user, loading } = useAuth();
   const [isProjectInfoOpen, setIsProjectInfoOpen] = useState(false);
+  const { messages, fcmToken } = useFCM();
+
+  const [token, setToken] = useState("");
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+
+  const handleSendNotification = async () => {
+    if (!token || !title || !description) {
+      alert("Completa todos los campos.");
+      return;
+    }
+
+    try {
+      await sendPushNotificationAction(token, title, description);
+      alert("✅ Notificación enviada correctamente");
+    } catch (error) {
+      console.error("Error al enviar la notificación:", error);
+      alert("❌ Error al enviar la notificación");
+    }
+  };
 
   const handleSignOut = async () => {
     try {
@@ -478,6 +500,35 @@ export default function Home() {
           <button onClick={() => toggleIsViewQA()} className={styles.secondary}>
             Toggle isViewQA (currently {String(user?.claims.role === "QA")})
           </button>
+        </section>
+        <section className={styles.userSection}>
+          <h2>Send Push Notification</h2>
+          <div className={styles.form}>
+            <input
+              type="text"
+              placeholder="Token"
+              value={token}
+              onChange={(e) => setToken(e.target.value)}
+              className={styles.input}
+            />
+            <input
+              type="text"
+              placeholder="Title"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              className={styles.input}
+            />
+            <input
+              type="text"
+              placeholder="Description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className={styles.input}
+            />
+            <button onClick={handleSendNotification} className={styles.primary}>
+              Send Notification
+            </button>
+          </div>
         </section>
       </main>
     </div>
