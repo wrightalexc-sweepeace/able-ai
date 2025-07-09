@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter, useParams } from "next/navigation";
 import AppCalendar from '@/app/components/shared/AppCalendar';
 import CalendarHeader from '@/app/components/shared/CalendarHeader';
 import CalendarEventComponent from '@/app/components/shared/CalendarEventComponent';
@@ -33,6 +34,9 @@ function filterEvents(events: CalendarEvent[], filter: string): CalendarEvent[] 
 
 const WorkerCalendarPage = () => {
   const { user } = useAuth();
+  const router = useRouter();
+  const params = useParams();
+  const pageUserId = params.userId as string;
 
   // Set default view based on screen size
   const [view, setView] = useState<View>(() => {
@@ -52,7 +56,7 @@ const WorkerCalendarPage = () => {
       const isViewQA = localStorage.getItem('isViewQA') === 'true';
       const res = await getCalendarEvents({ userId: user.uid, role: 'worker', isViewQA });
 
-      if(res.error) throw new Error(res.error);
+      if (res.error) throw new Error(res.error);
 
       const data: CalendarEvent[] = res.events;
 
@@ -70,6 +74,12 @@ const WorkerCalendarPage = () => {
       setView('day');
     }
   }, [activeFilter]);
+
+  const redirectGigOfferHandler = (event: CalendarEvent) => {
+    if (event?.status !== 'OFFER') return;
+
+    router.push(`/user/${pageUserId}/worker/gigs/${event.id || 'gig123-accepted'}`);
+  };
 
   // Calendar navigation handler
   const handleNavigate = (action: 'TODAY' | 'PREV' | 'NEXT') => {
@@ -113,6 +123,7 @@ const WorkerCalendarPage = () => {
           view={view}
           onView={setView}
           onNavigate={setDate}
+          onSelectEvent={redirectGigOfferHandler}
           components={{
             event: (props: any) => (
               <CalendarEventComponent {...props} userRole="worker" />

@@ -82,6 +82,9 @@ const BuyerCalendarPage = () => {
     fetchEvents();
   }, [activeFilter]);
 
+  const redirectGigOfferHandler = (event: CalendarEvent) => {
+    router.push(`/user/${pageUserId}/buyer/gigs/${event.id}`);
+  };
 
   // Calendar navigation handler
   const handleNavigate = (action: "TODAY" | "PREV" | "NEXT") => {
@@ -119,6 +122,7 @@ const BuyerCalendarPage = () => {
           view={view}
           onView={setView}
           onNavigate={setDate}
+          onSelectEvent={redirectGigOfferHandler}
           components={{
             event: (({ event }: { event: CalendarEvent; title: string }) => (
               <CalendarEventComponent event={event} />
