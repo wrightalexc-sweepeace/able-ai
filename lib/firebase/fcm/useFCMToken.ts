@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { getToken, isSupported } from "firebase/messaging";
 import useNotificationPermission from "./useNotificationPermission";
 import { messaging } from "@/lib/firebase/clientApp";
-import { saveNotificationFcmTokenAction } from "@/actions/notifications/notifications";
+import { subscribeFcmTopicAction } from "@/actions/notifications/notifications";
 
 const useFCMToken = () => {
   const permission = useNotificationPermission();
@@ -23,6 +23,7 @@ const useFCMToken = () => {
           })
           console.log(fcmToken);
           setFcmToken(fcmToken);
+          subscribeFcmTopicAction(fcmToken)
         }
       }
     };

@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 
@@ -25,6 +25,10 @@ import Loader from "@/app/components/shared/Loader";
 import Logo from "@/app/components/brand/Logo";
 import { useAuth } from "@/context/AuthContext";
 import { useAiSuggestionBanner } from "@/hooks/useAiSuggestionBanner";
+import {
+  getUnreadCountFromDB,
+  resetUnreadCountInDB,
+} from "@/actions/notifications/useUnreadNotifications";
 
 // Define this interface if you add the optional summary section
 // interface UpcomingGigSummary {
@@ -38,9 +42,19 @@ import { useAiSuggestionBanner } from "@/hooks/useAiSuggestionBanner";
 export default function WorkerDashboardPage() {
   const params = useParams();
   const pageUserId = params.userId as string;
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    getUnreadCountFromDB().then(setUnreadCount).catch(console.error);
+  }, []);
+
+  const handleClick = async () => {
+    await resetUnreadCountInDB();
+    setUnreadCount(0);
+  };
 
   const {
-    user
+    user,
     // TODO: Handle authError if necessary
   } = useAuth();
   const authUserId = user?.uid;
@@ -109,10 +123,7 @@ export default function WorkerDashboardPage() {
 
   // Show loader if auth is loading, or if user is not authenticated (as redirect will happen)
   // or if pageUserId is not the authenticated user's ID (again, redirect will happen)
-  if (
-    !user ||
-    (user && authUserId !== pageUserId)
-  ) {
+  if (!user || (user && authUserId !== pageUserId)) {
     return <Loader />;
   }
 
@@ -137,7 +148,11 @@ export default function WorkerDashboardPage() {
           )}
           {/* Notification Icon */}
           {uid && (
-            <Link href={`/user/${uid}/notifications`} passHref>
+            <Link
+              href={`/user/${uid}/notifications`}
+              passHref
+              onClick={handleClick}
+            >
               <button
                 className={styles.notificationButton}
                 aria-label="Notifications"
@@ -149,6 +164,27 @@ export default function WorkerDashboardPage() {
                   height={40}
                 />
               </button>
+              {unreadCount > 0 && (
+                <span
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    right: 0,
+                    background: "red",
+                    color: "white",
+                    borderRadius: "50%",
+                    width: 18,
+                    height: 18,
+                    fontSize: 12,
+                    fontWeight: "bold",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    pointerEvents: "none",
+                  }}
+                >
+                </span>
+              )}
             </Link>
           )}
         </header>

@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Users, CalendarDays, CreditCard, LayoutDashboard } from "lucide-react";
@@ -16,11 +16,22 @@ import Logo from "@/app/components/brand/Logo";
 import styles from "./HomePage.module.css";
 import { useAuth } from "@/context/AuthContext";
 import { useAiSuggestionBanner } from "@/hooks/useAiSuggestionBanner";
+import { getUnreadCountFromDB, resetUnreadCountInDB } from "@/actions/notifications/useUnreadNotifications";
 
 export default function BuyerDashboardPage() {
   const {
     user: userPublicProfile
   } = useAuth();
+    const [unreadCount, setUnreadCount] = useState(0);
+  
+    useEffect(() => {
+      getUnreadCountFromDB().then(setUnreadCount).catch(console.error);
+    }, []);
+  
+    const handleClick = async () => {
+      await resetUnreadCountInDB();
+      setUnreadCount(0);
+    };
 
   const uid = userPublicProfile?.uid;
 
@@ -98,6 +109,7 @@ export default function BuyerDashboardPage() {
             <Link
               href={`/user/${userPublicProfile.uid}/notifications`}
               passHref
+              onClick={handleClick}
             >
               <button
                 className={styles.notificationButton}
@@ -110,6 +122,27 @@ export default function BuyerDashboardPage() {
                   height={40}
                 />
               </button>
+              {unreadCount > 0 && (
+                  <span
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      right: 0,
+                      background: "red",
+                      color: "white",
+                      borderRadius: "50%",
+                      width: 18,
+                      height: 18,
+                      fontSize: 12,
+                      fontWeight: "bold",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      pointerEvents: "none",
+                    }}
+                  >
+                  </span>
+                )}
             </Link>
           )}
         </header>

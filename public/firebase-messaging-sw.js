@@ -1,7 +1,7 @@
 importScripts('https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/10.13.2/firebase-messaging-compat.js');
 
-console.log("Service Worker: initializing...");
+console.log("🛠 Service Worker: initializing...");
 
 (async () => {
   try {
@@ -15,17 +15,64 @@ console.log("Service Worker: initializing...");
     };
 
     firebase.initializeApp(firebaseConfig);
-    console.log("Service Worker: Firebase initialized", firebase);
 
     const messaging = firebase.messaging();
-    console.log("Service Worker: Messaging initialized", messaging);
 
-    messaging.onBackgroundMessage((payload) => {
-      console.log("[SW] 🎯 Background message received:", payload);
+    messaging.onBackgroundMessage(async (payload) => {
 
       if (!payload?.notification) {
-        console.warn("[SW] ⚠️ payload.notification not found");
+        console.warn("[SW][MSG] ⚠️ payload.notification not found");
         return;
+      }
+
+      try {
+        const dbOpenRequest = indexedDB.open("notifications-db", 5);
+
+        dbOpenRequest.onupgradeneeded = (event) => {
+          const db = event.target.result;
+          if (!db.objectStoreNames.contains("counters")) {
+            db.createObjectStore("counters", { keyPath: "id" });
+          }
+        };
+
+        dbOpenRequest.onsuccess = async () => {
+          const db = dbOpenRequest.result;
+
+          let currentCount = 0;
+          try {
+            const tx = db.transaction("counters", "readonly");
+            const store = tx.objectStore("counters");
+            const getRequest = store.get("unread");
+
+            getRequest.onsuccess = () => {
+              currentCount = getRequest.result?.count || 0;
+
+              const txWrite = db.transaction("counters", "readwrite");
+              const writeStore = txWrite.objectStore("counters");
+              const putRequest = writeStore.put({ id: "unread", count: currentCount + 1 });
+
+              putRequest.onsuccess = () => {
+                console.log("[SW][DB] ✅ Unread count updated to:", currentCount + 1);
+              };
+
+              putRequest.onerror = () => {
+                console.error("[SW][DB] ❌ Failed to write unread count:", putRequest.error);
+              };
+            };
+
+            getRequest.onerror = () => {
+              console.error("[SW][DB] ❌ Failed to read unread count:", getRequest.error);
+            };
+          } catch (innerErr) {
+            console.error("[SW][DB] ❌ IndexedDB error during read/write:", innerErr);
+          }
+        };
+
+        dbOpenRequest.onerror = () => {
+          console.error("[SW][DB] ❌ Failed to open DB:", dbOpenRequest.error);
+        };
+      } catch (err) {
+        console.error("[SW][MSG] ❌ Error interacting with IndexedDB:", err);
       }
 
       const { title, body, icon } = payload.notification;
@@ -38,12 +85,11 @@ console.log("Service Worker: initializing...");
         }
       };
 
-      console.log("[SW] 📢 Showing notification:", notificationTitle, notificationOptions);
       self.registration.showNotification(notificationTitle, notificationOptions);
     });
 
+
     self.addEventListener("notificationclick", (event) => {
-      console.log("[SW] 🖱️ Notification clicked:", event.notification);
       event.notification.close();
 
       const urlToOpen = event.notification?.data?.url || "/";
@@ -51,17 +97,15 @@ console.log("Service Worker: initializing...");
         clients.matchAll({ type: "window", includeUncontrolled: true }).then((windowClients) => {
           for (const client of windowClients) {
             if (client.url === urlToOpen && "focus" in client) {
-              console.log("[SW] 🔄 Focusing existing window:", client.url);
               return client.focus();
             }
           }
-          console.log("[SW] 🆕 Opening new window:", urlToOpen);
           return clients.openWindow(urlToOpen);
         })
       );
     });
 
   } catch (error) {
-    console.error("[SW] ❌ Error loading Firebase config:", error);
+    console.error("[SW] ❌ Fatal error initializing Firebase messaging:", error);
   }
 })();

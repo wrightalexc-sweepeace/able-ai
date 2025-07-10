@@ -1,7 +1,8 @@
 "use server";
 import admin from "@/lib/firebase/firebase-server";
+import { getMessaging } from "firebase-admin/messaging";
 
-type PriorityType = "high" | "normal" | undefined
+type PriorityType = "high" | "normal" | undefined;
 
 export const sendPushNotificationAction = async (
   token: string,
@@ -9,11 +10,10 @@ export const sendPushNotificationAction = async (
   body: string
 ) => {
   const message = {
-    token: token,
+    topic: "general",
     notification: {
-        title,
-        body,
-        imageUrl: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/User_icon_2.svg/2048px-User_icon_2.svg.png"
+      title,
+      body,
     },
     data: {
       customKey: "customValue",
@@ -26,7 +26,6 @@ export const sendPushNotificationAction = async (
         Urgency: "high",
       },
       notification: {
-        icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/User_icon_2.svg/2048px-User_icon_2.svg.png",
         click_action: "http://localhost:3000",
       },
     },
@@ -34,13 +33,22 @@ export const sendPushNotificationAction = async (
 
   try {
     const response = await admin.messaging().send(message);
-    return {seccess: true, data:response};
+
+    return { success: true, data: response };
   } catch (error: unknown) {
-    return {seccess: false, data: null};
+    return { success: false, data: null, error };
   }
 };
 
-export const saveNotificationFcmTokenAction = async (
-) => {
-  return null
+export const subscribeFcmTopicAction = async (token: string) => {
+  try {
+    const messaging = getMessaging();
+    if (!token) throw "Token required";
+    const result = await (messaging as any).subscribeToTopic(token, "general");
+
+    return { success: true, data: result };
+  } catch (error) {
+    console.log("Error subscribing to topic", error);
+    return { success: false, error: error };
+  }
 };
