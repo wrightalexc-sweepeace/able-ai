@@ -55,11 +55,11 @@ export default function CancelOrAmendGigDetailsPage() {
 
   const handleCancelGig = async () => {
     if (!user?.uid || !gigId || !lastRoleUsed) return;
+
     setIsLoading(true);
-    setTimeout(() => {
-      new Promise((resolve, reject) => resolve(0));
-      setIsLoading(false)
-    }, 5000);
+    const role = lastRoleUsed.includes('BUYER') ? 'buyer' : 'worker';
+    await updateGigOfferStatus({ gigId, role, userId: user?.uid, action: 'cancel' });
+    setIsLoading(false)
   };
 
   return (

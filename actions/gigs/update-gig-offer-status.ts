@@ -23,7 +23,6 @@ export async function updateGigOfferStatus({ gigId, userId, role, action }: { gi
       }
     });
 
-
     if (!user) {
       return { error: 'User is not found', status: 404 };
     }
