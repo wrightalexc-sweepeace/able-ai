@@ -1,76 +1,78 @@
-import React from 'react';
+import React, { useState, ChangeEvent } from 'react';
 import styles from './LocationMapLinkBubble.module.css';
-import { MapPin, ExternalLink } from 'lucide-react';
-// import InputBubble from './InputBubble'; // If using InputBubble internally
+import { MapPin } from 'lucide-react';
 
 interface LocationMapLinkBubbleProps {
   id?: string;
   name?: string;
   label?: string;
-  mapUrl?: string;
-  linkText?: string;
-  locationText?: string;
+  onLocationSet?: (coords: { lat: number; lon: number } | null) => void;
   disabled?: boolean;
-  // Props for potential future input integration
-  // value?: string;
-  // onChange?: (event: ChangeEvent<HTMLInputElement>) => void;
-  // placeholder?: string;
+  placeholder?: string;
 }
 
-const LocationMapLinkBubble = React.forwardRef<HTMLDivElement, LocationMapLinkBubbleProps>( // Ref could be for a wrapper or a specific input if added
+const LocationMapLinkBubble = React.forwardRef<HTMLInputElement, LocationMapLinkBubbleProps>(
   ({
-    label = "Location",
-    mapUrl,
-    linkText = "View on Map",
-    locationText,
+    id,
+    name,
+    label = "Paste your Google Maps link here",
+    onLocationSet,
     disabled,
-    // value,
-    // onChange,
-    // placeholder,
+    placeholder = "e.g., https://www.google.com/maps/@..."
   }, ref) => {
-    // const inputId = id || name; // For internal input if used
+    const [url, setUrl] = useState('');
+    const [error, setError] = useState('');
+    const inputId = id || name || 'location-map-link';
+
+    const handleUrlChange = (event: ChangeEvent<HTMLInputElement>) => {
+      const newUrl = event.target.value;
+      setUrl(newUrl);
+      setError(''); // Clear error on new input
+
+      if (newUrl.trim() === '') {
+        if (onLocationSet) {
+          onLocationSet(null);
+        }
+        return;
+      }
+
+      // Regex to find lat and lon from Google Maps URL
+      const regex = /@(-?\d+\.\d+),(-?\d+\.\d+)/;
+      const match = newUrl.match(regex);
+
+      if (match && match[1] && match[2]) {
+        const lat = parseFloat(match[1]);
+        const lon = parseFloat(match[2]);
+        if (onLocationSet) {
+          onLocationSet({ lat, lon });
+        }
+      } else {
+        setError('Invalid Google Maps URL. Please paste the full URL.');
+        if (onLocationSet) {
+          onLocationSet(null);
+        }
+      }
+    };
 
     return (
-      <div className={`${styles.locationBubbleWrapper} ${styles.alignUser}`} ref={ref}>
+      <div className={`${styles.locationBubbleWrapper} ${styles.alignUser}`}>
         <div className={styles.locationBubbleContent}>
           {label && <p className={styles.label}>{label}</p>}
-
-          {mapUrl ? (
-            <a
-              href={mapUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`${styles.mapLink} ${disabled ? styles.disabledLink : ''}`}
-              onClick={(e) => disabled && e.preventDefault()}
-            >
-              <MapPin size={16} />
-              <span>{linkText}</span>
-              <ExternalLink size={14} className={styles.externalIcon}/>
-            </a>
-          ) : locationText ? (
-            <div className={styles.locationTextDisplay}>
-              <MapPin size={16} />
-              <span>{locationText}</span>
-            </div>
-          ) : (
-            <div className={styles.locationPlaceholder}>
-              <MapPin size={16} />
-              <span>Location details will appear here or become interactive.</span>
-              {/* 
-              // Example for future InputBubble integration:
-              <InputBubble
-                id={inputId}
-                name={name}
-                type="text"
-                placeholder={placeholder || "Enter location"}
-                value={value || ""}
-                onChange={onChange}
-                disabled={disabled}
-                // ref={inputSpecificRef} // if InputBubble accepts ref
-              />
-              */}
-            </div>
-          )}
+          <div className={styles.inputWrapper}>
+            <MapPin size={18} className={styles.inputIcon} />
+            <input
+              id={inputId}
+              name={name}
+              type="url"
+              value={url}
+              onChange={handleUrlChange}
+              placeholder={placeholder}
+              disabled={disabled}
+              className={styles.locationInput}
+              ref={ref}
+            />
+          </div>
+          {error && <p className={styles.errorMessage}>{error}</p>}
         </div>
       </div>
     );

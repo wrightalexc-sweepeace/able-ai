@@ -45,14 +45,13 @@ const baseInitialSteps: OnboardingStep[] = [
   {
     id: 7,
     type: "botMessage",
-    content: "Where are you located and how far are you willing to travel?",
+    content: "Where are you located? You can drop a pin on Google Maps and paste the link here.",
     dependsOn: 6,
   },
   {
     id: 8,
-    type: "userResponseDisplay",
-    senderType: "user",
-    content: "Bonville road, SW16 RT7, I can travel 30 miles",
+    type: "locationMapLink",
+    name: "location",
     dependsOn: 7,
   },
   {
