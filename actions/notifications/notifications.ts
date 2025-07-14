@@ -6,15 +6,14 @@ import { isUserAuthenticated } from "@/lib/user.server";
 import { ERROR_CODES } from "@/lib/responses/errors";
 
 type NotificationStatus = "unread" | "read" | "actioned" | "deleted";
-export enum NotificationType {
-  OFFER = "offer",
-  PAYMENT = "payment",
-  GIG_UPDATE = "gigUpdate",
-  BADGE = "badge",
-  REFERRAL = "referral",
-  ACTION_REQUIRED = "actionRequired",
-  SYSTEM = "system",
-}
+export type NotificationType =
+  | "offer"
+  | "payment"
+  | "gigUpdate"
+  | "badge"
+  | "referral"
+  | "actionRequired"
+  | "system";
 
 export const subscribeFcmTopicAction = async (token: string, uid: string) => {
   try {
