@@ -1,24 +1,14 @@
 import { Pencil } from 'lucide-react';
 import styles from './UpdateGig.module.css';
 import { getLastRoleUsed } from '@/lib/last-role-used';
-import { InternalGigStatusEnumType } from '@/app/types/GigDetailsTypes';
-
-interface GigDetailsData {
-	location: string;
-	date: string;
-	time: string;
-	payPerHour: string;
-	totalPay: string;
-	summary: string; // Optional summary field
-	status?: InternalGigStatusEnumType; // Optional summary field
-}
+import { GigReviewDetailsData } from '@/app/types/GigDetailsTypes';
 
 interface GigDetailsProps {
-	editedGigDetails: GigDetailsData;
+	editedGigDetails: GigReviewDetailsData;
 	handleEditDetails: () => void;
-	setEditedGigDetails: React.Dispatch<React.SetStateAction<GigDetailsData>>;
+	setEditedGigDetails: React.Dispatch<React.SetStateAction<GigReviewDetailsData>>;
 	isEditingDetails?: boolean; // Optional prop to control edit mode
-	gigDetailsData: GigDetailsData; // Assuming this is passed for read-only view
+	gigDetailsData: GigReviewDetailsData; // Assuming this is passed for read-only view
 	isOnConfirm?: boolean;
 }
 
@@ -38,7 +28,9 @@ const AmendGig = ({ gigDetailsData, editedGigDetails, handleEditDetails, isEditi
 	return (
 		<div className={styles.card}>
 			<div className={styles.detailsHeader}>
-				<h2 className={styles.detailsTitle}>Updated gig details:</h2>
+				<h2 className={styles.detailsTitle}>
+					{gigDetailsData.status === 'CANCELLED' ? 'Cancelled' : 'Updated'} gig details:
+				</h2>
 				<Pencil className={styles.editIcon} onClick={handleEditDetails} />
 			</div>
 			{isEditingDetails ? (

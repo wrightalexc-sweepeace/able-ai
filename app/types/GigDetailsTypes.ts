@@ -51,3 +51,13 @@ export default interface GigDetails {
   isWorkerSubmittedFeedback?: boolean; // Indicates if worker has submitted feedback
   isBuyerSubmittedFeedback?: boolean; // Indicates if buyer has submitted feedback
 }
+
+export interface GigReviewDetailsData {
+	location: string;
+	date: string;
+	time: string;
+	payPerHour: string;
+	totalPay: string;
+	summary: string; // Optional summary field
+	status?: GigStatusEnumType; // Optional summary field
+}

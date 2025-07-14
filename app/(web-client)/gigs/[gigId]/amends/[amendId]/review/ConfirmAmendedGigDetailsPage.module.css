@@ -212,4 +212,9 @@
 .suggestButton:hover,
 .declineButton:hover {
   background-color: #707075;
-} 
+}
+
+.loaderContainer{
+  display: flex;
+  justify-content: center;
+}
