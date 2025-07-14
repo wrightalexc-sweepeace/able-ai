@@ -6,6 +6,9 @@ import { useAuth } from "@/context/AuthContext";
 import { getLastRoleUsed } from "@/lib/last-role-used";
 import Logo from "@/app/components/brand/Logo";
 import UpdateGig from "@/app/components/gigs/UpdateGig";
+import { useParams } from "next/navigation";
+import { updateGigOfferStatus } from "@/actions/gigs/update-gig-offer-status";
+import SubmitButton from "@/app/components/form/SubmitButton";
 
 // Mock data - replace with actual props or state
 const gigDetailsData = {
@@ -19,11 +22,14 @@ const gigDetailsData = {
 };
 
 export default function CancelOrAmendGigDetailsPage() {
+  const params = useParams();
+  const gigId = params.gigId as string;
   const { user } = useAuth();
   const [userMessage, setUserMessage] = useState("");
   const [isEditingDetails, setIsEditingDetails] = useState(false); // Add state for edit mode
   const [editedGigDetails, setEditedGigDetails] = useState(gigDetailsData); // State for edited details
-  const lastRoleUsed = getLastRoleUsed()
+  const [isLoading, setIsLoading] = useState(false);
+  const lastRoleUsed = getLastRoleUsed();
   /*
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -45,6 +51,15 @@ export default function CancelOrAmendGigDetailsPage() {
     console.log("Submit for Confirmation clicked. Message:", userMessage);
     console.log("Edited Gig Details:", editedGigDetails);
     // TODO: Call API to submit amendment request
+  };
+
+  const handleCancelGig = async () => {
+    if (!user?.uid || !gigId || !lastRoleUsed) return;
+
+    setIsLoading(true);
+    const role = lastRoleUsed.includes('BUYER') ? 'buyer' : 'worker';
+    await updateGigOfferStatus({ gigId, role, userId: user?.uid, action: 'cancel' });
+    setIsLoading(false)
   };
 
   return (
@@ -92,13 +107,29 @@ export default function CancelOrAmendGigDetailsPage() {
       </main>
 
       {/* Action Button Area */}
-      <button
-        type="button"
-        className={`${styles.submitButton} ${lastRoleUsed === "GIG_WORKER" ? styles.workerBtn : styles.buyerBtn}`}
-        onClick={handleSubmit}
-      >
-        Submit for Confirmation
-      </button>
+      <div className={`${styles.actionBtnContainer}`}>
+        <button
+          type="button"
+          className={`${styles.submitButton} ${lastRoleUsed === "GIG_WORKER" ? styles.workerBtn : styles.buyerBtn}`}
+          onClick={handleSubmit}
+        >
+          Submit for Confirmation
+        </button>
+        <SubmitButton
+          type="button"
+          className={`${styles.submitButton} ${styles.cancelBtn} ${isLoading ? styles.loadingCancelSubmit : ''}`}
+          onClick={handleCancelGig}
+          disabled={isLoading}
+          loading={isLoading}
+        >
+          <div className={styles.cancelBtnText}>
+            <span>
+              Cancel GIG
+            </span>
+            (This might incur charges or penalties)
+          </div>
+        </SubmitButton>
+      </div>
     </div>
   );
 }

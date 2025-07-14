@@ -23,7 +23,6 @@ const mapEventStatus = (status: string): EventStatusEnumType => {
     DISPUTED,
   ] = gigStatusEnum.enumValues;
 
-  
   const mappedStatus: Record<string, EventStatusEnumType> = {
     [PENDING_WORKER_ACCEPTANCE]: EventStatusEnum.OFFER,
     [ACCEPTED]: EventStatusEnum.ACCEPTED,
