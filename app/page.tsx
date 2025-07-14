@@ -1,37 +1,18 @@
 "use client";
 import Image from "next/image";
 import styles from "./page.module.css";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { signOut } from "firebase/auth";
 import { authClient } from "@/lib/firebase/clientApp";
 import useFCM from "@/lib/firebase/fcm/useFCM";
-import { sendPushNotificationAction } from "@/actions/notifications/notifications";
+import { createNotificationAction, getAllNotificationsAction } from "@/actions/notifications/notifications";
 
 export default function Home() {
   const { user, loading } = useAuth();
   const [isProjectInfoOpen, setIsProjectInfoOpen] = useState(false);
   const { messages, fcmToken } = useFCM();
-
-  const [token, setToken] = useState("");
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-
-  const handleSendNotification = async () => {
-    if (!token || !title || !description) {
-      alert("Completa todos los campos.");
-      return;
-    }
-
-    try {
-      await sendPushNotificationAction(token, title, description);
-      alert("✅ Notificación enviada correctamente");
-    } catch (error) {
-      console.error("Error al enviar la notificación:", error);
-      alert("❌ Error al enviar la notificación");
-    }
-  };
 
   const handleSignOut = async () => {
     try {
@@ -42,6 +23,15 @@ export default function Home() {
     }
   };
 
+  useEffect(()=>{
+    if(user?.token){
+      async function fetchNotifications() {
+        const result = await getAllNotificationsAction(user?.token || "")
+      }
+      fetchNotifications()
+    }
+  },[user?.token])
+
   const toggleIsViewQA = async () => {
     try {
       const currentIsQA = user?.claims.role === "QA";
@@ -51,6 +41,36 @@ export default function Home() {
       console.error("Error toggling isViewQA and refetching user:", error);
     }
   };
+    const [form, setForm] = useState({
+    userUid: "",
+    topic: "",
+    title: "",
+    body: "",
+    image: "",
+    path: "",
+  });
+
+  const [loading2, setLoading] = useState(false);
+  const [response, setResponse] = useState<null | { success: boolean; message: string }>(null);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setForm(prev => ({ ...prev, [name]: value }));
+  };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    const res = await createNotificationAction(form)
+
+    console.log(res);
+    
+    const json = await res;
+    setResponse({ success: json.success, message: json.success ? "Enviado" : "Error al enviar" });
+    setLoading(false);
+  };
+
   return (
     <div className={styles.page}>
       <main className={styles.main}>
@@ -501,35 +521,27 @@ export default function Home() {
             Toggle isViewQA (currently {String(user?.claims.role === "QA")})
           </button>
         </section>
-        <section className={styles.userSection}>
-          <h2>Send Push Notification</h2>
-          <div className={styles.form}>
-            <input
-              type="text"
-              placeholder="Token"
-              value={token}
-              onChange={(e) => setToken(e.target.value)}
-              className={styles.input}
-            />
-            <input
-              type="text"
-              placeholder="Title"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className={styles.input}
-            />
-            <input
-              type="text"
-              placeholder="Description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              className={styles.input}
-            />
-            <button onClick={handleSendNotification} className={styles.primary}>
-              Send Notification
-            </button>
-          </div>
-        </section>
+    <div className="max-w-xl mx-auto p-6 bg-white shadow-md rounded-xl mt-8">
+      <h1 className="text-2xl font-bold mb-4">Enviar Notificación</h1>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <input type="text" name="userUid" placeholder="userUid (opcional)" value={form.userUid} onChange={handleChange} className="w-full input input-bordered" />
+        <input type="text" name="topic" placeholder="topic (opcional)" value={form.topic} onChange={handleChange} className="w-full input input-bordered" />
+        <input type="text" name="title" placeholder="Título" required value={form.title} onChange={handleChange} className="w-full input input-bordered" />
+        <textarea name="body" placeholder="Cuerpo" required value={form.body} onChange={handleChange} className="w-full textarea textarea-bordered" />
+        <input type="text" name="image" placeholder="URL de Imagen" value={form.image} onChange={handleChange} className="w-full input input-bordered" />
+        <input type="text" name="path" placeholder="Ruta de redirección (opcional)" value={form.path} onChange={handleChange} className="w-full input input-bordered" />
+
+        <button type="submit" disabled={loading} className="btn btn-primary w-full">
+          {loading ? "Enviando..." : "Enviar Notificación"}
+        </button>
+      </form>
+
+      {response && (
+        <div className={`mt-4 text-center font-semibold ${response.success ? "text-green-600" : "text-red-600"}`}>
+          {response.message}
+        </div>
+      )}
+    </div>
       </main>
     </div>
   );

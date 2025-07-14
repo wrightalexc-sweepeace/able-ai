@@ -201,8 +201,9 @@ export function getPgUserLastViewVisited(
 
 // --- UTILITY FUNCTIONS BASED ON APP USER ---
 
-export async function isUserAuthenticated(idToken: string) {
+export async function isUserAuthenticated(idToken?: string) {
   try {
+    if (!idToken) throw new Error("Id token is required")
     const data = await admin.auth().verifyIdToken(idToken);
     return { data: true, uid: data.uid };
   } catch (error) {

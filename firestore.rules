@@ -88,14 +88,22 @@ service cloud.firestore {
 
       allow delete: if false;
 
-
       match /notifications/{notificationId} {
-        allow read, delete: if isOwner(userId);
-        allow create: if false;
-        allow update: if isOwner(userId)
-                        && request.resource.data.keys().hasOnly(['isRead'])
-                        && request.resource.data.isRead == true
-                        && resource.data.isRead == false;
+        allow read, delete, update: if isAuthenticated()
+          && (
+            (resource.data.userUid == request.auth.uid)
+            || (resource.data.topic != null)
+          );
+
+        allow create: if isBackendService(); // Solo desde el backend
+
+        allow update: if isAuthenticated()
+          && (
+            (resource.data.userUid == request.auth.uid)
+            || (resource.data.topic != null)
+          )
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status'])
+          && request.resource.data.status in ['read', 'unread', 'actioned', 'deleted'];
       }
 
       // --- AI Chat Collection for User-Specific AI Chats ---
