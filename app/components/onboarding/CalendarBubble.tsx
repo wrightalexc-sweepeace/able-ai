@@ -7,7 +7,7 @@ interface CalendarBubbleProps {
     id?: string;
     name?: string;
     label?: string;
-    value?: any; // Value could be a Date object or string
+    value?: Date | string; // Value could be a Date object or string
     onChange?: (date: Date | null) => void;
     disabled?: boolean;
     // Add other props needed for a date picker component
