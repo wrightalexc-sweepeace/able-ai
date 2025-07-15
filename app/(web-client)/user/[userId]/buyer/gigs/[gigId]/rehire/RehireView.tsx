@@ -17,10 +17,9 @@ type ChatMessage = {
 
 interface RehireViewProps {
   loadingAuth: boolean;
-  isLoadingData: boolean;
   error: string | null;
-  originalGigInfo: OriginalGigInfo | null;
-  workerToRehire: RehireWorkerData | null;
+  originalGigInfo?: OriginalGigInfo | null;
+  workerToRehire?: RehireWorkerData | null;
   chatMessages: ChatMessage[];
   chatContainerRef: React.RefObject<HTMLDivElement>;
   handleEditDetails: () => void;
@@ -31,7 +30,6 @@ interface RehireViewProps {
 
 const RehireView: React.FC<RehireViewProps> = ({
   loadingAuth,
-  isLoadingData,
   error,
   originalGigInfo,
   workerToRehire,
@@ -42,7 +40,7 @@ const RehireView: React.FC<RehireViewProps> = ({
   isBooking,
   userId,
 }) => {
-  if (loadingAuth || isLoadingData) {
+  if (loadingAuth) {
     return (
       <div className={styles.loadingContainer}>
         <Loader2 className="animate-spin" size={32} /> Loading Rehire Information...

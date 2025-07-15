@@ -38,5 +38,5 @@ export default async function RehirePage({ params }: RehirePageProps) {
   const { userId, gigId } = await params;
   // Fetch mock data server-side
   const data = await fetchRehireData(userId, gigId);
-  return <RehireContainer initialData={data} userId={userId} gigId={gigId} />;
+  return <RehireContainer initialData={data} userId={userId} />;
 }

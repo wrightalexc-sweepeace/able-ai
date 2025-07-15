@@ -2,15 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/context/AuthContext";
-import ChatBotLayout from "@/app/components/onboarding/ChatBotLayout";
-import MessageBubble from "@/app/components/onboarding/MessageBubble";
-import RehireWorkerCard from "@/app/components/buyer/RehireWorkerCard";
-import Link from "next/link";
-import { Home, Loader2 } from "lucide-react";
-import styles from "./RehirePage.module.css";
 import RehireView from "./RehireView";
-
-const BOT_AVATAR_SRC = "/images/logo-placeholder.svg";
 
 export interface OriginalGigInfo {
   workerName: string;
@@ -39,16 +31,12 @@ interface RehireContainerProps {
     workerForRehire: RehireWorkerData;
   } | null;
   userId: string;
-  gigId: string;
 }
 
-const RehireContainer: React.FC<RehireContainerProps> = ({ initialData, userId, gigId }) => {
+const RehireContainer: React.FC<RehireContainerProps> = ({ initialData, userId }) => {
   const { user, loading: loadingAuth } = useAuth();
   const chatContainerRef = useRef<HTMLDivElement>(null) as React.RefObject<HTMLDivElement>;
 
-  const [originalGigInfo, setOriginalGigInfo] = useState<OriginalGigInfo | null>(initialData ? initialData.originalGig : null);
-  const [workerToRehire, setWorkerToRehire] = useState<RehireWorkerData | null>(initialData ? initialData.workerForRehire : null);
-  const [isLoadingData, setIsLoadingData] = useState(false);
   const [isBooking, setIsBooking] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [chatMessages, setChatMessages] = useState<
@@ -82,32 +70,33 @@ const RehireContainer: React.FC<RehireContainerProps> = ({ initialData, userId, 
   }, [chatMessages]);
 
   const handleEditDetails = () => {
-    if (!workerToRehire) return;
+    if (!initialData?.workerForRehire) return;
     alert("Gig detail editing form would open here. You'd adjust proposed date, time, hours.");
   };
 
   const handleBookWorker = async () => {
-    if (!workerToRehire || !originalGigInfo) return;
+    if (!initialData?.workerForRehire || !initialData?.originalGig) return;
     setIsBooking(true);
     setError(null);
     const bookingPayload = {
       buyerUserId: user?.uid || userId,
-      workerId: workerToRehire.workerId,
-      role: workerToRehire.role,
+      workerId: initialData.workerForRehire.workerId,
+      role: initialData.workerForRehire.role,
       proposedDate: "Next Friday",
       proposedStartTime: "18:00",
-      proposedHours: workerToRehire.proposedHours,
-      proposedRate: workerToRehire.proposedHourlyRate,
-      location: originalGigInfo.originalLocation,
+      proposedHours: initialData.workerForRehire.proposedHours,
+      proposedRate: initialData.workerForRehire.proposedHourlyRate,
+      location: initialData?.originalGig.originalLocation,
     };
     try {
       await new Promise((resolve) => setTimeout(resolve, 1500));
+      console.log('send data here: ', bookingPayload);
       setChatMessages((prev) => [
         ...prev,
         {
           id: Date.now(),
           type: "bot",
-          content: `Great! ${workerToRehire.name} has been booked for the new gig. Details are in your calendar.`,
+          content: `Great! ${initialData.workerForRehire.name} has been booked for the new gig. Details are in your calendar.`,
         },
       ]);
     } catch (err) {
@@ -132,10 +121,9 @@ const RehireContainer: React.FC<RehireContainerProps> = ({ initialData, userId, 
   return (
     <RehireView
       loadingAuth={loadingAuth}
-      isLoadingData={isLoadingData}
       error={error}
-      originalGigInfo={originalGigInfo}
-      workerToRehire={workerToRehire}
+      originalGigInfo={initialData?.originalGig}
+      workerToRehire={initialData?.workerForRehire}
       chatMessages={chatMessages}
       chatContainerRef={chatContainerRef}
       handleEditDetails={handleEditDetails}
