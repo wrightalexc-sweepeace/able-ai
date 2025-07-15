@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 
@@ -25,6 +25,10 @@ import Loader from "@/app/components/shared/Loader";
 import Logo from "@/app/components/brand/Logo";
 import { useAuth } from "@/context/AuthContext";
 import { useAiSuggestionBanner } from "@/hooks/useAiSuggestionBanner";
+import {
+  resetUnreadCountInDB,
+} from "@/actions/notifications/useUnreadNotifications";
+import { getAllNotificationsAction } from "@/actions/notifications/notifications";
 
 // Define this interface if you add the optional summary section
 // interface UpcomingGigSummary {
@@ -38,11 +42,32 @@ import { useAiSuggestionBanner } from "@/hooks/useAiSuggestionBanner";
 export default function WorkerDashboardPage() {
   const params = useParams();
   const pageUserId = params.userId as string;
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const { user } = useAuth();
+  const authUserToken = user?.token;
 
-  const {
-    user
-    // TODO: Handle authError if necessary
-  } = useAuth();
+  async function fetchNotifications(token: string) {
+    const { notifications, unreadCount } = await getAllNotificationsAction(token);
+    
+    setUnreadNotifications(unreadCount);
+    return notifications;
+  }
+
+  useEffect(() => {
+    if (authUserToken) {
+      fetchNotifications(authUserToken)
+        .catch((err) => {
+          console.error("Failed to fetch notifications:", err);
+        })
+    }
+  }, [authUserToken]);
+
+  const handleClick = async () => {
+    await resetUnreadCountInDB();
+    setUnreadCount(0);
+  };
+
   const authUserId = user?.uid;
 
   // Use authUserId for subsequent operations after validation
@@ -109,10 +134,7 @@ export default function WorkerDashboardPage() {
 
   // Show loader if auth is loading, or if user is not authenticated (as redirect will happen)
   // or if pageUserId is not the authenticated user's ID (again, redirect will happen)
-  if (
-    !user ||
-    (user && authUserId !== pageUserId)
-  ) {
+  if (!user || (user && authUserId !== pageUserId)) {
     return <Loader />;
   }
 
@@ -137,7 +159,11 @@ export default function WorkerDashboardPage() {
           )}
           {/* Notification Icon */}
           {uid && (
-            <Link href={`/user/${uid}/notifications`} passHref>
+            <Link
+              href={`/user/${uid}/notifications`}
+              passHref
+              onClick={handleClick}
+            >
               <button
                 className={styles.notificationButton}
                 aria-label="Notifications"
@@ -149,6 +175,12 @@ export default function WorkerDashboardPage() {
                   height={40}
                 />
               </button>
+              {unreadCount > 0 || unreadNotifications > 0 ? (
+                <span
+                  className={styles.notificationBadge}
+                >
+                </span>
+              ) : null}
             </Link>
           )}
         </header>
