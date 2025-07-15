@@ -1,10 +1,11 @@
+'use client';
 import { useEffect } from "react";
 import useFCMToken from "./useFCMToken";
 import { onMessage } from "firebase/messaging";
-import { messaging } from "@/lib/firebase/clientApp";
 import { toast } from "sonner";
+import { messaging } from "../clientApp";
 
-const useFCM = () => {
+const FcmProvider = ({ children }: { children: React.ReactNode }) => {
   const fcmToken = useFCMToken();
   useEffect(() => {
     if ("serviceWorker" in navigator) {
@@ -15,7 +16,8 @@ const useFCM = () => {
       return () => unsubscribe();
     }
   }, [fcmToken]);
-  return { fcmToken };
+
+  return <>{children}</>
 };
 
-export default useFCM;
+export default FcmProvider;

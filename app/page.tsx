@@ -6,13 +6,11 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { signOut } from "firebase/auth";
 import { authClient } from "@/lib/firebase/clientApp";
-import useFCM from "@/lib/firebase/fcm/useFCM";
 import { createNotificationAction, getAllNotificationsAction } from "@/actions/notifications/notifications";
 
 export default function Home() {
   const { user, loading } = useAuth();
   const [isProjectInfoOpen, setIsProjectInfoOpen] = useState(false);
-  useFCM();
 
   const handleSignOut = async () => {
     try {
@@ -60,7 +58,7 @@ export default function Home() {
     const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const res = await createNotificationAction({...form, status: "unread", type: "system"});
+    const res = await createNotificationAction({...form, status: "unread", type: "system"}, user?.token);
 
     console.log(res);
     

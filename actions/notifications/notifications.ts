@@ -4,26 +4,7 @@ import { getMessaging } from "firebase-admin/messaging";
 import { FieldValue } from "firebase-admin/firestore";
 import { isUserAuthenticated } from "@/lib/user.server";
 import { ERROR_CODES } from "@/lib/responses/errors";
-
-type NotificationStatus = "unread" | "read" | "actioned" | "deleted";
-export type NotificationType =
-  | "offer"
-  | "payment"
-  | "gigUpdate"
-  | "badge"
-  | "referral"
-  | "actionRequired"
-  | "system";
-
-const VALID_NOTIFICATION_TYPES: NotificationType[] = [
-  "offer",
-  "payment",
-  "gigUpdate",
-  "badge",
-  "referral",
-  "actionRequired",
-  "system",
-];
+import { Notification, NotificationStatus, NotificationType, VALID_NOTIFICATION_TYPES } from "@/app/types/NotificationTypes";
 
 export const subscribeFcmTopicAction = async (token: string) => {
   try {
@@ -42,7 +23,8 @@ export const subscribeFcmTopicAction = async (token: string) => {
   }
 };
 
-export async function createNotificationAction(data: {
+export async function createNotificationAction(
+  data: {
   userUid?: string;
   topic?: string;
   status?: NotificationStatus;
@@ -51,11 +33,10 @@ export async function createNotificationAction(data: {
   body: string;
   image: string;
   path?: string;
-}) {
+},
+token?: string) {
   try {
     const { userUid, title, body, image, path, status, type = "system" } = data;
-
-    if (!userUid) throw ERROR_CODES.UNAUTHORIZED;
 
     if (!VALID_NOTIFICATION_TYPES.includes(type)) {
       return {
@@ -65,10 +46,10 @@ export async function createNotificationAction(data: {
       };
     }
 
-    const { data: result, uid } = await isUserAuthenticated(userUid);
+    const { data: result } = await isUserAuthenticated(token);
     if (!result) throw ERROR_CODES.UNAUTHORIZED;
 
-    const topic = data.topic || uid;
+    const topic = data.topic || userUid;
 
     if (!topic) {
       return {
@@ -139,13 +120,18 @@ export async function getAllNotificationsAction(token: string) {
 
   const allDocs = [...userSnapshot.docs, ...generalSnapshot.docs];
 
-  const notifications = allDocs.map((doc) => {
+  const notifications: Notification[] = allDocs.map((doc) => {
     const data = doc.data();
     return {
       id: doc.id,
-      ...data,
       status: data.status,
       createTime: data.createTime?.toDate().toISOString() ?? null,
+      body: data.body,
+      image: data.image,
+      title: data.title,
+      type: data.type,
+      topic: data.topic,
+      path: data.path,
     };
   });
 

@@ -8,14 +8,12 @@ import styles from "./SelectRolePage.module.css";
 import Loader from "@/app/components/shared/Loader";
 import { useAuth } from '@/context/AuthContext';
 import { setLastRoleUsed } from "@/lib/last-role-used";
-import useFCM from "@/lib/firebase/fcm/useFCM";
 
 export default function SelectRolePage() {
   const router = useRouter();
   const { user } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  useFCM()
 
   const handleRoleSelection = async (role: "BUYER" | "GIG_WORKER") => {
     if (!user) {

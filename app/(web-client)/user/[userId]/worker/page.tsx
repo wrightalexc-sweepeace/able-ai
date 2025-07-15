@@ -26,7 +26,6 @@ import Logo from "@/app/components/brand/Logo";
 import { useAuth } from "@/context/AuthContext";
 import { useAiSuggestionBanner } from "@/hooks/useAiSuggestionBanner";
 import {
-  getUnreadCountFromDB,
   resetUnreadCountInDB,
 } from "@/actions/notifications/useUnreadNotifications";
 import { getAllNotificationsAction } from "@/actions/notifications/notifications";
@@ -44,43 +43,25 @@ export default function WorkerDashboardPage() {
   const params = useParams();
   const pageUserId = params.userId as string;
   const [unreadCount, setUnreadCount] = useState(0);
-  const [notifications, setNotifications] = useState<any[]>([]);
-  const [isLoadingNotifications, setIsLoadingNotifications] = useState(true);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
-  const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
   const authUserToken = user?.token;
 
   async function fetchNotifications(token: string) {
     const { notifications, unreadCount } = await getAllNotificationsAction(token);
-
+    
     setUnreadNotifications(unreadCount);
     return notifications;
   }
 
   useEffect(() => {
-    getUnreadCountFromDB().then(setUnreadCount).catch(console.error);
-  }, []);
-
-  useEffect(() => {
-    if (user && authUserToken) {
-      setIsLoadingNotifications(true);
+    if (authUserToken) {
       fetchNotifications(authUserToken)
-        .then((data) => {
-          setNotifications(data);
-          setError(null);
-        })
         .catch((err) => {
           console.error("Failed to fetch notifications:", err);
-          setError("Could not load notifications. Please try again.");
         })
-        .finally(() => setIsLoadingNotifications(false));
     }
-  }, [user, authUserToken]);
-
-  useEffect(() => {
-    getUnreadCountFromDB().then(setUnreadCount).catch(console.error);
-  }, []);
+  }, [authUserToken]);
 
   const handleClick = async () => {
     await resetUnreadCountInDB();

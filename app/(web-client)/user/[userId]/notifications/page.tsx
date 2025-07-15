@@ -12,27 +12,8 @@ import styles from "./NotificationsPage.module.css";
 import Loader from "@/app/components/shared/Loader"; // Assuming you have a Loader component
 import { useAuth } from "@/context/AuthContext";
 import { getAllNotificationsAction, updateNotificationStatusAction } from "@/actions/notifications/notifications";
+import { Notification, NotificationType } from "@/app/types/NotificationTypes";
 
-export type NotificationType =
-  | "offer"
-  | "payment"
-  | "gigUpdate"
-  | "badge"
-  | "referral"
-  | "actionRequired"
-  | "system";
-
-
-// Define an interface for notification data
-interface Notification {
-  id: string; // Unique ID for the notification
-  type: NotificationType;
-  message: string;
-  link?: string; // Optional link to navigate to on click
-  isRead: boolean;
-  timestamp: string; // ISO date string
-  icon?: React.ReactNode; // Allow custom icon override
-}
 
 // Helper to get icon based on notification type
 const getNotificationIcon = (type: Notification["type"]) => {
@@ -77,6 +58,17 @@ const formatTimestamp = (isoString: string) => {
   return date.toLocaleDateString(); // Older than a week, show date
 };
 
+export interface ClientNotification {
+  id: string;
+  type: NotificationType;
+  message: string;
+  link?: string;
+  isRead: boolean;
+  icon?: string;
+  timestamp: string; // ISO string
+}
+
+
 export default function NotificationsPage() {
   const router = useRouter();
   const params = useParams();
@@ -85,25 +77,21 @@ export default function NotificationsPage() {
   const authUserToken = user?.token;
   const authUserId = user?.uid;
 
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notifications, setNotifications] = useState<ClientNotification[]>([]);
   const [isLoadingNotifications, setIsLoadingNotifications] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  async function fetchNotifications(token: string): Promise<Notification[]> {
+  async function fetchNotifications(token: string) {
     const { notifications } = await getAllNotificationsAction(token);
 
     return notifications
-      .map((n: any) => ({
+      .map((n: Notification) => ({
         id: n.id,
         type: n.type ?? "system",
         message: n.title ?? "No title",
         link: n.path ?? undefined,
         isRead: n.status !== "unread",
-        timestamp:
-          typeof n.createTime === "string"
-            ? n.createTime
-            : n.createTime?.toDate?.().toISOString() ??
-              new Date().toISOString(),
+        timestamp: n.createTime ?? new Date().toISOString(),
       }))
       .sort(
         (a, b) =>
@@ -128,7 +116,7 @@ export default function NotificationsPage() {
     }
   }, [user, authUserToken]);
 
-  const handleNotificationClick = async(notification: Notification) => {
+  const handleNotificationClick = async(notification: ClientNotification) => {
 
     if (notification.link) {
       router.push(notification.link);
@@ -197,7 +185,7 @@ export default function NotificationsPage() {
                   }
                 >
                   <div className={styles.notificationContent}>
-                    {notification.icon ||
+                    {notification?.icon ||
                       getNotificationIcon(notification.type)}
                     <div>
                       <span className={styles.notificationMessage}>

@@ -1,4 +1,4 @@
-import useFCM from "@/lib/firebase/fcm/useFCM";
+import FcmProvider from "@/lib/firebase/fcm/FcmProvider";
 import { ProtectedRoute } from "@/utils/ProtectedRoute";
 
 export default function RootLayout({
@@ -6,11 +6,12 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  useFCM()
   return (
     <div>
       <ProtectedRoute>
-      {children}
+         <FcmProvider>
+            {children}
+         </FcmProvider>
       </ProtectedRoute>
     </div>
   );

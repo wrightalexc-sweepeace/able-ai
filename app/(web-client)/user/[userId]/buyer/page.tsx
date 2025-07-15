@@ -26,33 +26,13 @@ export default function BuyerDashboardPage() {
   const { user: userPublicProfile } = useAuth();
   const [unreadCount, setUnreadCount] = useState(0);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
-  const [notifications, setNotifications] = useState<any[]>([]);
-  const [isLoadingNotifications, setIsLoadingNotifications] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
   const authUserToken = user?.token;
 
   async function fetchNotifications(token: string) {
-    const { notifications, unreadCount } = await getAllNotificationsAction(token);
+    const { unreadCount } = await getAllNotificationsAction(token);
 
     setUnreadNotifications(unreadCount);
-    return notifications
-      .map((n: any) => ({
-        id: n.id,
-        type: n.type ?? "system",
-        message: n.title ?? "No title",
-        link: n.path ?? undefined,
-        isRead: n.status !== "unread",
-        timestamp:
-          typeof n.createTime === "string"
-            ? n.createTime
-            : n.createTime?.toDate?.().toISOString() ??
-              new Date().toISOString(),
-      }))
-      .sort(
-        (a, b) =>
-          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-      );
   }
 
   useEffect(() => {
@@ -68,17 +48,10 @@ export default function BuyerDashboardPage() {
 
   useEffect(() => {
     if (user && authUserToken) {
-      setIsLoadingNotifications(true);
       fetchNotifications(authUserToken)
-        .then((data) => {
-          setNotifications(data);
-          setError(null);
-        })
         .catch((err) => {
           console.error("Failed to fetch notifications:", err);
-          setError("Could not load notifications. Please try again.");
         })
-        .finally(() => setIsLoadingNotifications(false));
     }
   }, [user, authUserToken]);
 
