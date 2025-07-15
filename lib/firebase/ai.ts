@@ -1,3 +1,4 @@
+/* eslint-disable max-lines-per-function */
 import { ai } from "@/lib/firebase/clientApp";
 import { getGenerativeModel, Schema } from "@firebase/ai";
 import { ERROR_CODES, AppLogError } from "@/lib/log";
@@ -14,7 +15,7 @@ export const SUPPORTED_GEMINI_MODELS = [
   "gemini-2.0-flash",
   // Add more as needed
 ] as const;
-export type SupportedGeminiModel = typeof SUPPORTED_GEMINI_MODELS[number];
+export type SupportedGeminiModel = (typeof SUPPORTED_GEMINI_MODELS)[number];
 
 // --- Type Definitions ---
 export type GeminiAIOptions = {
@@ -52,24 +53,51 @@ export async function geminiAIAgent<T>(
       details: { modelName },
     };
   }
-  if (fallbackModelName && !isSupportedModel(fallbackModelName, SUPPORTED_GEMINI_MODELS)) {
-    return handleGeminiError({
-      ...ERROR_CODES.MODEL_NOT_SUPPORTED,
+  if (
+    fallbackModelName &&
+    !isSupportedModel(fallbackModelName, SUPPORTED_GEMINI_MODELS)
+  ) {
+    handleGeminiError(
+      {
+        ...ERROR_CODES.MODEL_NOT_SUPPORTED,
+        details: { fallbackModelName },
+      },
+      errorHook
+    );
+    return {
+      ok: false,
+      error: ERROR_CODES.MODEL_NOT_SUPPORTED.message,
+      code: ERROR_CODES.MODEL_NOT_SUPPORTED.code,
       details: { fallbackModelName },
-    }, errorHook);
+    };
   }
 
   // --- Streaming stub ---
   if (aiOptions.isStream) {
-    return handleGeminiError(ERROR_CODES.STREAM_NOT_IMPLEMENTED, errorHook);
+    handleGeminiError(ERROR_CODES.STREAM_NOT_IMPLEMENTED, errorHook);
+    return {
+      ok: false,
+      error: ERROR_CODES.STREAM_NOT_IMPLEMENTED.message,
+      code: ERROR_CODES.STREAM_NOT_IMPLEMENTED.code,
+      details: undefined,
+    };
   }
 
   // --- Schema enforcement ---
   if (!validateSchema(aiOptions.responseSchema)) {
-    return handleGeminiError({
-      ...ERROR_CODES.SCHEMA_VALIDATION_FAILED,
+    handleGeminiError(
+      {
+        ...ERROR_CODES.SCHEMA_VALIDATION_FAILED,
+        details: { reason: "No responseSchema provided" },
+      },
+      errorHook
+    );
+    return {
+      ok: false,
+      error: ERROR_CODES.SCHEMA_VALIDATION_FAILED.message,
+      code: ERROR_CODES.SCHEMA_VALIDATION_FAILED.code,
       details: { reason: "No responseSchema provided" },
-    }, errorHook);
+    };
   }
 
   // --- Retry and fallback logic ---
@@ -90,7 +118,11 @@ export async function geminiAIAgent<T>(
         },
       });
       // Call the model and parse response
-      const data = await callGeminiModelAndParse<T>(model, aiOptions.prompt, errorHook);
+      const data = await callGeminiModelAndParse<T>(
+        model,
+        aiOptions.prompt,
+        errorHook
+      );
       if (data instanceof Error) {
         lastError = {
           ...ERROR_CODES.SCHEMA_VALIDATION_FAILED,
@@ -126,12 +158,14 @@ export async function geminiAIAgent<T>(
       attempt++;
     }
   }
-  // All retries/fallbacks failed
-  const finalError =
-    lastError || { ...ERROR_CODES.UNKNOWN, details: { modelName, aiOptions } };
+  const finalError = lastError || {
+    ...ERROR_CODES.UNKNOWN,
+    details: { modelName, aiOptions },
+  }; // All retries/fallbacks failed
   return {
     ok: false,
-    error: "Sorry, I cannot answer this time. Please retry or report this issue.",
+    error:
+      "Sorry, I cannot answer this time. Please retry or report this issue.",
     code: finalError.code,
     details: finalError.details,
   };
