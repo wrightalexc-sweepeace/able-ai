@@ -5,14 +5,8 @@ console.log("🛠 Service Worker: initializing...");
 
 (async () => {
   try {
-    const firebaseConfig = {
-      apiKey: "AIzaSyBF7DIyylS8ByVbXxdmnmLkKpLyXSdEbQA",
-      authDomain: "ableai-mvp.firebaseapp.com",
-      projectId: "ableai-mvp",
-      storageBucket: "ableai-mvp.firebasestorage.app",
-      messagingSenderId: "697522507372",
-      appId: "1:697522507372:web:7ce039897f0e597d4d9249"
-    };
+    const res = await fetch("/firebase-config.json");
+    const firebaseConfig = await res.json();
 
     firebase.initializeApp(firebaseConfig);
 

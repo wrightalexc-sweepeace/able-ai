@@ -196,22 +196,7 @@ export default function WorkerDashboardPage() {
               </button>
               {unreadCount > 0 || unreadNotifications > 0 ? (
                 <span
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    right: 0,
-                    background: "red",
-                    color: "white",
-                    borderRadius: "50%",
-                    width: 18,
-                    height: 18,
-                    fontSize: 12,
-                    fontWeight: "bold",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    pointerEvents: "none",
-                  }}
+                  className={styles.notificationBadge}
                 >
                 </span>
               ) : null}

@@ -50,7 +50,6 @@ export default function Home() {
     path: "",
   });
 
-  const [loading2, setLoading] = useState(false);
   const [response, setResponse] = useState<null | { success: boolean; message: string }>(null);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -60,7 +59,6 @@ export default function Home() {
 
     const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
 
     const res = await createNotificationAction({...form, status: "unread", type: "system"});
 
@@ -68,7 +66,6 @@ export default function Home() {
     
     const json = await res;
     setResponse({ success: json.success, message: json.success ? "Sended" : "Error sending message" });
-    setLoading(false);
   };
 
   return (
@@ -522,7 +519,7 @@ export default function Home() {
           </button>
         </section>
     <div className="max-w-xl mx-auto p-6 bg-white shadow-md rounded-xl mt-8">
-      <h1 className="text-2xl font-bold mb-4">Enviar Notificación</h1>
+      <h1 className="text-2xl font-bold mb-4">Send notification</h1>
       <form onSubmit={handleSubmit} className="space-y-4">
         <input type="text" name="userUid" placeholder="userUid (opcional)" value={form.userUid} onChange={handleChange} className="w-full input input-bordered" />
         <input type="text" name="topic" placeholder="topic (opcional)" value={form.topic} onChange={handleChange} className="w-full input input-bordered" />
@@ -532,7 +529,7 @@ export default function Home() {
         <input type="text" name="path" placeholder="Ruta de redirección (opcional)" value={form.path} onChange={handleChange} className="w-full input input-bordered" />
 
         <button type="submit" disabled={loading} className="btn btn-primary w-full">
-          {loading ? "Enviando..." : "Enviar Notificación"}
+          {loading ? "Sending..." : "Send Notification"}
         </button>
       </form>
 
