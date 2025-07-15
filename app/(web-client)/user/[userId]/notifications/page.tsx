@@ -11,17 +11,17 @@ import { AlertTriangle, ChevronRight, Info, ChevronLeft } from "lucide-react";
 import styles from "./NotificationsPage.module.css";
 import Loader from "@/app/components/shared/Loader"; // Assuming you have a Loader component
 import { useAuth } from "@/context/AuthContext";
-import { getAllNotificationsAction } from "@/actions/notifications/notifications";
+import { getAllNotificationsAction, updateNotificationStatusAction } from "@/actions/notifications/notifications";
 
-export enum NotificationType {
-  OFFER = "offer",
-  PAYMENT = "payment",
-  GIG_UPDATE = "gigUpdate",
-  BADGE = "badge",
-  REFERRAL = "referral",
-  ACTION_REQUIRED = "actionRequired",
-  SYSTEM = "system",
-}
+export type NotificationType =
+  | "offer"
+  | "payment"
+  | "gigUpdate"
+  | "badge"
+  | "referral"
+  | "actionRequired"
+  | "system";
+
 
 // Define an interface for notification data
 interface Notification {
@@ -34,10 +34,9 @@ interface Notification {
   icon?: React.ReactNode; // Allow custom icon override
 }
 
-
 // Helper to get icon based on notification type
 const getNotificationIcon = (type: Notification["type"]) => {
-  if (type) return null
+  if (type) return null;
   switch (type) {
     case "offer":
     case "gigUpdate":
@@ -82,34 +81,35 @@ export default function NotificationsPage() {
   const router = useRouter();
   const params = useParams();
   const pageUserId = params.userId as string;
-  
-  async function fetchNotifications(token: string): Promise<Notification[]> {
-  const rawNotifications = await getAllNotificationsAction(token);
-
-  return rawNotifications
-    .map((n: any) => ({
-      id: n.id,
-      type: n.type ?? "system",
-      message: n.title ?? "No title",
-      link: n.path ?? undefined,
-      isRead: n.status !== "unread",
-      timestamp: typeof n.createTime === "string"
-        ? n.createTime
-        : n.createTime?.toDate?.().toISOString() ?? new Date().toISOString(),
-    }))
-    .sort(
-      (a, b) =>
-        new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-    );
-}
-
   const { user } = useAuth();
   const authUserToken = user?.token;
-  const authUserId = user?.uid
+  const authUserId = user?.uid;
 
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isLoadingNotifications, setIsLoadingNotifications] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  async function fetchNotifications(token: string): Promise<Notification[]> {
+    const { notifications } = await getAllNotificationsAction(token);
+
+    return notifications
+      .map((n: any) => ({
+        id: n.id,
+        type: n.type ?? "system",
+        message: n.title ?? "No title",
+        link: n.path ?? undefined,
+        isRead: n.status !== "unread",
+        timestamp:
+          typeof n.createTime === "string"
+            ? n.createTime
+            : n.createTime?.toDate?.().toISOString() ??
+              new Date().toISOString(),
+      }))
+      .sort(
+        (a, b) =>
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      );
+  }
 
   // Fetch notifications
   useEffect(() => {
@@ -128,18 +128,13 @@ export default function NotificationsPage() {
     }
   }, [user, authUserToken]);
 
-  const handleNotificationClick = (notification: Notification) => {
-    // Mark notification as read (API call or local state update then sync)
-    // For now, just log and navigate if link exists
-    console.log("Notification clicked:", notification.id);
+  const handleNotificationClick = async(notification: Notification) => {
+
     if (notification.link) {
       router.push(notification.link);
     }
-    // Example: Optimistically mark as read locally and then call API
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === notification.id ? { ...n, isRead: true } : n))
-    );
-    // TODO: Call API to mark as read: await markNotificationAsRead(userId, notification.id);
+
+    await updateNotificationStatusAction(notification.id, "read")
   };
 
   const handleGoBack = () => {

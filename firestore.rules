@@ -95,7 +95,7 @@ service cloud.firestore {
             || (resource.data.topic != null)
           );
 
-        allow create: if isBackendService(); // Solo desde el backend
+        allow create: if isBackendService();
 
         allow update: if isAuthenticated()
           && (

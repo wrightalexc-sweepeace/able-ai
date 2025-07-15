@@ -32,12 +32,13 @@ if (!getApps().length) {
 
 // Initialize Firebase services
 const authClient: Auth = getAuth(firebaseApp);
+const db: Firestore = getFirestore(firebaseApp);
 const storage = getStorage(firebaseApp);
 // Initialize the Gemini Developer API backend service
 const ai = getAI(firebaseApp, { backend: new GoogleAIBackend() });
 
 export const messaging = () => getMessaging(firebaseApp);
 
-export { firebaseApp, authClient, storage, firebaseConfig, ai };
+export { firebaseApp, authClient, storage, firebaseConfig, ai, db };
 
 

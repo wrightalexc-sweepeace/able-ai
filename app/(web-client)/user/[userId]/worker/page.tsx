@@ -29,6 +29,7 @@ import {
   getUnreadCountFromDB,
   resetUnreadCountInDB,
 } from "@/actions/notifications/useUnreadNotifications";
+import { getAllNotificationsAction } from "@/actions/notifications/notifications";
 
 // Define this interface if you add the optional summary section
 // interface UpcomingGigSummary {
@@ -43,6 +44,39 @@ export default function WorkerDashboardPage() {
   const params = useParams();
   const pageUserId = params.userId as string;
   const [unreadCount, setUnreadCount] = useState(0);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [isLoadingNotifications, setIsLoadingNotifications] = useState(true);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [error, setError] = useState<string | null>(null);
+  const { user } = useAuth();
+  const authUserToken = user?.token;
+
+  async function fetchNotifications(token: string) {
+    const { notifications, unreadCount } = await getAllNotificationsAction(token);
+
+    setUnreadNotifications(unreadCount);
+    return notifications;
+  }
+
+  useEffect(() => {
+    getUnreadCountFromDB().then(setUnreadCount).catch(console.error);
+  }, []);
+
+  useEffect(() => {
+    if (user && authUserToken) {
+      setIsLoadingNotifications(true);
+      fetchNotifications(authUserToken)
+        .then((data) => {
+          setNotifications(data);
+          setError(null);
+        })
+        .catch((err) => {
+          console.error("Failed to fetch notifications:", err);
+          setError("Could not load notifications. Please try again.");
+        })
+        .finally(() => setIsLoadingNotifications(false));
+    }
+  }, [user, authUserToken]);
 
   useEffect(() => {
     getUnreadCountFromDB().then(setUnreadCount).catch(console.error);
@@ -53,10 +87,6 @@ export default function WorkerDashboardPage() {
     setUnreadCount(0);
   };
 
-  const {
-    user,
-    // TODO: Handle authError if necessary
-  } = useAuth();
   const authUserId = user?.uid;
 
   // Use authUserId for subsequent operations after validation
@@ -164,7 +194,7 @@ export default function WorkerDashboardPage() {
                   height={40}
                 />
               </button>
-              {unreadCount > 0 && (
+              {unreadCount > 0 || unreadNotifications > 0 ? (
                 <span
                   style={{
                     position: "absolute",
@@ -184,7 +214,7 @@ export default function WorkerDashboardPage() {
                   }}
                 >
                 </span>
-              )}
+              ) : null}
             </Link>
           )}
         </header>

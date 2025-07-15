@@ -15,7 +15,17 @@ export type NotificationType =
   | "actionRequired"
   | "system";
 
-export const subscribeFcmTopicAction = async (token: string, uid: string) => {
+const VALID_NOTIFICATION_TYPES: NotificationType[] = [
+  "offer",
+  "payment",
+  "gigUpdate",
+  "badge",
+  "referral",
+  "actionRequired",
+  "system",
+];
+
+export const subscribeFcmTopicAction = async (token: string) => {
   try {
     const messaging = getMessaging();
     if (!token) throw "Token required";
@@ -23,7 +33,7 @@ export const subscribeFcmTopicAction = async (token: string, uid: string) => {
       token,
       "general"
     );
-    const uidSubscribed = await (messaging as any).subscribeToTopic(token, uid);
+    const uidSubscribed = await (messaging as any).subscribeToTopic(token);
 
     return { success: true, data: { topicSubscribed, uidSubscribed } };
   } catch (error) {
@@ -47,6 +57,14 @@ export async function createNotificationAction(data: {
 
     if (!userUid) throw ERROR_CODES.UNAUTHORIZED;
 
+    if (!VALID_NOTIFICATION_TYPES.includes(type)) {
+      return {
+        success: false,
+        error: `Invalid notification type: ${type}`,
+        data: null,
+      };
+    }
+
     const { data: result, uid } = await isUserAuthenticated(userUid);
     if (!result) throw ERROR_CODES.UNAUTHORIZED;
 
@@ -67,7 +85,7 @@ export async function createNotificationAction(data: {
       title,
       body,
       image,
-      path: path ?? null,
+      path: path ?? "/select-role",
       createTime: FieldValue.serverTimestamp(),
     };
 
@@ -126,11 +144,14 @@ export async function getAllNotificationsAction(token: string) {
     return {
       id: doc.id,
       ...data,
+      status: data.status,
       createTime: data.createTime?.toDate().toISOString() ?? null,
     };
   });
 
-  return notifications;
+  const unreadCount = notifications.filter((n) => n.status === "unread").length;
+
+  return { notifications, unreadCount };
 }
 
 export async function getNotificationByIdAction(id: string) {

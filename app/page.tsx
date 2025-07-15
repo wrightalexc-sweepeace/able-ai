@@ -26,7 +26,7 @@ export default function Home() {
   useEffect(()=>{
     if(user?.token){
       async function fetchNotifications() {
-        const result = await getAllNotificationsAction(user?.token || "")
+        await getAllNotificationsAction(user?.token || "")
       }
       fetchNotifications()
     }
@@ -62,12 +62,12 @@ export default function Home() {
     e.preventDefault();
     setLoading(true);
 
-    const res = await createNotificationAction(form)
+    const res = await createNotificationAction({...form, status: "unread", type: "system"});
 
     console.log(res);
     
     const json = await res;
-    setResponse({ success: json.success, message: json.success ? "Enviado" : "Error al enviar" });
+    setResponse({ success: json.success, message: json.success ? "Sended" : "Error sending message" });
     setLoading(false);
   };
 
