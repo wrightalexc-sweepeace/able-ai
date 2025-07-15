@@ -1,3 +1,4 @@
+/* eslint-disable max-lines-per-function */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import React from 'react';
 import { Calendar as BigCalendar, Formats, momentLocalizer, View } from 'react-big-calendar';

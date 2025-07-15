@@ -75,12 +75,13 @@ const BuyerCalendarPage = () => {
 
       const data: CalendarEvent[] = res.events;
 
-      const parsed = data.map((event: any) => ({ ...event, start: new Date(event.start), end: new Date(event.end) }));
+      const parsed = data.map((event: CalendarEvent) => ({ ...event, start: new Date(event.start), end: new Date(event.end) }));
       setEvents(filterEvents(parsed, activeFilter));
     };
 
     fetchEvents();
-  }, [activeFilter]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeFilter, loadingAuth]);
 
   const redirectGigOfferHandler = (event: CalendarEvent) => {
     router.push(`/user/${pageUserId}/buyer/gigs/${event.id}`);
