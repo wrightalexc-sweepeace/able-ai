@@ -12,7 +12,7 @@ import { createNotificationAction, getAllNotificationsAction } from "@/actions/n
 export default function Home() {
   const { user, loading } = useAuth();
   const [isProjectInfoOpen, setIsProjectInfoOpen] = useState(false);
-  const { messages, fcmToken } = useFCM();
+  useFCM();
 
   const handleSignOut = async () => {
     try {

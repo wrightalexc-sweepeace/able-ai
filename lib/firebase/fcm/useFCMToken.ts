@@ -21,7 +21,6 @@ const useFCMToken = () => {
             vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
             serviceWorkerRegistration: registration,
           })
-          console.log(fcmToken);
           setFcmToken(fcmToken);
           subscribeFcmTopicAction(fcmToken)
         }
