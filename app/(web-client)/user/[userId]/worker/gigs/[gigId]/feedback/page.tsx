@@ -7,7 +7,7 @@ import FeedbackContainer from "@/app/components/gigs/FeedbackContainer";
 import { GigDetails, WorkerFeedbackFormData, BuyerFeedbackFormData } from "@/app/components/gigs/Feedback";
 import { useAuth } from "@/context/AuthContext";
 
-async function fetchGigForWorkerFeedback(workerUserId: string, gigId: string): Promise<GigDetails | null> {
+async function getGigData(workerUserId: string, gigId: string): Promise<GigDetails | null> {
   await new Promise((resolve) => setTimeout(resolve, 500));
   if (gigId === "gig123-accepted") {
     return {
@@ -38,13 +38,6 @@ export default function WorkerFeedbackPage() {
   const authUserId = user?.uid;
   const [gigData, setGigData] = useState<GigDetails | null>(null);
   const [isLoadingGig, setIsLoadingGig] = useState(true);
-  const [formData, setFormData] = useState<WorkerFeedbackFormData>({
-    feedbackText: "",
-    wouldWorkAgain: null,
-    topCommunicator: false,
-    teamBuilder: false,
-    expensesText: "",
-  });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -55,12 +48,13 @@ export default function WorkerFeedbackPage() {
                         (user && authUserId === pageUserId && gigId);
     if (shouldFetch) {
       setIsLoadingGig(true);
-      fetchGigForWorkerFeedback(authUserId!, gigId)
+      getGigData(authUserId!, gigId)
         .then((data) => {
           if (data) {
             setGigData(data);
           } else {
             setError("Gig not found, not ready for feedback, or feedback already submitted.");
+            router.push(`/user/${user?.uid}/worker`)
           }
         })
         .catch(() => {
@@ -124,7 +118,6 @@ export default function WorkerFeedbackPage() {
       role="GIG_WORKER"
       mode="worker"
       onSubmit={handleSubmit}
-      initialFormData={formData}
       loading={isSubmitting}
       error={error}
       successMessage={successMessage}
