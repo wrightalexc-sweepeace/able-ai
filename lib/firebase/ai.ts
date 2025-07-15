@@ -26,8 +26,8 @@ export type GeminiAIOptions = {
 };
 
 export type GeminiAIResult<T> =
-  | { ok: boolean; data: T }
-  | { ok: boolean; error: string; code?: number; details?: unknown };
+  | { ok: true; data: T }
+  | { ok: false; error: string; code?: number; details?: unknown };
 
 export type GeminiAIErrorHook = (error: AppLogError) => void;
 
