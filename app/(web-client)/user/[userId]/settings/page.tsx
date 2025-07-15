@@ -6,44 +6,46 @@ import {
   updatePassword,
   sendPasswordResetEmail,
   signOut as firebaseSignOut,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
 } from "firebase/auth";
-
-// Assuming shared components are structured like this
-import InputField from "@/app/components/form/InputField"; // Corrected path
-// import Logo from '@/app/components/brand/Logo'; // Corrected path, if needed
+import InputField from "@/app/components/form/InputField";
+import styles2 from "@/app/components/shared/AiSuggestionBanner.module.css";
 
 import styles from "./SettingsPage.module.css";
 import {
-  User,
   Shield,
   LogOut,
   Save,
-  CreditCard,
   CircleMinus,
   AlertTriangle,
   CheckCircle,
-} from "lucide-react"; // Added new icons
+} from "lucide-react";
 import Loader from "@/app/components/shared/Loader";
 import { useAuth } from "@/context/AuthContext";
 import { authClient } from "@/lib/firebase/clientApp";
 import { createAccountLink } from "@/app/actions/stripe/create-account-link";
 import { createPortalSession } from "@/app/actions/stripe/create-portal-session";
 import { FirebaseError } from "firebase/app";
+import SwitchControl from "@/app/components/shared/SwitchControl";
+import Logo from "@/app/components/brand/Logo";
+import { toast } from "sonner";
+import { getProfileInfoUserAction, updateNotificationEmailAction, updateNotificationSmsAction, updateProfileVisibilityAction, updateUserProfileAction } from "@/actions/user/user";
 
-// Define a type for user settings fetched from backend
 interface UserSettingsData {
   displayName: string;
-  email: string; // Usually not editable directly here
+  email: string;
   phone?: string | null; // Added phone field
   // Stripe Connect related fields (essential for Gig Workers, optional for Buyers unless they also act as sellers)
   stripeAccountId: string | null; // The Stripe Connect Account ID
   stripeAccountStatus:
-  | "connected"
-  | "pending_verification"
-  | "incomplete"
-  | "restricted"
-  | "disabled"
-  | null;
+    | "connected"
+    | "pending_verification"
+    | "incomplete"
+    | "restricted"
+    | "disabled"
+    | null;
+  stripeConnectAccountId: string | null;
   canReceivePayouts: boolean; // Derived on backend, true if Stripe account is fully setup and can receive payouts
 
   notificationPreferences: {
@@ -67,9 +69,7 @@ interface UserSettingsData {
 export default function SettingsPage() {
   const router = useRouter();
 
-  const {
-    user
-  } = useAuth();
+  const { user } = useAuth();
 
   const [userSettings, setUserSettings] = useState<UserSettingsData | null>(
     null
@@ -86,7 +86,10 @@ export default function SettingsPage() {
   const [isDeletingAccount, setIsDeletingAccount] = useState(false);
 
   // Privacy Settings related states
-  const [profileVisibility, setProfileVisibility] = useState(false); // State for profile visibility
+  const [profileVisibility, setProfileVisibility] = useState(false);
+  const [notificationEmail, setNotificationEmail] = useState(false);
+  const [notificationSms, setNotificationSms] = useState(false);
+
 
   const [displayName, setDisplayName] = useState("");
   const [phone, setPhone] = useState(""); // Added state for phone number
@@ -94,6 +97,8 @@ export default function SettingsPage() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
+
+  const [showStripeModal, setShowStripeModal] = useState(false);
 
   // Notification preferences
   const [emailGigUpdates, setEmailGigUpdates] = useState(false);
@@ -104,62 +109,71 @@ export default function SettingsPage() {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
+  const fetchSettings = async () => {
+    try {
+      let userProfile = null
+      if (user?.uid) {
+        const { success, data, error } = await getProfileInfoUserAction(user?.token);
+        if (!success) throw error;
+        userProfile = data;
+      }
+
+      const data: UserSettingsData = {
+        displayName: user?.displayName || "",
+        email: user?.email || "",
+        phone: userProfile?.phone || "",
+        // Added mock Stripe data
+        stripeAccountId: userProfile?.stripeCustomerId|| null, // Or a mock ID like 'acct_123abc'
+        stripeAccountStatus: "incomplete",
+        stripeConnectAccountId: userProfile?.stripeConnectAccountId || null, // Or 'connected', 'pending_verification', etc.
+        canReceivePayouts: false, // Or true
+
+        privacySettings: {
+          // Added mock privacy data
+          profileVisibility: true, // Example initial value
+        },
+
+        notificationPreferences: {
+          email: {
+            gigUpdates: true,
+            platformAnnouncements: true,
+            marketing: false,
+          },
+          sms: { gigAlerts: false },
+        },
+      };
+      setUserSettings(data);
+      setDisplayName(userProfile?.fullName || "");
+      setPhone(userProfile?.phone || "");
+      setEmailGigUpdates(data.notificationPreferences.email.gigUpdates);
+      setEmailPlatformAnnouncements(
+        data.notificationPreferences.email.platformAnnouncements
+      );
+      if (!data.stripeAccountId || !data.stripeAccountStatus) {
+        setShowStripeModal(true)
+      }
+      // setSmsGigAlerts(data.notificationPreferences.sms.gigAlerts); // SMS commented out
+      setProfileVisibility(userProfile?.profileVisibility || false);
+      setNotificationEmail(userProfile?.notificationPreferences.emailGigUpdates || false)
+      setNotificationSms(userProfile?.notificationPreferences.smsGigAlerts || false)
+      // setPhone(data.phone || ''); // Set initial state for phone
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message || "Could not load settings.");
+      } else {
+        setError("Could not load settings.");
+      }
+    } finally {
+      setIsLoadingSettings(false);
+    }
+  };
+
   // Fetch user settings from backend API
   useEffect(() => {
     if (user) {
       // authUserId is now derived from user?.uid
       setIsLoadingSettings(true);
       // Replace with your actual API call
-      const fetchSettings = async () => {
-        try {
-          // const response = await fetch(`/api/users/settings`); // API would use authUserId from token
-          // if (!response.ok) throw new Error('Failed to fetch settings');
-          // const data = await response.json();
-
-          // MOCK DATA FOR NOW - Replace with API call
-          await new Promise((res) => setTimeout(res, 500)); // Simulate delay
-          const data: UserSettingsData = {
-            displayName: user?.displayName || "User", // Access displayName from user object
-            email: user?.email || "", // Access email from user object
-            phone: user?.phoneNumber || "", // Added mock phone data
-            // Added mock Stripe data
-            stripeAccountId: null, // Or a mock ID like 'acct_123abc'
-            stripeAccountStatus: null, // Or 'connected', 'pending_verification', etc.
-            canReceivePayouts: false, // Or true
-
-            privacySettings: {
-              // Added mock privacy data
-              profileVisibility: true, // Example initial value
-            },
-
-            notificationPreferences: {
-              email: {
-                gigUpdates: true,
-                platformAnnouncements: true,
-                marketing: false,
-              },
-              sms: { gigAlerts: false },
-            },
-          };
-          setUserSettings(data);
-          setDisplayName(data.displayName);
-          setEmailGigUpdates(data.notificationPreferences.email.gigUpdates);
-          setEmailPlatformAnnouncements(
-            data.notificationPreferences.email.platformAnnouncements
-          );
-          // setSmsGigAlerts(data.notificationPreferences.sms.gigAlerts); // SMS commented out
-          setProfileVisibility(data.privacySettings.profileVisibility); // Set initial state for privacy setting
-          // setPhone(data.phone || ''); // Set initial state for phone
-        } catch (err: unknown) {
-          if (err instanceof Error) {
-            setError(err.message || "Could not load settings.");
-          } else {
-            setError("Could not load settings.");
-          }
-        } finally {
-          setIsLoadingSettings(false);
-        }
-      };
       fetchSettings();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -174,24 +188,27 @@ export default function SettingsPage() {
     event.preventDefault();
     clearMessages();
     setIsSavingProfile(true);
-    // TODO: API call to update profile (e.g., PUT /api/users/profile)
-    // This API would update both PostgreSQL and relevant Firestore public profile fields
+  
     try {
-      console.log("Updating profile with name:", displayName);
-      // Simulate API call
-      await new Promise((res) => setTimeout(res, 1000));
+      const { success: updateSuccess, error: updateError } = await updateUserProfileAction(
+        { fullName: displayName, phone: phone },
+        user?.token
+      );
+  
+      if (!updateSuccess) throw updateError;
+  
+      const { success: fetchSuccess, error: fetchError } = await getProfileInfoUserAction(user?.token);
+      if (!fetchSuccess) throw fetchError;
+  
+      toast.success("Profile updated successfully");
       setSuccessMessage("Profile updated successfully!");
-      // Optionally, trigger a refetch if name changes often or rely on context update if displayName is part of User object
     } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message || "Failed to update profile.");
-      } else {
-        setError("Failed to update profile.");
-      }
+      const message = err instanceof Error ? err.message : "Failed to update profile.";
+      setError(message);
     } finally {
       setIsSavingProfile(false);
     }
-  };
+  };  
 
   const handleChangePassword = async (event: FormEvent) => {
     event.preventDefault();
@@ -210,32 +227,35 @@ export default function SettingsPage() {
       return;
     }
 
-    setIsSavingProfile(true); // Use same loading state for simplicity or create new
-    try {
-      // Re-authenticate for sensitive operation (optional but recommended)
-      // const credential = EmailAuthProvider.credential(user.email!, currentPassword); // Use user.email
-      // await reauthenticateWithCredential(user, credential); // Use user
+    setIsSavingProfile(true);
 
-      // Then update password
-      await updatePassword(user, newPassword); // Use user
+    try {
+      const credential = EmailAuthProvider.credential(
+        user.email!,
+        currentPassword
+      );
+      await reauthenticateWithCredential(user, credential);
+
+      await updatePassword(user, newPassword);
       setSuccessMessage("Password changed successfully!");
       setCurrentPassword("");
       setNewPassword("");
       setConfirmNewPassword("");
+      toast.success(`Password changed successfully.`);
     } catch (err: unknown) {
       if (err instanceof FirebaseError) {
-        console.error("Password change error:", err);
-        setError(
-          err.code === "auth/wrong-password"
-            ? "Incorrect current password."
-            : err.message || "Failed to change password."
-        );
+        console.error("Error changing password", err);
+        if (err.code === "auth/wrong-password.") {
+          setError("Current password incorrect.");
+        } else if (err.code === "auth/requires-recent-login") {
+          setError("For security login again");
+        } else {
+          setError(err.message || "rror changing password.");
+        }
+      } else {
+        console.error("Error unknown:", err);
+        setError("rror changing password.");
       }
-      else {
-        console.error("Password change error:", err);
-        setError("Failed to change password.");
-      }
-
     } finally {
       setIsSavingProfile(false);
     }
@@ -250,39 +270,13 @@ export default function SettingsPage() {
     try {
       await sendPasswordResetEmail(authClient, userSettings.email);
       setSuccessMessage("Password reset email sent. Please check your inbox.");
+      toast.success(`Check your email to reset your password.`);
     } catch (err) {
       if (err instanceof FirebaseError) {
         setError(err.message || "Failed to send password reset email.");
       } else {
         setError("Failed to send password reset email.");
       }
-    }
-  };
-
-  const handleNotificationPreferencesUpdate = async (event: FormEvent) => {
-    event.preventDefault();
-    clearMessages();
-    setIsSavingNotifications(true);
-    const preferences = {
-      email: {
-        gigUpdates: emailGigUpdates,
-        platformAnnouncements: emailPlatformAnnouncements,
-      },
-      sms: { gigAlerts: smsGigAlerts },
-    };
-    // TODO: API call to PUT /api/users/notification-preferences
-    try {
-      console.log("Updating notification preferences:", preferences);
-      await new Promise((res) => setTimeout(res, 1000)); // Simulate API
-      setSuccessMessage("Notification preferences saved!");
-    } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message || "Failed to save notification preferences.");
-      } else {
-        setError("Failed to save notification preferences.");
-      }
-    } finally {
-      setIsSavingNotifications(false);
     }
   };
 
@@ -359,8 +353,7 @@ export default function SettingsPage() {
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message || "Failed to delete account.");
-      }
-      else {
+      } else {
         setError("Failed to delete account.");
       }
     } finally {
@@ -369,38 +362,55 @@ export default function SettingsPage() {
     }
   };
 
-  // Handle Profile Visibility Change
-  /*
-  const handleProfileVisibilityChange = async (checked: boolean) => {
-    clearMessages();
-    // setIsSavingProfile(true); // Use a different loading state if needed
-    setProfileVisibility(checked); // Optimistically update UI
-    // TODO: API call to PUT /api/users/privacy-settings
+  async function handleToggleEmailNotification() {
     try {
-      console.log("Updating profile visibility:", checked);
-      await new Promise((res) => setTimeout(res, 500)); // Simulate API
-      setSuccessMessage("Profile visibility updated!");
-    } catch (err: unknown) {
-      if (err instanceof Error) {
-        setError(err.message || "Failed to update profile visibility.");
-      }
-      else {
-        setError("Failed to update profile visibility.");
-      }
-      // Revert state if API fails
-      setProfileVisibility(!checked);
-    } finally {
-      // setIsSavingProfile(false); // Reset loading state
+      const { data, error } = await updateNotificationEmailAction(
+        { emailProferences: !notificationEmail },
+        user?.token
+      );
+        setNotificationEmail(error ? notificationEmail : data);
+        toast.success("Email notification updated")
+    } catch (error) {
+      console.error("Failed to update email notifications", error);
+      setNotificationEmail(notificationEmail); // Revert to current value 
     }
-  };
-  */
+  }
+  
+  async function handleToggleSmsNotification() {
+    try {
+      const {data, error } = await updateNotificationSmsAction(
+        { smsGigAlerts: !notificationSms },
+        user?.token
+      );
+        setNotificationSms(error ? notificationSms : data);
+    } catch (error) {
+      console.error("Failed to update SMS notifications", error);
+      setNotificationSms(notificationSms);
+    }
+  }
+  
+  async function handleToggleProfileVisibility() {
+    try {
+      const { data, error } = await updateProfileVisibilityAction(
+        { profileVisibility: !profileVisibility },
+        user?.token
+      );
+
+      setProfileVisibility(error ? profileVisibility : data);
+    } catch (error) {
+      console.error("Failed to update profile visibility", error);
+      setProfileVisibility(profileVisibility);
+      
+    }
+  }
+  
+
 
   if (isLoadingSettings) {
     return <Loader />;
   }
 
   if (!user || !userSettings) {
-    // Should have been caught by useEffect, but as a fallback
     return (
       <div className={styles.loadingContainer}>
         Unable to load settings. Please ensure you are logged in.
@@ -434,52 +444,15 @@ export default function SettingsPage() {
                 <CheckCircle size={20} /> Stripe account connected and active.
               </div>
             )}
-          {userSettings &&
-            (!userSettings.stripeAccountId ||
-              !userSettings.canReceivePayouts) && (
-              <div className={`${styles.section} ${styles.stripePromptInline}`}>
-                <div className={styles.stripePromptHeader}>
-                  <div className={styles.stripeIconWrapper}>
-                    <AlertTriangle size={28} color="#ffc107" />
-                  </div>
-                  <h3>Get Paid with Stripe!</h3>
-                </div>
-                <p>
-                  To receive payments for your gigs, you must connect your bnak
-                  account through our payment provider, Stripe. This is secure,
-                  free, and only takes a minute.
-                </p>
-                <button
-                  onClick={handleStripeConnect}
-                  className={styles.stripeButton}
-                  disabled={isConnectingStripe}
-                >
-                  {isConnectingStripe
-                    ? "Connecting..."
-                    : "Connect My Bank Account"}
-                </button>
-                <div className={styles.stripeStatus}>
-                  <AlertTriangle size={20} color="#ffc107" />
-                  <span>
-                    {userSettings.stripeAccountStatus
-                      ? userSettings.stripeAccountStatus.replace("_", " ")
-                      : "Not Connected"}
-                  </span>
-                </div>
-              </div>
-            )}
 
           {/* Profile Information Section */}
           <section className={styles.section}>
-            <h2 className={styles.sectionTitle}>
-              <User size={20} style={{ marginRight: "0.5rem" }} /> Personal
-              Information
-            </h2>
+            <h2 className={styles.sectionTitle}>Personal Information</h2>
             {/* ... (DisplayName, Email - as before) ... */}
             <form onSubmit={handleProfileUpdate} className={styles.form}>
               <div className={styles.formGroup}>
                 <label htmlFor="displayName" className={styles.label}>
-                  Display Name
+                  Full Name
                 </label>
                 <InputField
                   id="displayName"
@@ -494,12 +467,12 @@ export default function SettingsPage() {
               </div>
               <div className={styles.formGroup}>
                 <label htmlFor="email" className={styles.label}>
-                  Email Address
+                  Email
                 </label>
                 <input // Display only, not editable directly here typically
                   id="email"
                   type="email"
-                  value={userSettings.email}
+                  value={user.email || ""}
                   readOnly
                   disabled
                   className={styles.inputField} // Or use InputField component with disabled prop
@@ -509,13 +482,13 @@ export default function SettingsPage() {
                 {" "}
                 {/* Added phone field */}
                 <label htmlFor="phone" className={styles.label}>
-                  Phone Number
+                  Phone
                 </label>
                 <InputField
                   id="phone"
                   name="phone"
                   type="tel" // Use type="tel" for phone numbers
-                  value={userSettings.phone || phone}
+                  value={phone}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     setPhone(e.target.value)
                   }
@@ -538,60 +511,67 @@ export default function SettingsPage() {
           {/* Payment Settings Section */}
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>
-              <CreditCard size={20} style={{ marginRight: "0.5rem" }} /> Payment
-              Settings
+              Payment Settings - Stripe portal
             </h2>
-            {!userSettings?.stripeAccountId && !userSettings.canReceivePayouts ? (
-              <div className={styles.settingItem}>
-                <span className={styles.settingLabel}>
-                  Manage your payouts and bank details.
-                </span>
-                <button
-                  onClick={handleManageStripeAccount}
-                  className={`${styles.button} ${styles.secondary}`}
-                >
-                  Open Stripe Portal
-                </button>
-              </div>
-            ) : (
-              <p className={styles.settingLabel}>
-                Connect your Stripe account to manage payment settings.
-              </p>
-            )}
+            <label htmlFor="phone" className={styles.label}>
+              Payment method
+            </label>
+            <InputField
+              id="card"
+              name="card"
+              type="text"
+              disabled
+              value={"Visa **** 1234"}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => () => {
+                console.log(e);
+              }}
+              placeholder="Your display name"
+            />
           </section>
 
-          {/* Notification Preferences Section
+          {/* Payment Settings Section */}
           <section className={styles.section}>
-            <h2 className={styles.sectionTitle}><Bell size={20} style={{ marginRight: '0.5rem' }} /> Notification Preferences</h2>
-            <form onSubmit={handleNotificationPreferencesUpdate}>
-              <SwitchControl
-                id="emailGigUpdates"
-                label="Email: Gig Updates & Offers"
-                checked={emailGigUpdates}
-                onCheckedChange={setEmailGigUpdates}
-              />
-              <SwitchControl
-                id="emailPlatformAnnouncements"
-                label="Email: Platform News & Announcements"
-                checked={emailPlatformAnnouncements}
-                onCheckedChange={setEmailPlatformAnnouncements}
-              />
-              SMS Notification Option (Commented Out)
-              
-              <SwitchControl
-                id="smsGigAlerts"
-                label="SMS: Urgent Gig Alerts (if phone provided)"
-                checked={smsGigAlerts}
-                onCheckedChange={setSmsGigAlerts}
-              />
-            
-              <div className={styles.actionButtons}>
-                  <button type="submit" className={styles.button} disabled={isSavingNotifications}>
-                      <Save size={16} /> {isSavingNotifications ? 'Saving...' : 'Save Preferences'}
-                  </button>
-              </div>
-            </form>
-          </section> */}
+            <h2 className={styles.sectionTitle}>Notification Preferences</h2>
+            <SwitchControl
+              id="emailNotification"
+              label="Email Notifications"
+              checked={notificationEmail}
+              onCheckedChange={() => handleToggleEmailNotification()}
+            />
+            <SwitchControl
+              id="smsNotification"
+              label="SMS Notifications"
+              checked={notificationSms}
+              onCheckedChange={() => handleToggleSmsNotification()}
+            />
+          </section>
+
+          {/* Payment Settings Section */}
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}>Privacy Settings</h2>
+            <SwitchControl
+              id="profileVisibility"
+              label="Profile Visibility (Public/Private for search)"
+              checked={profileVisibility}
+              onCheckedChange={() => handleToggleProfileVisibility()}
+            />
+          </section>
+
+          {/* Payment Settings Section */}
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}>Community Discord channel</h2>
+            <label htmlFor="phone" className={styles.label}>
+              Join here
+            </label>
+          </section>
+
+          {/* Payment Settings Section */}
+          <section className={styles.section}>
+            <h2 className={styles.sectionTitle}>User policy</h2>
+            <label htmlFor="phone" className={styles.label}>
+              Read here
+            </label>
+          </section>
 
           {/* Account Security Section */}
           <section className={styles.section}>
@@ -603,21 +583,26 @@ export default function SettingsPage() {
               onSubmit={handleChangePassword}
               className={styles.passwordChangeSection}
             >
-              {/* <div className={styles.formGroup}>
-                <label htmlFor="currentPassword" className={styles.label}>Current Password</label>
+              <div className={styles.formGroup}>
+                <label htmlFor="currentPassword" className={styles.label}>
+                  Contraseña actual
+                </label>
                 <InputField
                   id="currentPassword"
                   name="currentPassword"
                   type="password"
                   value={currentPassword}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => setCurrentPassword(e.target.value)}
-                  placeholder="Your current password"
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setCurrentPassword(e.target.value)
+                  }
+                  placeholder="Ingresa tu contraseña actual"
                   required
                 />
-              </div> */}
+              </div>
+
               <div className={styles.formGroup}>
                 <label htmlFor="newPassword" className={styles.label}>
-                  New Password
+                  Nueva contraseña
                 </label>
                 <InputField
                   id="newPassword"
@@ -627,13 +612,14 @@ export default function SettingsPage() {
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     setNewPassword(e.target.value)
                   }
-                  placeholder="Enter new password (min. 10 characters)"
+                  placeholder="Mínimo 6 caracteres"
                   required
                 />
               </div>
+
               <div className={styles.formGroup}>
                 <label htmlFor="confirmNewPassword" className={styles.label}>
-                  Confirm New Password
+                  Confirmar nueva contraseña
                 </label>
                 <InputField
                   id="confirmNewPassword"
@@ -643,20 +629,22 @@ export default function SettingsPage() {
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     setConfirmNewPassword(e.target.value)
                   }
-                  placeholder="Confirm new password"
+                  placeholder="Repite la nueva contraseña"
                   required
                 />
               </div>
+
               <div className={styles.actionButtons}>
                 <button
                   type="submit"
                   className={styles.button}
                   disabled={isSavingProfile}
                 >
-                  {isSavingProfile ? "Changing..." : "Change Password"}
+                  {isSavingProfile ? "Cambiando..." : "Cambiar contraseña"}
                 </button>
               </div>
             </form>
+
             <div style={{ marginTop: "1rem", textAlign: "right" }}>
               <button
                 onClick={handleForgotPassword}
@@ -667,37 +655,21 @@ export default function SettingsPage() {
             </div>
           </section>
 
-          {/* Privacy Settings Section (NEW)
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}><EyeOff size={20} style={{ marginRight: '0.5rem' }} /> Privacy Settings</h2>
-            <SwitchControl
-              id="profileVisibility"
-              label="Profile Visibility (Public/Private for search)"
-              checked={profileVisibility} // Connect to state
-              onCheckedChange={handleProfileVisibilityChange} // Connect to handler
-            />
-            Add more privacy toggles as needed
-          </section> */}
-
-          {/* Community & Legal Section (Combined & NEW)
-          <section className={styles.section}>
-            <h2 className={styles.sectionTitle}><Info size={20} style={{ marginRight: '0.5rem' }} /> Community & Legal</h2>
-            <ul className={styles.linkList}>
-              <li><a href="YOUR_DISCORD_LINK" target="_blank" rel="noopener noreferrer">Join our Community Discord</a></li>
-              <li><a href="/user-policy" target="_blank" rel="noopener noreferrer">User Policy</a></li>
-              <li><a href="/terms-of-service" target="_blank" rel="noopener noreferrer">Terms of Service</a></li>
-              <li><a href="/privacy-policy" target="_blank" rel="noopener noreferrer">Privacy Policy</a></li>
-            </ul>
-          </section> */}
-
-          {/* Actions Section (Bottom Nav from user prompt) */}
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <Logo width={60} height={60} />
+            <div
+              className={`${styles2.suggestionBanner} ${styles2.suggestionTextContainer}`}
+            >
+              <p
+                className={styles2.dismissedText}
+                onClick={() => router.replace(`able-ai`)}
+              >
+                How can i help?
+              </p>
+            </div>
+          </div>
           <section className={styles.bottomNavSection}>
             <div className={styles.bottomNav}>
-              {" "}
-              {/* Using user's class name idea */}
-              {/* <button onClick={() => alert('Contact support: support@ableai.com')} className={styles.bottomNavLink}>
-                <MessageSquare size={18} /> Contact Able AI Agent
-              </button> */}
               <button onClick={handleLogout} className={styles.bottomNavLink}>
                 <LogOut size={18} /> Logout
               </button>
@@ -711,15 +683,6 @@ export default function SettingsPage() {
           </section>
         </div>
 
-        {/* Stripe Connect Prompt Modal (Optional, if not inline) */}
-        {/* {showStripePromptModal && (
-          <Modal title="Connect Stripe to Get Paid" onClose={() => setShowStripePromptModal(false)}>
-            // Content of the prompt
-            <button onClick={handleStripeConnect} disabled={isConnectingStripe}>...</button>
-          </Modal>
-        )} */}
-
-        {/* Delete Account Confirmation Modal */}
         {showDeleteAccountModal && (
           <div
             className={styles.modalOverlay}
@@ -750,6 +713,69 @@ export default function SettingsPage() {
                 >
                   {isDeletingAccount ? "Deleting..." : "Yes, Delete My Account"}
                 </button>
+              </div>
+            </div>
+          </div>
+        )}
+        {showStripeModal && (
+          <div
+            className={styles.modalOverlay}
+            onClick={() => setShowStripeModal(false)}
+          >
+            <div
+              className={styles.modalContent}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className={styles.modalHeader}>
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <div className={styles.stripeIconWrapper}>
+                    <AlertTriangle size={28} color="#ffc107" />
+                  </div>
+                  <h3 style={{
+                    marginLeft: "10px"
+                  }}>Get Paid with Stripe!</h3>
+                </div>
+                <button
+                  onClick={() => setShowStripeModal(false)}
+                  className={styles.closeButton}
+                  aria-label="Close"
+                >
+                  ×
+                </button>
+              </div>
+
+              <p>
+                To receive payments for your gigs, you must connect your bank
+                account through our payment provider, Stripe. This is secure,
+                free, and only takes a minute.
+              </p>
+
+              <div className={styles.modalActions}>
+                <button
+                  onClick={handleStripeConnect}
+                  className={styles.stripeButton}
+                  disabled={isConnectingStripe}
+                >
+                  {isConnectingStripe
+                    ? "Connecting..."
+                    : "Connect My Bank Account"}
+                </button>
+              </div>
+              <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+              >
+              <AlertTriangle size={20} color="#ffc107" />
+              <p>Not connected</p>
               </div>
             </div>
           </div>

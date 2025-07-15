@@ -10,12 +10,7 @@ import {
 import { authClient } from "@/lib/firebase/clientApp";
 
 type Claims = {
-  name: string;
   role: string;
-  companyId: string;
-  companyName: string;
-  plan: string;
-  lastRoleUsed: string
 };
 
 export type User = FirebaseUser & {

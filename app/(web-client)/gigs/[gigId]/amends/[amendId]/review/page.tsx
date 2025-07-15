@@ -1,36 +1,21 @@
 "use client";
 
-import React from 'react';
-import { AlertCircle, MessageSquare } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { AlertCircle, MessageSquare, Loader2 } from 'lucide-react';
+import moment from 'moment';
 import styles from './ConfirmAmendedGigDetailsPage.module.css';
+import { useAuth } from '@/context/AuthContext';
+import { getGigDetails } from '@/actions/gigs/get-gig-details';
 import { getLastRoleUsed } from '@/lib/last-role-used';
 import UpdateGig from '@/app/components/gigs/UpdateGig';
 import Logo from '@/app/components/brand/Logo';
-
-// Mock data for Buyer view
-const buyerGigDetailsData = {
-  location: 'The Green Tavern, Main Street, Springfield',
-  date: 'Saturday, 12th November 2023',
-  time: '6:00 PM - 1:00 AM',
-  payPerHour: '£22',
-  totalPay: '£169.40',
-  summary: 'including Able and payment provider fees',
-};
+import { useParams } from 'next/navigation';
+import GigDetails, { GigReviewDetailsData } from '@/app/types/GigDetailsTypes';
 
 const buyerNotificationMessage = {
   user: "Benji",
   change: "the hourly rate to £22ph",
   prompt: "Please accept to confirm these changes, edit to suggest new changes, or decline"
-};
-
-// Mock data for Worker view
-const workerGigDetailsData = {
-  location: 'The Green Tavern, Main Street, Springfield',
-  date: 'Saturday, 12th November 2023',
-  time: '6:00 PM - 1:00 AM',
-  payPerHour: '£20',
-  totalPay: '£140',
-  summary: 'including Able and payment provider fees',
 };
 
 const workerNotificationMessage = {
@@ -39,12 +24,39 @@ const workerNotificationMessage = {
   prompt: "Please accept to confirm these changes"
 };
 
+function formatTimeRange(isoStartDateString: string, isoEndDateString: string) {
+  const start = moment.utc(isoStartDateString);
+  const end = moment.utc(isoEndDateString);
+
+  const formattedStartTime = start.format('h:mm A');
+  const formattedEndTime = end.format('h:mm A');
+
+  // Verifica si la hora de fin es al día siguiente (la fecha es diferente)
+  const isNextDay = start.dayOfYear() !== end.dayOfYear();
+
+  if (isNextDay)
+    return `${formattedStartTime} - ${formattedEndTime} (Next day)`;
+  return `${formattedStartTime} - ${formattedEndTime}`;
+}
+
 export default function ConfirmAmendedGigDetailsPage() {
-  const lastRoleUsed = getLastRoleUsed()
-  const [editedGigDetails, setEditedGigDetails] = React.useState(buyerGigDetailsData);
+  const params = useParams();
+  const gigId = params.gigId as string;
+  const lastRoleUsed = getLastRoleUsed();
+  const { user } = useAuth();
+  const [gigDetails, setGigDetails] = useState<GigDetails>();
+  const [editedGigDetails, setEditedGigDetails] = useState<GigReviewDetailsData>({
+    location: '',
+    date: '',
+    time: '',
+    payPerHour: '',
+    totalPay: '',
+    summary: '',
+  });
+  const [gigDetailsData, setGigDetailsData] = useState<GigReviewDetailsData>();
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Determine which data and UI elements to use based on role
-  const gigDetailsData = lastRoleUsed ? buyerGigDetailsData : workerGigDetailsData;
   const notificationMessage = lastRoleUsed ? buyerNotificationMessage : workerNotificationMessage;
 
   const handleEditDetails = () => {
@@ -66,11 +78,42 @@ export default function ConfirmAmendedGigDetailsPage() {
     console.log("Decline changes clicked");
   };
 
+  useEffect(() => {
+    const fetchGigDetails = async () => {
+      if (!user || !lastRoleUsed) return;
+      setIsLoading(true);
+
+      const role = lastRoleUsed.includes('BUYER') ? 'buyer' : 'worker';
+
+      const res = await getGigDetails({ userId: user.uid, gigId, role })
+      console.log({ res })
+      setIsLoading(false);
+
+      if (!res.gig) return;
+
+      const gigData = res.gig;
+      const gigSummary = {
+        date: gigData.date,
+        location: gigData.location,
+        summary: gigData.specialInstructions || '',
+        payPerHour: `${gigData.hourlyRate}`,
+        totalPay: `${gigData.estimatedEarnings}`,
+        time: formatTimeRange(res.gig?.startTime || '', res.gig?.endTime || ''),
+        status: gigData.status,
+      };
+      setGigDetails(gigData);
+      setGigDetailsData(gigSummary);
+      setEditedGigDetails(gigSummary);
+    };
+
+    fetchGigDetails();
+  }, []);
+
   return (
     <div className={styles.viewContainer}>
       <header className={styles.header}>
         <div className={styles.headerContent}>
-          <AlertCircle className={styles.headerIcon} strokeWidth={2} color='#ffffff'/>
+          <AlertCircle className={styles.headerIcon} strokeWidth={2} color='#ffffff' />
           <h1 className={styles.headerTitle}>Confirm amended Gig Details</h1>
         </div>
       </header>
@@ -80,9 +123,18 @@ export default function ConfirmAmendedGigDetailsPage() {
         <section className={`${styles.card} ${styles.notificationCard}`}>
           <div className={styles.notificationMain}>
             <Logo width={60} height={60} />
-            <p className={styles.notificationText}>
-              {notificationMessage.user} has {notificationMessage.change}, the update details are below. {notificationMessage.prompt}
-            </p>
+            {
+              gigDetails?.status !== 'CANCELLED' && !isLoading &&
+              <p className={styles.notificationText}>
+                {notificationMessage.user} has {notificationMessage.change}, the update details are below. {notificationMessage.prompt}
+              </p>
+            }
+            {
+              gigDetails?.statusInternal === 'CANCELLED_BY_WORKER' && lastRoleUsed === 'GIG_WORKER' &&
+              <p className={styles.notificationText}>
+                {gigDetails.buyerName} has cancelled the gig, but don't worry, there are more to come!
+              </p>
+            }
           </div>
           {lastRoleUsed == "BUYER" && (
             <MessageSquare className={styles.chatIcon} strokeWidth={1.5} onClick={() => console.log("Chat icon clicked")} />
@@ -134,13 +186,22 @@ export default function ConfirmAmendedGigDetailsPage() {
             )}
           </div>
         </section> */}
-        <UpdateGig
-          gigDetailsData={gigDetailsData}
-          editedGigDetails={gigDetailsData}
-          handleEditDetails={handleEditDetails}
-          setEditedGigDetails={setEditedGigDetails}
-          isOnConfirm={true}
-        />
+        {
+          !gigDetailsData && isLoading &&
+          <div className={styles.loaderContainer}>
+            <Loader2 />
+          </div>
+        }
+        {
+          gigDetailsData &&
+          < UpdateGig
+            gigDetailsData={gigDetailsData}
+            editedGigDetails={gigDetailsData}
+            handleEditDetails={handleEditDetails}
+            setEditedGigDetails={setEditedGigDetails}
+            isOnConfirm={true}
+          />
+        }
       </main>
 
       <footer className={styles.actionsFooter}>
@@ -150,7 +211,7 @@ export default function ConfirmAmendedGigDetailsPage() {
           onClick={handleConfirm}
         >
           Confirm changes
-        </button>  
+        </button>
         <button
           type="button"
           className={`${styles.actionButton} ${styles.suggestButton}`}
@@ -184,6 +245,6 @@ export default function ConfirmAmendedGigDetailsPage() {
           </>
         )}
       </footer>
-    </div>
+    </div >
   );
 } 

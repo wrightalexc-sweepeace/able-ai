@@ -19,8 +19,8 @@
     {
       "idx": 2,
       "version": "7",
-      "when": 1750448909340,
-      "tag": "0002_add_stripe_support_to_user",
+      "when": 1751052274338,
+      "tag": "0002_mighty_toxin",
       "breakpoints": true
     }
   ]

@@ -6,7 +6,7 @@ import * as relations from "./schema/relations";
 export const db = drizzle({
   connection: {
     connectionString: process.env.NILEDB_URL!,
-    ssl: true,
+    ssl: process.env.NODE_ENV === "production",
   },
   schema: { ...schema, ...relations },
 });
