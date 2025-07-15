@@ -17,7 +17,6 @@ type FeedbackContainerProps = {
   role: "GIG_WORKER" | "BUYER";
   mode: "worker" | "buyer";
   onSubmit: (formData: WorkerFeedbackFormData | BuyerFeedbackFormData) => void;
-  initialFormData?: WorkerFeedbackFormData | BuyerFeedbackFormData;
   loading?: boolean;
   error?: string | null;
   successMessage?: string | null;
@@ -45,13 +44,12 @@ const FeedbackContainer: React.FC<FeedbackContainerProps> = ({
   role,
   mode,
   onSubmit,
-  initialFormData,
   loading,
   error,
   successMessage,
 }) => {
   const [formData, setFormData] = useState<WorkerFeedbackFormData | BuyerFeedbackFormData>(
-    initialFormData || (mode === "worker" ? defaultWorkerForm : defaultBuyerForm)
+    (mode === "worker" ? defaultWorkerForm : defaultBuyerForm)
   );
   const [submitting, setSubmitting] = useState(false);
 

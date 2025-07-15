@@ -47,6 +47,7 @@ const ConfirmAmendedGigDetailsContainer: React.FC<ConfirmAmendedGigDetailsContai
 
   const handleConfirm = () => {
     // Logic for confirming changes
+    console.log(amendId)
   };
 
   const handleSuggestNew = () => {
