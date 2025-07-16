@@ -7,7 +7,7 @@ import styles from "@/app/signin/SignInPage.module.css";
 import { useRouter } from 'next/navigation';
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { signInWithFirebaseAction } from "@/actions/auth/singin";
-import { authClient } from "@/lib/firebase/clientApp";
+import { useFirebase } from "@/context/FirebaseContext";
 
 interface SignInViewProps {
   onToggleRegister: () => void;
@@ -19,6 +19,7 @@ const SignInView: React.FC<SignInViewProps> = ({ onToggleRegister, onError }) =>
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { authClient } = useFirebase();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,8 +27,11 @@ const SignInView: React.FC<SignInViewProps> = ({ onToggleRegister, onError }) =>
     onError(null);
 
     try {
-      const userCredential = await signInWithEmailAndPassword(authClient, email, password);
-      const user = userCredential.user;
+      let userCredential
+      if (authClient) {
+        userCredential = await signInWithEmailAndPassword(authClient, email, password);
+      }
+      const user = userCredential?.user;
 
       if (!user?.uid) throw new Error("User UID not found");
 

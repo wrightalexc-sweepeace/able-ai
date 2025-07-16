@@ -13,11 +13,12 @@ import {
 } from "firebase/auth";
 import { FirebaseError } from "firebase/app";
 import styles from "./usermgmt.module.css";
-import { authClient } from "@/lib/firebase/clientApp";
+import { useFirebase } from "@/context/FirebaseContext";
 
 const UserMgmtPage: React.FC = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { authClient } = useFirebase();
 
   const [actionCode, setActionCode] = useState<string | null>(null);
   const [continueUrl, setContinueUrl] = useState<string | null>(null);
@@ -27,14 +28,17 @@ const UserMgmtPage: React.FC = () => {
   const [uiState, setUiState] = useState<
     "initial" | "inputPassword" | "success" | "error"
   >("initial");
-  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null | undefined>(null);
   const [newPassword, setNewPassword] = useState<string>("");
 
   const handleResetPassword = useCallback(async (currentActionCode: string) => {
     setIsLoading(true);
     setError(null);
     try {
-      const email = await verifyPasswordResetCode(authClient, currentActionCode);
+      let email;
+      if (authClient) {
+        email = await verifyPasswordResetCode(authClient, currentActionCode);
+      }
       setUserEmail(email);
       setUiState("inputPassword");
       setMessage(
@@ -65,10 +69,12 @@ const UserMgmtPage: React.FC = () => {
     setIsLoading(true);
     setError(null);
     try {
-      await confirmPasswordReset(authClient, actionCode, newPassword);
-      setMessage(
-        "Password has been reset successfully! Attempting to sign you in..."
-      );
+      if (authClient) {
+        await confirmPasswordReset(authClient, actionCode, newPassword);
+        setMessage(
+          "Password has been reset successfully! Attempting to sign you in..."
+        );
+      }
       try {
         if (!userEmail) {
           // This case should ideally not happen if verifyPasswordResetCode was successful
@@ -78,9 +84,12 @@ const UserMgmtPage: React.FC = () => {
           setUiState("success"); // Still a success for password reset
           return;
         }
-        await signInWithEmailAndPassword(authClient, userEmail, newPassword);
-        setMessage("Password reset and signed in successfully!");
-        setUiState("success");
+        if (authClient) {
+          await signInWithEmailAndPassword(authClient, userEmail, newPassword);
+          setMessage("Password reset and signed in successfully!");
+          setUiState("success");
+        }
+
         if (continueUrl) {
           router.push(continueUrl); // Redirect if continueUrl is available
         } else {
@@ -117,16 +126,18 @@ const UserMgmtPage: React.FC = () => {
     setIsLoading(true);
     setError(null);
     try {
-      const info = await checkActionCode(authClient, currentActionCode);
-      const oldEmail = info.data.email; // Email being restored
-      await applyActionCode(authClient, currentActionCode);
-      setUserEmail(oldEmail || "");
-      setMessage(
-        `Your email has been successfully reverted to ${oldEmail}. If you did not request this, please secure your account.`
-      );
-      setUiState("success");
-      // Optionally offer to send a password reset email to the restored email
-      // auth.sendPasswordResetEmail(oldEmail);
+      if (authClient) {
+        const info = await checkActionCode(authClient, currentActionCode);
+        const oldEmail = info.data.email; // Email being restored
+        await applyActionCode(authClient, currentActionCode);
+        setUserEmail(oldEmail || "");
+        setMessage(
+          `Your email has been successfully reverted to ${oldEmail}. If you did not request this, please secure your account.`
+        );
+        setUiState("success");
+        // Optionally offer to send a password reset email to the restored email
+        // auth.sendPasswordResetEmail(oldEmail);
+      }
     } catch (err: unknown) {
       console.error("Error recovering email:", err);
       if (err instanceof FirebaseError) {
@@ -147,16 +158,18 @@ const UserMgmtPage: React.FC = () => {
       setIsLoading(true);
       setError(null);
       try {
-        await applyActionCode(authClient, currentActionCode);
-        setMessage("Your email address has been verified successfully!");
-        setUiState("success");
-        if (currentContinueUrl) {
-          // router.push(currentContinueUrl); // Or provide a button
-          setMessage(
-            (prev) =>
-              prev +
-              ` You will be redirected shortly if a continue URL was provided, or click here: <a href='${currentContinueUrl}'>Continue</a>`
-          );
+        if (authClient) {
+          await applyActionCode(authClient, currentActionCode);
+          setMessage("Your email address has been verified successfully!");
+          setUiState("success");
+          if (currentContinueUrl) {
+            // router.push(currentContinueUrl); // Or provide a button
+            setMessage(
+              (prev) =>
+                prev +
+                ` You will be redirected shortly if a continue URL was provided, or click here: <a href='${currentContinueUrl}'>Continue</a>`
+            );
+          }
         }
       } catch (err: unknown) {
         console.error("Error verifying email:", err);
@@ -177,53 +190,55 @@ const UserMgmtPage: React.FC = () => {
 
   // https://blog.logrocket.com/send-custom-email-templates-firebase-react-express/
   const handleSignIn = useCallback(
-    async (currentActionCode: string ) => {
+    async (currentActionCode: string) => {
       setIsLoading(true);
       setError(null);
       try {
-        if (isSignInWithEmailLink(authClient, window.location.href)) {
-          // Additional state parameters can also be passed via URL.
-          // This can be used to continue the user's intended action before triggering
-          // the sign-in operation.
-          // Get the email if available. This should be available if the user completes
-          // the flow on the same device where they started it.
-          let email = window.localStorage.getItem("emailForSignIn");
-          if (!email) {
-            // User opened the link on a different device. To prevent session fixation attacks,
-            const info = await checkActionCode(authClient, currentActionCode);
-            const firebaseEmail = info.data.email;
-            if (firebaseEmail) {
-              email = firebaseEmail;
-            } else {
-              email = window.prompt(
-                "Please provide your email for confirmation"
-              );
+        if (authClient) {
+          if (isSignInWithEmailLink(authClient, window.location.href)) {
+            // Additional state parameters can also be passed via URL.
+            // This can be used to continue the user's intended action before triggering
+            // the sign-in operation.
+            // Get the email if available. This should be available if the user completes
+            // the flow on the same device where they started it.
+            let email = window.localStorage.getItem("emailForSignIn");
+            if (!email) {
+              // User opened the link on a different device. To prevent session fixation attacks,
+              const info = await checkActionCode(authClient, currentActionCode);
+              const firebaseEmail = info.data.email;
+              if (firebaseEmail) {
+                email = firebaseEmail;
+              } else {
+                email = window.prompt(
+                  "Please provide your email for confirmation"
+                );
+              }
             }
+            if (!email) {
+              setError("No email found. Please try signing in manually.");
+              setUiState("error");
+              setIsLoading(false);
+              router.push("/signin");
+              return;
+            }
+            // The client SDK will parse the code from the link for you.
+            signInWithEmailLink(authClient, email, window.location.href)
+              .then(() => {
+                // Clear email from storage.
+                window.localStorage.removeItem("emailForSignIn");
+                // You can access the new user by importing getAdditionalUserInfo
+                // and calling it with result:
+                // getAdditionalUserInfo(result)
+                // You can access the user's profile via:
+                // getAdditionalUserInfo(result)?.profile
+                // You can check if the user is new or existing:
+                // getAdditionalUserInfo(result)?.isNewUser
+              })
+              .catch(() => {
+                // Some error occurred, you can inspect the code: error.code
+                // Common errors could be invalid email and invalid or expired OTPs.
+              });
           }
-          if (!email) {
-            setError("No email found. Please try signing in manually.");
-            setUiState("error");
-            setIsLoading(false);
-            router.push("/signin");
-            return;
-          }
-          // The client SDK will parse the code from the link for you.
-          signInWithEmailLink(authClient, email, window.location.href)
-            .then(() => {
-              // Clear email from storage.
-              window.localStorage.removeItem("emailForSignIn");
-              // You can access the new user by importing getAdditionalUserInfo
-              // and calling it with result:
-              // getAdditionalUserInfo(result)
-              // You can access the user's profile via:
-              // getAdditionalUserInfo(result)?.profile
-              // You can check if the user is new or existing:
-              // getAdditionalUserInfo(result)?.isNewUser
-            })
-            .catch(() => {
-              // Some error occurred, you can inspect the code: error.code
-              // Common errors could be invalid email and invalid or expired OTPs.
-            });
         }
         setMessage("Your email address has been verified successfully!");
         setUiState("success");
@@ -274,7 +289,7 @@ const UserMgmtPage: React.FC = () => {
         setUiState("error");
         setIsLoading(false);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     searchParams,
     handleResetPassword,

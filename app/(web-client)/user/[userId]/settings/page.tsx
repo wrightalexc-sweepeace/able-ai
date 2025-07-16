@@ -23,12 +23,12 @@ import {
 } from "lucide-react";
 import Loader from "@/app/components/shared/Loader";
 import { useAuth } from "@/context/AuthContext";
-import { authClient } from "@/lib/firebase/clientApp";
 import { FirebaseError } from "firebase/app";
 import SwitchControl from "@/app/components/shared/SwitchControl";
 import Logo from "@/app/components/brand/Logo";
 import { toast } from "sonner";
 import { getProfileInfoUserAction, updateNotificationEmailAction, updateNotificationSmsAction, updateProfileVisibilityAction, updateUserProfileAction } from "@/actions/user/user";
+import { useFirebase } from "@/context/FirebaseContext";
 
 interface UserSettingsData {
   displayName: string;
@@ -103,6 +103,7 @@ export default function SettingsPage() {
   const [emailPlatformAnnouncements, setEmailPlatformAnnouncements] =
     useState(false);
   const [smsGigAlerts, setSmsGigAlerts] = useState(false);
+  const { authClient } = useFirebase();
 
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -266,9 +267,11 @@ export default function SettingsPage() {
       return;
     }
     try {
-      await sendPasswordResetEmail(authClient, userSettings.email);
-      setSuccessMessage("Password reset email sent. Please check your inbox.");
-      toast.success(`Check your email to reset your password.`);
+      if (authClient) {
+        await sendPasswordResetEmail(authClient, userSettings.email);
+        setSuccessMessage("Password reset email sent. Please check your inbox.");
+        toast.success(`Check your email to reset your password.`);
+      }
     } catch (err) {
       if (err instanceof FirebaseError) {
         setError(err.message || "Failed to send password reset email.");
@@ -281,8 +284,10 @@ export default function SettingsPage() {
   const handleLogout = async () => {
     clearMessages();
     try {
-      await firebaseSignOut(authClient);
-      router.push("/signin");
+      if(authClient) {
+        await firebaseSignOut(authClient);
+        router.push("/signin");
+      }
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message || "Logout failed.");
@@ -326,8 +331,10 @@ export default function SettingsPage() {
       await new Promise((res) => setTimeout(res, 2000));
       setSuccessMessage("Account deleted successfully. Redirecting...");
       // On success, logout and redirect
-      await firebaseSignOut(authClient);
-      router.push("/signin"); // Or home page
+      if (authClient) {
+        await firebaseSignOut(authClient);
+        router.push("/signin"); // Or home page
+      }
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message || "Failed to delete account.");

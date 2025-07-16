@@ -6,13 +6,14 @@ import Logo from "@/app/components/brand/Logo";
 import InputField from "@/app/components/form/InputField";
 import SubmitButton from "@/app/components/form/SubmitButton";
 import styles from "./ResetPasswordPage.module.css";
-import { authClient } from "@/lib/firebase/clientApp";
+import { useFirebase } from "@/context/FirebaseContext";
 
 export default function ResetPasswordPage() {
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { authClient } = useFirebase();
 
   const handleResetPassword = async (event: FormEvent) => {
     event.preventDefault();
@@ -20,8 +21,10 @@ export default function ResetPasswordPage() {
     setLoading(true);
 
     try {
-      await sendPasswordResetEmail(authClient, email);
-      setSuccess(true);
+      if (authClient) {
+        await sendPasswordResetEmail(authClient, email);
+        setSuccess(true);
+      }
     } catch (err: unknown) {
       if (err instanceof Error) {
         console.error("Password Reset Error:", err);

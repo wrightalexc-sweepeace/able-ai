@@ -2,12 +2,13 @@
 import { useEffect, useState } from "react";
 import { getToken, isSupported } from "firebase/messaging";
 import useNotificationPermission from "./useNotificationPermission";
-import { messaging } from "@/lib/firebase/clientApp";
 import { subscribeFcmTopicAction } from "@/actions/notifications/notifications";
+import { useFirebase } from "@/context/FirebaseContext";
 
 const useFCMToken = () => {
   const permission = useNotificationPermission();
   const [fcmToken, setFcmToken] = useState<string | null>(null);
+  const { messaging } = useFirebase();
 
   useEffect(() => {
     const retrieveToken = async () => {
@@ -17,7 +18,7 @@ const useFCMToken = () => {
           if (!isFCMSupported) return;
           const registration = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
 
-          const fcmToken = await getToken(messaging(), {
+          const fcmToken = await getToken(messaging, {
             vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
             serviceWorkerRegistration: registration,
           })
