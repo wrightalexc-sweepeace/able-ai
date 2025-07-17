@@ -78,6 +78,7 @@
   border: none;
 }
 
+
 .calendarWrapper :global(.rbc-day-bg) {
   border-left: 1px solid #2b2b2b;
 }
@@ -104,6 +105,8 @@
 .calendarWrapper :global(.rbc-event) {
   box-shadow: 0 2px 4px rgba(0,0,0,0.4);
   font-weight: 500;
+  background-color: #161616;
+  /* overflow-y: scroll; */
 }
 .calendarWrapper :global(.rbc-event:focus), .calendarWrapper :global(.rbc-event.rbc-selected) {
     outline: 2px solid var(--primary-color);
@@ -112,6 +115,9 @@
     font-size: 0.75rem;
 }
 .calendarWrapper :global(.rbc-event-content) {
+  font-size: 14px;
+  font-family: var(--font-family);
+  line-height: 16px;
 }
 
 .calendarWrapper :global(.rbc-agenda-table) {
@@ -140,6 +146,8 @@
   border-bottom: 1px solid #3a3a3a;
 }
 .calendarWrapper :global(.rbc-time-slot) {
+  border-top: 1px solid #000000;
+  /* z-index: 100; */
 }
 
 /* Legend Styling */

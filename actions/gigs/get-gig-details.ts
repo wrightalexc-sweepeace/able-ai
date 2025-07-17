@@ -23,6 +23,7 @@ function getMockedQAData(gigId: string) {
       estimatedEarnings: 125,
       specialInstructions: "Focus on high-quality cocktails. Dress code: smart black. Setup starts 30 mins prior. Contact person on site: Jane (07xxxxxxxxx).",
       status: "IN_PROGRESS", // Initially pending
+      statusInternal: "IN_PROGRESS",
       hiringManager: "Jane Smith",
       hiringManagerUsername: "@janesmith",
       isBuyerSubmittedFeedback: false,
@@ -42,6 +43,7 @@ function getMockedQAData(gigId: string) {
       hourlyRate: 18, estimatedEarnings: 108,
       specialInstructions: "Silver service required. Liaise with the event coordinator Sarah upon arrival.",
       status: "IN_PROGRESS", // Initially completed
+      statusInternal: "IN_PROGRESS",
       hiringManager: "Sarah Johnson",
       hiringManagerUsername: "@sarahjohnson",
       isBuyerSubmittedFeedback: false,
@@ -140,6 +142,7 @@ export async function getGigDetails({ gigId, userId, role, isViewQA }: { gigId: 
       estimatedEarnings: estimatedEarnings,
       specialInstructions: gig.notesForWorker || undefined,
       status: getMappedStatus(gig.statusInternal),
+      statusInternal: gig.statusInternal,
       hiringManager: gig.buyer.fullName || 'manager',
       hiringManagerUsername: gig.buyer.email,
       isWorkerSubmittedFeedback: isWorkerSubmittedFeedback,

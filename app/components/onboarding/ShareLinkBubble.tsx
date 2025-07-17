@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import styles from './ShareLinkBubble.module.css';
-import { Share2 } from 'lucide-react';
+import React, { useState } from "react";
+import styles from "./ShareLinkBubble.module.css";
+import { CheckCircle, Copy, Share2 } from "lucide-react";
 
 interface ShareLinkBubbleProps {
   label?: string;
@@ -14,7 +14,7 @@ const ShareLinkBubble: React.FC<ShareLinkBubbleProps> = ({
   linkUrl,
   linkText,
   disabled,
-  onCopy
+  onCopy,
 }) => {
   const [copied, setCopied] = useState(false);
   const displayLinkText = linkText || linkUrl;
@@ -27,7 +27,7 @@ const ShareLinkBubble: React.FC<ShareLinkBubbleProps> = ({
       if (onCopy) onCopy(linkUrl);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
-      console.error('Failed to copy link: ', err);
+      console.error("Failed to copy link: ", err);
     }
   };
 
@@ -42,16 +42,20 @@ const ShareLinkBubble: React.FC<ShareLinkBubbleProps> = ({
               href={linkUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className={`${styles.shareLink} ${disabled ? styles.disabledLink : ''}`}
+              className={`${styles.shareLink} ${
+                disabled ? styles.disabledLink : ""
+              }`}
               onClick={(e) => disabled && e.preventDefault()}
               title={linkUrl}
             >
               {displayLinkText}
             </a>
           ) : (
-            <span className={styles.noLinkText}>{linkUrl ? displayLinkText : "No link available"}</span>
+            <span className={styles.noLinkText}>
+              {linkUrl ? displayLinkText : "No link available"}
+            </span>
           )}
-          {/* {linkUrl && navigator.clipboard && (
+          {linkUrl && navigator.clipboard && (
             <button
               type="button"
               onClick={handleCopy}
@@ -59,10 +63,14 @@ const ShareLinkBubble: React.FC<ShareLinkBubbleProps> = ({
               className={styles.copyButton}
               title="Copy link"
             >
-              {copied ? <CheckCircle size={16} className={styles.copiedIcon} /> : <Copy size={16} />}
+              {copied ? (
+                <CheckCircle size={16} className={styles.copiedIcon} />
+              ) : (
+                <Copy size={16} />
+              )}
             </button>
-          )} */}
-          <Share2 color='#41a1e8' />
+          )}
+          <Share2 color="#41a1e8" />
         </div>
       </div>
     </div>

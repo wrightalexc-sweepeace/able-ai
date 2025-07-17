@@ -13,6 +13,7 @@ const VIEW_OPTIONS: { label: string; value: View }[] = [
 interface CalendarHeaderProps {
   date: Date;
   view: View;
+  role: string;
   onViewChange: (view: View) => void;
   onNavigate: (action: "TODAY" | "PREV" | "NEXT") => void;
   filters: string[];
@@ -23,6 +24,7 @@ interface CalendarHeaderProps {
 const CalendarHeader: React.FC<CalendarHeaderProps> = ({
   date,
   view,
+  role,
   onViewChange,
   onNavigate,
   filters,
@@ -80,7 +82,7 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
             key={filter}
             className={
               filter === activeFilter
-                ? `${styles.filterPill} ${styles.activePill}`
+                ? `${styles.filterPill} ${role === "worker" ? styles.activePillWorker : styles.activePillBuyer}`
                 : styles.filterPill
             }
             onClick={() => onFilterChange(filter)}

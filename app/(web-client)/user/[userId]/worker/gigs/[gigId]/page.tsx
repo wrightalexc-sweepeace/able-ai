@@ -13,7 +13,7 @@ async function fetchWorkerGigDetails(user: User, gigId: string): Promise<GigDeta
   console.log("Fetching gig details for worker:", user?.uid, "gig:", gigId);
 
   const isViewQA = user?.claims.role === "QA";
-  const { gig, status } = await getGigDetails({ gigId, userId: user?.uid, role: 'buyer', isViewQA });
+  const { gig, status } = await getGigDetails({ gigId, userId: user?.uid, role: 'worker', isViewQA });
 
   if (!gig || status !== 200) return null;
 

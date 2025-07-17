@@ -127,3 +127,31 @@
 .workerBtn:hover {
   background-color: #3071bb; /* Lighter blue on hover */
 }
+
+.cancelBtn {
+  background-color: var(--error-color);
+}
+
+.cancelBtnText {
+  display: flex;
+  flex-direction: column;
+}
+
+.cancelBtn:hover {
+  background-color: rgba(239, 68, 68, 0.5);
+}
+
+.loadingCancelSubmit {
+  display: flex;
+  justify-content: center;
+}
+
+.loadingCancelSubmit span {
+  color: black;
+}
+
+.actionBtnContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
