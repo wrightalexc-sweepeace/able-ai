@@ -21,48 +21,39 @@ interface FirebaseContextType {
 const FirebaseContext = createContext<FirebaseContextType | null>(null);
 
 export const FirebaseProvider = ({ children }: { children: ReactNode }) => {
+  const [authClient, setAuthClient] = React.useState<Auth | null>(null);
+  const [messaging, setMessaging] = React.useState<
+    import("firebase/messaging").Messaging | null
+  >(null);
+  const [db, setDb] = React.useState<Firestore | null>(null);
+  const [storage, setStorage] = React.useState<FirebaseStorage | null>(null);
+  const [ai, setAi] = React.useState<ReturnType<typeof getAI> | null>(null);
+  const [loading, setLoading] = React.useState(true);
 
-    const [authClient, setAuthClient] = React.useState<Auth | null>(null);
-    const [messaging, setMessaging] = React.useState<any>(null);
-    const [db, setDb] = React.useState<Firestore | null>(null);
-    const [storage, setStorage] = React.useState<FirebaseStorage | null>(null);
-    const [ai, setAi] = React.useState<any | null>(null);
-    const [loading, setLoading] = React.useState(true);
+  useEffect(() => {
+    async function initFirebase() {
+      const res = await fetch("/firebase-config.json");
+      const firebaseConfig = await res.json();
 
-useEffect(() => {
-    const firebaseConfig = {
-  apiKey: "AIzaSyBF7DIyylS8ByVbXxdmnmLkKpLyXSdEbQA",
-  authDomain: "ableai-mvp.firebaseapp.com",
-  projectId: "ableai-mvp",
-  storageBucket: "ableai-mvp.firebasestorage.app",
-  messagingSenderId: "697522507372",
-  appId: "1:697522507372:web:7ce039897f0e597d4d9249"
-};
+      let firebaseApp: FirebaseApp;
 
-// Agrega logs para saber si se inicia o reutiliza
-let firebaseApp: FirebaseApp;
+      if (getApps().length === 0) {
+        console.log("[Firebase] Initializing new instance...");
+        firebaseApp = initializeApp(firebaseConfig);
+      } else {
+        console.log("[Firebase] Reusing existing instance.");
+        firebaseApp = getApp();
+      }
 
-if (getApps().length === 0) {
-  console.log("[Firebase] Inicializando nueva instancia...");
-  firebaseApp = initializeApp(firebaseConfig);
-} else {
-  console.log("[Firebase] Reutilizando instancia existente.");
-  firebaseApp = getApp();
-}
-
-setAuthClient(getAuth(firebaseApp));
-setDb(getFirestore(firebaseApp));
-setStorage(getStorage(firebaseApp));
-setAi(getAI(firebaseApp, { backend: new GoogleAIBackend() }));
-
-setMessaging(getMessaging(firebaseApp));
-
-setLoading(false);
-
-console.log("[Firebase] Servicios inicializados:", );
-
-
-},[]);
+      setAuthClient(getAuth(firebaseApp));
+      setDb(getFirestore(firebaseApp));
+      setStorage(getStorage(firebaseApp));
+      setAi(getAI(firebaseApp, { backend: new GoogleAIBackend() }));
+      setMessaging(getMessaging(firebaseApp));
+      setLoading(false);
+    }
+    initFirebase();
+  }, []);
   return (
     <FirebaseContext.Provider
       value={{
@@ -71,7 +62,7 @@ console.log("[Firebase] Servicios inicializados:", );
         storage,
         ai,
         messaging,
-        loading
+        loading,
       }}
     >
       {children}
@@ -81,6 +72,7 @@ console.log("[Firebase] Servicios inicializados:", );
 
 export const useFirebase = () => {
   const context = useContext(FirebaseContext);
-  if (!context) throw new Error("useFirebase must be used within FirebaseProvider");
+  if (!context)
+    throw new Error("useFirebase must be used within FirebaseProvider");
   return context;
 };
