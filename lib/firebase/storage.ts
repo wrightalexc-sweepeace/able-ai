@@ -2,9 +2,10 @@ import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 
 import { getUserData } from ".";
 import { storage } from "@/lib/firebase/clientApp";
+import { Firestore } from "firebase/firestore";
 
-export async function uploadFile(file: File, userId: string) {
-  const userData = await getUserData(userId);
+export async function uploadFile(db: Firestore, file: File, userId: string) {
+  const userData = await getUserData(db, userId);
   const storageRef = ref(storage, `users/${userData.displayName}/files/${file.name}`);
   const uploadTask = uploadBytesResumable(storageRef, file);
 
@@ -31,8 +32,8 @@ export async function uploadFile(file: File, userId: string) {
     );
   });
 }
-export async function uploadFileWithProgress(file: File, userId: string) {
-  const userData = await getUserData(userId);
+export async function uploadFileWithProgress(db: Firestore,file: File, userId: string) {
+  const userData = await getUserData(db, userId);
   const storageRef = ref(storage, `users/${userData.displayName}/files/${file.name}`);
   const uploadTask = uploadBytesResumable(storageRef, file);
 

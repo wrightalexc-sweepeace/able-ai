@@ -1,5 +1,5 @@
 import { geminiAIAgent, GeminiAIOptions, SUPPORTED_GEMINI_MODELS } from "@/lib/firebase/ai";
-import { Schema } from "@firebase/ai";
+import { getAI, Schema } from "@firebase/ai";
 
 // --- Suggestion Schema ---
 const suggestionSchema = Schema.array({
@@ -44,7 +44,8 @@ interface Suggestion {
 
 export async function generateSuggestions(
   context: Record<string, unknown>,
-  role: 'worker' | 'buyer'
+  role: 'worker' | 'buyer',
+  ai: ReturnType<typeof getAI> | null,
 ): Promise<Suggestion[]> {
   // Build the prompt based on the role
   const knownLinkKeysInfo = `
@@ -86,7 +87,8 @@ Context: ${JSON.stringify(context)}`;
 
   const result = await geminiAIAgent<Suggestion[]>(
     modelName,
-    aiOptions
+    aiOptions,
+    ai,
   );
 
   if (result.ok) {

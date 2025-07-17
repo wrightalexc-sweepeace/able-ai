@@ -4,6 +4,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { SuggestedAction, Suggestion } from '@/app/components/shared/AiSuggestionBanner';
 import { generateSuggestions } from '@/lib/agents/suggestionBannerAgent';
+import { useFirebase } from '@/context/FirebaseContext';
 
 interface UseAiSuggestionBannerProps {
   role: 'buyer' | 'worker';
@@ -29,6 +30,7 @@ export function useAiSuggestionBanner({
   const suggestionsRef = useRef(suggestions);
   const [isLoading, setIsLoading] = useState<boolean>(true); // Start with loading true
   const [error, setError] = useState<string | null>(null);
+  const {ai} = useFirebase();
 
   const getLongTermDismissKey = useCallback(() => `${LONG_TERM_DISMISS_KEY_PREFIX}${userId}_${role}`,
     [userId, role]
@@ -65,7 +67,7 @@ export function useAiSuggestionBanner({
     setError(null);
 
     try {
-      let fetchedBatch = await generateSuggestions(context, role);
+      let fetchedBatch = await generateSuggestions(context, role, ai);
       if (!fetchedBatch || fetchedBatch.length === 0) {
         fetchedBatch = defaultSuggestions.map((s: { title: string; description: string; }) => ({ ...s, id: crypto.randomUUID(), suggestedActions: [] as SuggestedAction[] }));
       }

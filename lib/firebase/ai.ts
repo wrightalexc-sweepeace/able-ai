@@ -1,7 +1,6 @@
 // Gemini AI Agent Utility - Scaffolding
 
-import { ai } from "@/lib/firebase/clientApp";
-import { getGenerativeModel, Schema } from "@firebase/ai";
+import { getAI, getGenerativeModel, Schema } from "@firebase/ai";
 import { logClient, logServer, ERROR_CODES, AppLogError } from "@/lib/log";
 
 // --- Supported Models ---
@@ -34,10 +33,10 @@ export const defaultErrorHook: GeminiAIErrorHook = () => {};
 export async function geminiAIAgent<T>(
   modelName: SupportedGeminiModel,
   aiOptions: GeminiAIOptions,
+  injectedAI: ReturnType<typeof getAI> | null, // For testability
   fallbackModelName?: SupportedGeminiModel,
   retries = 3,
   errorHook: GeminiAIErrorHook = defaultErrorHook,
-  injectedAI: typeof ai = ai // For testability
 ): Promise<GeminiAIResult<T>> {
   // --- Model support check ---
   if (!SUPPORTED_GEMINI_MODELS.includes(modelName)) {
@@ -81,6 +80,15 @@ export async function geminiAIAgent<T>(
 
   while (attempt < retries) {
     try {
+      if (!injectedAI) {
+        const error = { ...ERROR_CODES.AI_API_ERROR, details: { attempt, modelName, aiOptions } };
+        logClient(error);
+        logServer(error);
+        errorHook(error);
+        lastError = error;
+        attempt++;
+        continue; // Retry if AI is not initialized
+      }
       // Get the generative model
       const model = getGenerativeModel(injectedAI, {
         model: currentModel,

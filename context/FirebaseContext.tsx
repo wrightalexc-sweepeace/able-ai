@@ -13,8 +13,8 @@ interface FirebaseContextType {
   authClient: Auth | null;
   db: Firestore | null;
   storage: FirebaseStorage | null;
-  ai: any | null;
-  messaging: any;
+  ai: ReturnType<typeof getAI> | null;
+  messaging: import("firebase/messaging").Messaging | null;
   loading: boolean;
 }
 

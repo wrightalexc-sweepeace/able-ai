@@ -18,6 +18,10 @@ const useFCMToken = () => {
           if (!isFCMSupported) return;
           const registration = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
 
+          if (!messaging) {
+            console.error("Firebase Messaging is not initialized.");
+            return;
+          }
           const fcmToken = await getToken(messaging, {
             vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
             serviceWorkerRegistration: registration,
