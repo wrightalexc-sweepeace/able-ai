@@ -29,7 +29,7 @@ interface OnboardingStep {
     | "discountCode";
   senderType?: "bot" | "user";
   content?: string | React.ReactNode; // For message-like steps or labels for non-input steps
-  inputConfig?: StepInputConfig;    // Configuration for input fields if the step type involves input
+  inputConfig?: StepInputConfig; // Configuration for input fields if the step type involves input
   isComplete?: boolean;
   dependsOn?: number;
   value?: any; // Stores the submitted value of the input for this step
@@ -201,7 +201,8 @@ export default function OnboardBuyerPage() {
     if (isQA) {
       const qaFormData: Record<string, any> = {};
       baseInitialSteps.forEach((step) => {
-        if (step.inputConfig?.name) { // Check if inputConfig and its name exist
+        if (step.inputConfig?.name) {
+          // Check if inputConfig and its name exist
           const inputConf = step.inputConfig; // Safe to use after check
           switch (inputConf.type) {
             case "file":
@@ -313,7 +314,10 @@ export default function OnboardBuyerPage() {
           break;
         }
       }
-      newMessages.push({ ...step, value: formData[step.inputConfig?.name || ""] });
+      newMessages.push({
+        ...step,
+        value: formData[step.inputConfig?.name || ""],
+      });
       if (
         (step.type === "userInput" ||
           step.type === "fileUpload" ||

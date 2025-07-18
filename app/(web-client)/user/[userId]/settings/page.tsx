@@ -74,7 +74,6 @@ export default function SettingsPage() {
   );
   const [isLoadingSettings, setIsLoadingSettings] = useState(true);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
-  const [isSavingNotifications, setIsSavingNotifications] = useState(false);
 
   // Stripe Connect related states
   const [isConnectingStripe, setIsConnectingStripe] = useState(false);
@@ -102,7 +101,6 @@ export default function SettingsPage() {
   const [emailGigUpdates, setEmailGigUpdates] = useState(false);
   const [emailPlatformAnnouncements, setEmailPlatformAnnouncements] =
     useState(false);
-  const [smsGigAlerts, setSmsGigAlerts] = useState(false);
   const { authClient } = useFirebase();
 
   const [error, setError] = useState<string | null>(null);

@@ -1,6 +1,6 @@
 /* eslint-disable max-lines-per-function */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import React, { use, useState } from 'react';
+import React from 'react';
 import { Calendar as BigCalendar, Formats, momentLocalizer, View } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';

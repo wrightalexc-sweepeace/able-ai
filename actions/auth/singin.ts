@@ -19,7 +19,13 @@ export async function signInWithFirebaseAction(uid: string) {
     await admin.auth().setCustomUserClaims(uid, customClaims);
 
     return {...CODES_SUCCESS.QUERY_OK, error: false};
-  } catch (error: any) {
-    return { error: error.message, ...ERROR_CODES.BAD_REQUEST };
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error("Error signing in with Firebase:", error.message);
+      return { error: error.message, ...ERROR_CODES.BAD_REQUEST };
+    } else {
+      console.error("Unexpected error signing in with Firebase:", error);
+      return { error: 'Unexpected error', ...ERROR_CODES.BAD_REQUEST };
+    }
   }
 }

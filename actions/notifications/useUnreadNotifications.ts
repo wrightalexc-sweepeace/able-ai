@@ -45,7 +45,7 @@ export async function resetUnreadCountInDB(): Promise<void> {
       reject(request.error);
     };
 
-    request.onupgradeneeded = (event) => {
+    request.onupgradeneeded = () => {
       const db = request.result;
       if (!db.objectStoreNames.contains(STORE_NAME)) {
         db.createObjectStore(STORE_NAME, { keyPath: "id" });
