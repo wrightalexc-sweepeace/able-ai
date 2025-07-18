@@ -1,5 +1,4 @@
-// Filtered passwords with more than 9 characters from top 10k passwords
-// https://github.com/ignis-sec/Pwdb-Public/blob/master/wordlists/ignis-10K.txt
+/* eslint-disable max-lines */
 const top10k10plus = new Set(
   [
     '1234567890',
