@@ -32,7 +32,7 @@ const useFCMToken = () => {
       }
     };
     retrieveToken();
-  }, [permission]);
+  }, [messaging, permission]);
 
   return fcmToken;
 };

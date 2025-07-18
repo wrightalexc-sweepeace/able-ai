@@ -16,7 +16,7 @@ const FcmProvider = ({ children }: { children: React.ReactNode }) => {
         });
       return () => unsubscribe();
     }
-  }, [fcmToken]);
+  }, [fcmToken, messaging]);
 
   return <>{children}</>
 };

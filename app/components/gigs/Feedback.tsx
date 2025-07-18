@@ -53,7 +53,6 @@ type FeedbackProps = {
 
 const Feedback: React.FC<FeedbackProps> = ({
   gigDetails,
-  role,
   mode,
   formData,
   onChange,

@@ -2,7 +2,6 @@
 
 import { getAI } from "@firebase/ai";
 import { logClient, logServer, ERROR_CODES, AppLogError } from "@/lib/log";
-/* eslint-disable max-lines-per-function */
 import { getGenerativeModel, Schema } from "@firebase/ai";
 import {
   isSupportedModel,
@@ -46,43 +45,10 @@ export async function geminiAIAgent<T>(
   retries = 3,
   errorHook: GeminiAIErrorHook = defaultErrorHook,
 ): Promise<GeminiAIResult<T>> {
-  // --- Model support check ---
-  if (!isSupportedModel(modelName, SUPPORTED_GEMINI_MODELS)) {
-    return {
-      ok: false,
-      error: ERROR_CODES.MODEL_NOT_SUPPORTED.message,
-      code: ERROR_CODES.MODEL_NOT_SUPPORTED.code,
-      details: { modelName },
-    };
-  }
-  if (
-    fallbackModelName &&
-    !isSupportedModel(fallbackModelName, SUPPORTED_GEMINI_MODELS)
-  ) {
-    handleGeminiError(
-      {
-        ...ERROR_CODES.MODEL_NOT_SUPPORTED,
-        details: { fallbackModelName },
-      },
-      errorHook
-    );
-    return {
-      ok: false,
-      error: ERROR_CODES.MODEL_NOT_SUPPORTED.message,
-      code: ERROR_CODES.MODEL_NOT_SUPPORTED.code,
-      details: { fallbackModelName },
-    };
-  }
-
-  // --- Streaming stub ---
-  if (aiOptions.isStream) {
-    handleGeminiError(ERROR_CODES.STREAM_NOT_IMPLEMENTED, errorHook);
-    return {
-      ok: false,
-      error: ERROR_CODES.STREAM_NOT_IMPLEMENTED.message,
-      code: ERROR_CODES.STREAM_NOT_IMPLEMENTED.code,
-      details: undefined,
-    };
+    const error = validateInputs(modelName, fallbackModelName, aiOptions);
+  if (error) {
+    handleGeminiError(error, errorHook);
+    return formatErrorResult(error);
   }
 
   // --- Schema enforcement ---
@@ -182,15 +148,38 @@ export async function geminiAIAgent<T>(
   };
 }
 
-// --- Streaming Stub (if needed) ---
-// function notImplementedStream() {
-//   const error = ERROR_CODES.STREAM_NOT_IMPLEMENTED;
-//   logClient(error);
-//   logServer(error);
-//   throw new Error(error.message);
-// }
+function validateInputs(
+  modelName: SupportedGeminiModel,
+  fallbackModelName: SupportedGeminiModel | undefined,
+  aiOptions: GeminiAIOptions,
+): AppLogError | null {
+  if (!isSupportedModel(modelName, SUPPORTED_GEMINI_MODELS)) {
+    return { ...ERROR_CODES.MODEL_NOT_SUPPORTED, details: { modelName } };
+  }
 
-// --- Example Schema Usage (commented) ---
-// const mySchema = Schema.object({
-//   answer: Schema.string(),
-// });
+  if (fallbackModelName && !isSupportedModel(fallbackModelName, SUPPORTED_GEMINI_MODELS)) {
+    return { ...ERROR_CODES.MODEL_NOT_SUPPORTED, details: { fallbackModelName } };
+  }
+
+  if (aiOptions.isStream) {
+    return ERROR_CODES.STREAM_NOT_IMPLEMENTED;
+  }
+
+  if (!validateSchema(aiOptions.responseSchema)) {
+    return {
+      ...ERROR_CODES.SCHEMA_VALIDATION_FAILED,
+      details: { reason: "No responseSchema provided" },
+    };
+  }
+
+  return null;
+}
+
+function formatErrorResult(error: AppLogError): GeminiAIResult<never> {
+  return {
+    ok: false,
+    error: error.message,
+    code: error.code,
+    details: error.details,
+  };
+}

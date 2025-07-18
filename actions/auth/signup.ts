@@ -29,8 +29,13 @@ export async function registerUserAction(data: RegisterUserData) {
     });
 
     return { ok: true };
-  } catch (error: any) {
-    console.error("Error registering user:", error);
-    return { ok: false, error: error.message };
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error("Error registering user:", error.message);
+      return { ok: false, error: error.message };
+    } else {
+      console.error("Unexpected error registering user:", error);
+      return { ok: false, error: 'Unexpected error' };
+    }
   }
 }
