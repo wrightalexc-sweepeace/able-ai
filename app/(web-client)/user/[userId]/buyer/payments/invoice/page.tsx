@@ -106,7 +106,7 @@ export default function InvoicePage() {
 
     if (user?.claims.role == "QA") {
       // QA users get mock data regardless of their own authUserId vs params.userId
-      fetchInvoiceData();
+      fetchInvoiceData(invoiceId);
     } else if (user && user?.uid === params.userId) {
       // Non-QA users must be authenticated and authorized
       fetchInvoiceData(invoiceId);
