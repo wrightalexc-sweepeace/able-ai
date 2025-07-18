@@ -1,5 +1,6 @@
+/* eslint-disable max-lines-per-function */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import React from 'react';
+import React, { use, useState } from 'react';
 import { Calendar as BigCalendar, Formats, momentLocalizer, View } from 'react-big-calendar';
 import moment from 'moment';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
@@ -7,6 +8,7 @@ import styles from './AppCalendar.module.css';
 import { CalendarEvent } from './CalendarEventComponent';
 
 const localizer = momentLocalizer(moment);
+
 
 type AppCalendarProps<TEvent> = {
   events: TEvent[];
@@ -43,6 +45,9 @@ const AppCalendar = <TEvent extends object>({
     eventTimeRangeFormat: () => ''
   },
 }: AppCalendarProps<TEvent>) => {
+
+  const role = localStorage.getItem('lastRoleUsed');
+
   const defaultEventPropGetter = (event: TEvent) => {
     const style: React.CSSProperties = {
       backgroundColor: '#3a3a3a',
@@ -58,20 +63,21 @@ const AppCalendar = <TEvent extends object>({
     switch (event.status) {
       case 'PENDING':
       case 'OFFER':
-        style.backgroundColor = '#525252';
-        style.borderColor = '#404040';
-        style.color = '#e0e0e0';
+        style.backgroundColor = '#808080';
+        style.borderColor = '#2b2b2b';
+        style.color = '#ffffff';
+        style.borderRadius = '24px';
         break;
       case 'ACCEPTED':
         // @ts-ignore
-        if (event.isBuyerAccepted) {
-          style.backgroundColor = 'var(--buyer-accent-color, #22d3ee)';
-          style.borderColor = 'var(--buyer-accent-darker-color, #06b6d4)';
+        if (role === 'BUYER') {
+          style.backgroundColor = 'var(--secondary-color)';
+          style.borderColor = 'var(--secondary-darker-color)';
         } else {
           style.backgroundColor = 'var(--primary-color)';
-          style.borderColor = 'var(--primary-darker-color, #2563eb)';
+          style.borderColor = 'var(--primary-darker-color)';
         }
-        style.color = 'white';
+        style.color = '#272100';
         break;
       case 'IN_PROGRESS':
         style.backgroundColor = '#f59e0b';

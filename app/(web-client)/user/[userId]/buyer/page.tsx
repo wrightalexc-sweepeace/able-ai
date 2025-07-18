@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Users, CalendarDays, CreditCard, LayoutDashboard } from "lucide-react";
@@ -16,13 +16,44 @@ import Logo from "@/app/components/brand/Logo";
 import styles from "./HomePage.module.css";
 import { useAuth } from "@/context/AuthContext";
 import { useAiSuggestionBanner } from "@/hooks/useAiSuggestionBanner";
+import {
+  getUnreadCountFromDB,
+  resetUnreadCountInDB,
+} from "@/actions/notifications/useUnreadNotifications";
+import { getAllNotificationsAction } from "@/actions/notifications/notifications";
 
 export default function BuyerDashboardPage() {
-  const {
-    user: userPublicProfile
-  } = useAuth();
+  const { user: userPublicProfile } = useAuth();
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const { user } = useAuth();
+  const authUserToken = user?.token;
+
+  async function fetchNotifications(token: string) {
+    const { unreadCount } = await getAllNotificationsAction(token);
+
+    setUnreadNotifications(unreadCount);
+  }
+
+  useEffect(() => {
+    getUnreadCountFromDB().then(setUnreadCount).catch(console.error);
+  }, []);
+
+  const handleClick = async () => {
+    await resetUnreadCountInDB();
+    setUnreadCount(0);
+  };
 
   const uid = userPublicProfile?.uid;
+
+  useEffect(() => {
+    if (user && authUserToken) {
+      fetchNotifications(authUserToken)
+        .catch((err) => {
+          console.error("Failed to fetch notifications:", err);
+        })
+    }
+  }, [user, authUserToken]);
 
   // AI Suggestion Banner Hook
   const {
@@ -57,7 +88,11 @@ export default function BuyerDashboardPage() {
       icon: <LayoutDashboard size={28} />,
       to: `/user/${uid}/buyer/profile`,
     },
-    { label: "Hire", icon: <Users size={28} />, to: `/user/${uid}/buyer/gigs/new`},
+    {
+      label: "Hire",
+      icon: <Users size={28} />,
+      to: `/user/${uid}/buyer/gigs/new`,
+    },
     {
       label: "Calendar & Gigs",
       icon: <CalendarDays size={28} />,
@@ -98,6 +133,7 @@ export default function BuyerDashboardPage() {
             <Link
               href={`/user/${userPublicProfile.uid}/notifications`}
               passHref
+              onClick={handleClick}
             >
               <button
                 className={styles.notificationButton}
@@ -110,6 +146,12 @@ export default function BuyerDashboardPage() {
                   height={40}
                 />
               </button>
+              {unreadCount > 0 || unreadNotifications > 0 ? (
+                <span
+                className={styles.notificationBadge}
+                >
+                </span>
+              ) : null}
             </Link>
           )}
         </header>

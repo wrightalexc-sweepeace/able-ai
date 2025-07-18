@@ -1,6 +1,7 @@
+import FcmProvider from "@/lib/firebase/fcm/FcmProvider";
 import { ProtectedRoute } from "@/utils/ProtectedRoute";
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -8,7 +9,9 @@ export default async function RootLayout({
   return (
     <div>
       <ProtectedRoute>
-      {children}
+         <FcmProvider>
+            {children}
+         </FcmProvider>
       </ProtectedRoute>
     </div>
   );

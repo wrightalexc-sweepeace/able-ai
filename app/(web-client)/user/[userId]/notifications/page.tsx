@@ -11,90 +11,13 @@ import { AlertTriangle, ChevronRight, Info, ChevronLeft } from "lucide-react";
 import styles from "./NotificationsPage.module.css";
 import Loader from "@/app/components/shared/Loader"; // Assuming you have a Loader component
 import { useAuth } from "@/context/AuthContext";
+import { getAllNotificationsAction, updateNotificationStatusAction } from "@/actions/notifications/notifications";
+import { Notification, NotificationType } from "@/app/types/NotificationTypes";
 
-// Define an interface for notification data
-interface Notification {
-  id: string; // Unique ID for the notification
-  type:
-    | "offer"
-    | "payment"
-    | "gigUpdate"
-    | "badge"
-    | "referral"
-    | "actionRequired"
-    | "system"
-    | string;
-  message: string;
-  link?: string; // Optional link to navigate to on click
-  isRead: boolean;
-  timestamp: string; // ISO date string
-  icon?: React.ReactNode; // Allow custom icon override
-}
-
-// Mock function to fetch notifications - replace with actual API call
-async function fetchNotifications(userId: string): Promise<Notification[]> {
-  console.log("Fetching notifications for userId:", userId);
-  // In a real app, fetch from Firestore: `users/{userId}/notifications`
-  // or from a backend API: `/api/users/notifications`
-  await new Promise((resolve) => setTimeout(resolve, 700)); // Simulate delay
-
-  // Example data
-  return [
-    {
-      id: "1",
-      type: "offer",
-      message: 'New gig offer: Bartender at "The Grand Event"',
-      link: "/worker/offers/offer-123",
-      isRead: false,
-      timestamp: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
-    },
-    {
-      id: "2",
-      type: "payment",
-      message: 'Payment of £85.00 received for "Weekend Bar Shift"',
-      link: "/worker/earnings/payment-456",
-      isRead: false,
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
-    },
-    {
-      id: "3",
-      type: "gigUpdate",
-      message: 'Gig "Corporate Party" details updated by buyer.',
-      link: "/worker/gigs/gig-789",
-      isRead: true,
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
-    },
-    {
-      id: "4",
-      type: "badge",
-      message: 'You were awarded the "Top Performer" badge!',
-      link: "/worker/profile#badges",
-      isRead: true,
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(),
-    },
-    {
-      id: "5",
-      type: "referral",
-      message: 'Your referral for "The Local Cafe" signed up!',
-      link: "/user/referrals/status",
-      isRead: false,
-      timestamp: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-    },
-    {
-      id: "6",
-      type: "actionRequired",
-      message: "Action required: Update bank details for payouts.",
-      link: "/user/settings#payment",
-      isRead: false,
-      timestamp: new Date(Date.now() - 1000 * 60 * 60 * 5).toISOString(),
-    },
-  ].sort(
-    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-  ); // Sort by newest first
-}
 
 // Helper to get icon based on notification type
 const getNotificationIcon = (type: Notification["type"]) => {
+  if (type) return null;
   switch (type) {
     case "offer":
     case "gigUpdate":
@@ -135,23 +58,52 @@ const formatTimestamp = (isoString: string) => {
   return date.toLocaleDateString(); // Older than a week, show date
 };
 
+export interface ClientNotification {
+  id: string;
+  type: NotificationType;
+  message: string;
+  link?: string;
+  isRead: boolean;
+  icon?: string;
+  timestamp: string; // ISO string
+}
+
+
 export default function NotificationsPage() {
   const router = useRouter();
   const params = useParams();
   const pageUserId = params.userId as string;
-
   const { user } = useAuth();
+  const authUserToken = user?.token;
   const authUserId = user?.uid;
 
-  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [notifications, setNotifications] = useState<ClientNotification[]>([]);
   const [isLoadingNotifications, setIsLoadingNotifications] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  async function fetchNotifications(token: string) {
+    const { notifications } = await getAllNotificationsAction(token);
+
+    return notifications
+      .map((n: Notification) => ({
+        id: n.id,
+        type: n.type ?? "system",
+        message: n.title ?? "No title",
+        link: n.path ?? undefined,
+        isRead: n.status !== "unread",
+        timestamp: n.createTime ?? new Date().toISOString(),
+      }))
+      .sort(
+        (a, b) =>
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      );
+  }
+
   // Fetch notifications
   useEffect(() => {
-    if (user && authUserId) {
+    if (user && authUserToken) {
       setIsLoadingNotifications(true);
-      fetchNotifications(authUserId)
+      fetchNotifications(authUserToken)
         .then((data) => {
           setNotifications(data);
           setError(null);
@@ -162,20 +114,15 @@ export default function NotificationsPage() {
         })
         .finally(() => setIsLoadingNotifications(false));
     }
-  }, [user, authUserId]);
+  }, [user, authUserToken]);
 
-  const handleNotificationClick = (notification: Notification) => {
-    // Mark notification as read (API call or local state update then sync)
-    // For now, just log and navigate if link exists
-    console.log("Notification clicked:", notification.id);
+  const handleNotificationClick = async(notification: ClientNotification) => {
+
     if (notification.link) {
       router.push(notification.link);
     }
-    // Example: Optimistically mark as read locally and then call API
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === notification.id ? { ...n, isRead: true } : n))
-    );
-    // TODO: Call API to mark as read: await markNotificationAsRead(userId, notification.id);
+
+    await updateNotificationStatusAction(notification.id, "read")
   };
 
   const handleGoBack = () => {
@@ -238,7 +185,7 @@ export default function NotificationsPage() {
                   }
                 >
                   <div className={styles.notificationContent}>
-                    {notification.icon ||
+                    {notification?.icon ||
                       getNotificationIcon(notification.type)}
                     <div>
                       <span className={styles.notificationMessage}>

@@ -11,6 +11,8 @@ import { CalendarEvent } from '@/app/types/CalendarEventTypes';
 import { getCalendarEvents } from '@/actions/events/get-calendar-events';
 // Import the CSS module for this page
 import styles from './WorkerCalendarPage.module.css';
+import { Home } from 'lucide-react';
+import Image from 'next/image';
 
 const FILTERS = [
   'Manage availability',
@@ -53,8 +55,8 @@ const WorkerCalendarPage = () => {
     const fetchEvents = async () => {
       if (!user) return;
 
-      const isViewQA = localStorage.getItem('isViewQA') === 'true';
-      const res = await getCalendarEvents({ userId: user.uid, role: 'worker', isViewQA });
+      // const isViewQA = localStorage.getItem('isViewQA') === 'true';
+      const res = await getCalendarEvents({ userId: user.uid, role: 'worker', isViewQA: true });
 
       if (res.error) throw new Error(res.error);
 
@@ -110,6 +112,7 @@ const WorkerCalendarPage = () => {
       <CalendarHeader
         date={date}
         view={view}
+        role="worker"
         onViewChange={setView}
         onNavigate={handleNavigate}
         filters={FILTERS}
@@ -133,7 +136,9 @@ const WorkerCalendarPage = () => {
         />
       </main>
       <footer className={styles.footer}>
-        <button className={styles.homeButton}>🏠</button>
+        <button className={styles.homeButton} onClick={() => router.push(`/user/${pageUserId}/worker`)}>
+          <Image src="/images/home.svg" alt="Home" width={24} height={24} />
+        </button>
       </footer>
     </div>
   );

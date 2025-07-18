@@ -29,5 +29,6 @@ if (!admin.apps.length) {
   });
 }
 
+export const dbdoc = admin.firestore();
 export default admin;
 export const authServer = getAuth(admin.app());

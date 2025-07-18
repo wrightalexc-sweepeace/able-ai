@@ -7,7 +7,7 @@ import {
   IdTokenResult,
   User as FirebaseUser,
 } from "firebase/auth";
-import { authClient } from "@/lib/firebase/clientApp";
+import { useFirebase } from "./FirebaseContext";
 
 type Claims = {
   role: string;
@@ -50,9 +50,12 @@ async function fetchTokenResultWithPolling(
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-
+  const { authClient, loading: loadingAuth } = useFirebase();
+  
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(authClient, async (firebaseUser) => {
+    let unsubscribe: () => void = () => {};
+    if(!loadingAuth && authClient) {
+      unsubscribe = onAuthStateChanged(authClient, async (firebaseUser) => {
       if (firebaseUser) {
         const tokenResult = await fetchTokenResultWithPolling(firebaseUser);
         if (tokenResult) {
@@ -70,9 +73,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
       setLoading(false);
     });
+    }
 
     return () => unsubscribe();
-  }, []);
+  }, [loadingAuth]);
 
   return (
     <AuthContext.Provider value={{ user, loading }}>
