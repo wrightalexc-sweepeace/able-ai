@@ -54,6 +54,7 @@ export const FirebaseProvider = ({ children }: { children: ReactNode }) => {
     }
     initFirebase();
   }, []);
+
   return (
     <FirebaseContext.Provider
       value={{
