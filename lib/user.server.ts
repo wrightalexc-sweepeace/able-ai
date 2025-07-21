@@ -1,30 +1,13 @@
-// File: app/lib/user.server.ts
-import { db } from "@/lib/drizzle/db"; // Correct path to your Drizzle instance
+import { db } from "@/lib/drizzle/db";
 import {
   UsersTable,
   GigWorkerProfilesTable,
   BuyerProfilesTable,
-  userAppRoleEnum,
   activeRoleContextEnum,
   NotificationPreferencesTable,
 } from "@/lib/drizzle/schema";
 import { eq } from "drizzle-orm";
 import admin from "./firebase/firebase-server";
-
-// Define a comprehensive AppUser type
-export interface AppUser {
-  id: string; // This will be your PostgreSQL UsersTable.id
-  firebaseUid: string; // Firebase UID
-  email: string | null | undefined;
-  fullName: string | null | undefined;
-  picture?: string | null | undefined; // From Firebase profile
-  appRole: (typeof userAppRoleEnum.enumValues)[number];
-  isBuyer: boolean;
-  isGigWorker: boolean;
-  lastRoleUsed: (typeof activeRoleContextEnum.enumValues)[number] | null;
-  lastViewVisitedBuyer: string | null;
-  lastViewVisitedWorker: string | null;
-}
 
 // Type for the input to findOrCreatePgUserAndUpdateRole
 interface FindOrCreatePgUserInput {
@@ -45,7 +28,7 @@ type PgUserSelect = typeof UsersTable.$inferSelect;
  * Finds an existing PostgreSQL user by Firebase UID or creates a new one.
  * Updates role flags (isBuyer, isGigWorker) based on initialRoleContext if it's a new user
  * or if the flags are not yet set.
- * This is called by NextAuth's `authorize` callback.
+* This is called by NextAuth's `authorize` callback.
  */
 export async function findOrCreatePgUserAndUpdateRole(
   input: FindOrCreatePgUserInput
@@ -183,21 +166,6 @@ export async function findOrCreatePgUserAndUpdateRole(
 
 // --- UTILITY FUNCTIONS BASED ON PG USER OBJECT ---
 
-export function getPgUserLastRoleUsed(
-  pgUser: PgUserSelect | null
-): (typeof activeRoleContextEnum.enumValues)[number] | null {
-  return pgUser?.lastRoleUsed || null;
-}
-
-export function getPgUserLastViewVisited(
-  pgUser: PgUserSelect | null,
-  currentRoleContext: (typeof activeRoleContextEnum.enumValues)[number] | null
-): string | null {
-  if (!pgUser || !currentRoleContext) return null;
-  return currentRoleContext === "BUYER"
-    ? pgUser.lastViewVisitedBuyer
-    : pgUser.lastViewVisitedWorker;
-}
 
 // --- UTILITY FUNCTIONS BASED ON APP USER ---
 
@@ -264,101 +232,5 @@ export async function isUserGigWorker(idToken: string): Promise<boolean> {
   } catch (error) {
     console.error("Invalid or expired token:", error);
     throw "Invalid or expired token";
-  }
-}
-
-// --- FUNCTION TO UPDATE USER CONTEXT IN POSTGRESQL (lastRoleUsed, lastViewVisited) ---
-export async function updateUserAppContext(
-  firebaseUid: string,
-  updates: {
-    lastRoleUsed?: (typeof activeRoleContextEnum.enumValues)[number];
-    lastViewVisited?: string; // This will be the specific view for the role being set/updated
-  }
-): Promise<PgUserSelect | null> {
-  if (!firebaseUid || Object.keys(updates).length === 0) return null;
-
-  const updateData: Partial<typeof UsersTable.$inferInsert> = {
-    updatedAt: new Date(),
-  };
-
-  if (updates.lastRoleUsed) {
-    updateData.lastRoleUsed = updates.lastRoleUsed;
-    // When lastRoleUsed is updated, also update the specific lastViewVisited for that role
-    if (updates.lastViewVisited) {
-      if (updates.lastRoleUsed === "BUYER") {
-        updateData.lastViewVisitedBuyer = updates.lastViewVisited;
-      } else if (updates.lastRoleUsed === "GIG_WORKER") {
-        updateData.lastViewVisitedWorker = updates.lastViewVisited;
-      }
-    }
-  } else if (updates.lastViewVisited) {
-    // If only lastViewVisited is provided, we need to know for which role context
-    // This scenario implies the role context is already known and not changing.
-    // It's better if updateUserAppContext is always called with the current role context
-    // if lastViewVisited is being updated.
-    // For simplicity, this function should ideally be called when a role IS active.
-    // Let's assume the caller knows the current role if only updating view.
-    // Or, fetch the current lastRoleUsed from DB first if not provided.
-    // To avoid complexity, the `updates` object should ideally contain `lastRoleUsed` if `lastViewVisited` for that role is changing.
-    // For now, if lastRoleUsed is not in updates, we won't update specific lastViewVisited.
-    console.warn(
-      "Updating lastViewVisited without lastRoleUsed might lead to ambiguity. Please provide lastRoleUsed."
-    );
-  }
-
-  try {
-    const updatedUsers = await db
-      .update(UsersTable)
-      .set(updateData)
-      .where(eq(UsersTable.firebaseUid, firebaseUid))
-      .returning();
-
-    return updatedUsers[0] || null;
-  } catch (error) {
-    console.error("Error updating user app context in PG:", error);
-    return null;
-  }
-}
-
-/**
- * Gets a hydrated AppUser object for a given Firebase UID by fetching data from PostgreSQL
- */
-export async function getHydratedAppUser(
-  firebaseUid: string
-): Promise<AppUser | null> {
-  if (!firebaseUid) {
-    console.warn("getHydratedAppUser: No Firebase UID provided.");
-    return null;
-  }
-
-  try {
-    const pgUser = await db.query.UsersTable.findFirst({
-      where: eq(UsersTable.firebaseUid, firebaseUid),
-    });
-
-    if (!pgUser) {
-      console.warn(
-        `getHydratedAppUser: No PG User found for Firebase UID: ${firebaseUid}`
-      );
-      return null;
-    }
-
-    // Return user data from PostgreSQL
-    return {
-      id: pgUser.id,
-      firebaseUid: pgUser.firebaseUid,
-      email: pgUser.email,
-      fullName: pgUser.fullName,
-      picture: undefined, // This will be set from Firebase user data when needed
-      appRole: pgUser.appRole,
-      isBuyer: pgUser.isBuyer,
-      isGigWorker: pgUser.isGigWorker,
-      lastRoleUsed: pgUser.lastRoleUsed,
-      lastViewVisitedBuyer: pgUser.lastViewVisitedBuyer,
-      lastViewVisitedWorker: pgUser.lastViewVisitedWorker,
-    };
-  } catch (error) {
-    console.error(`getHydratedAppUser: Error fetching PG User details:`, error);
-    return null;
   }
 }

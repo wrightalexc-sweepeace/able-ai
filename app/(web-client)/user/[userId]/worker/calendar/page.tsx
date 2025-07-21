@@ -11,7 +11,6 @@ import { CalendarEvent } from '@/app/types/CalendarEventTypes';
 import { getCalendarEvents } from '@/actions/events/get-calendar-events';
 // Import the CSS module for this page
 import styles from './WorkerCalendarPage.module.css';
-import { Home } from 'lucide-react';
 import Image from 'next/image';
 
 const FILTERS = [

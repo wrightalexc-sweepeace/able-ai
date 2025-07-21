@@ -111,8 +111,13 @@ export async function getCalendarEvents({ userId, role, isViewQA }: { userId: st
 
     return { events: calendarEvents };
 
-  } catch (error: any) {
-    console.error("Error fetching events:", error);
-    return { error: error.message, events: [], status: 500 };
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error("Error fetching events:", error.message);
+      return { error: error.message, events: [], status: 500 };
+    } else {
+      console.error("Unexpected error fetching events:", error);
+      return { error: 'Unexpected error', events: [], status: 500 };
+    }
   }
 }

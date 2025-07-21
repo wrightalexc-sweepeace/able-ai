@@ -20,7 +20,7 @@ const SignInView: React.FC<SignInViewProps> = ({ onToggleRegister, onError }) =>
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const { authClient } = useFirebase();
+  const { authClient, loading: firebaseLoading } = useFirebase();
   const [show, setShow] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -72,6 +72,10 @@ const SignInView: React.FC<SignInViewProps> = ({ onToggleRegister, onError }) =>
       setLoading(false);
     }
   };
+
+  if (firebaseLoading) {
+    return <div className={styles.loading}>Loading...</div>;
+  }
 
   return (
     <form className={styles.form} onSubmit={handleSubmit}>

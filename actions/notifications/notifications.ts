@@ -10,11 +10,15 @@ export const subscribeFcmTopicAction = async (token: string) => {
   try {
     const messaging = getMessaging();
     if (!token) throw "Token required";
-    const topicSubscribed = await (messaging as any).subscribeToTopic(
+    const topicSubscribed = await messaging.subscribeToTopic(
       token,
       "general"
     );
-    const uidSubscribed = await (messaging as any).subscribeToTopic(token);
+
+    let uidSubscribed = null;
+    if (token) {
+      uidSubscribed = await messaging.subscribeToTopic(token, token);
+    }
 
     return { success: true, data: { topicSubscribed, uidSubscribed } };
   } catch (error) {

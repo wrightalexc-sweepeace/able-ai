@@ -29,20 +29,9 @@ interface InvoiceData {
   total: number;
   status: "Paid" | "Pending";
 }
-
-export default function InvoicePage() {
-  const params = useParams();
-  const searchParams = useSearchParams();
-  const { user, loading: loadingAuth } = useAuth();
-
-  const [invoiceData, setInvoiceData] = useState<InvoiceData | null>(null);
-  const [isLoading, setIsLoading] = useState(true); // This is for data loading, loadingAuth is for user context
-
-  // Data Fetching Effect
-  useEffect(() => {
-    const fetchInvoiceData = async () => {
+    const fetchInvoiceData = async (invoiceId: string | null) => {
       try {
-        const invoiceId = searchParams.get("id");
+        
         if (!invoiceId) {
           throw new Error("Invoice ID is required");
         }
@@ -79,13 +68,37 @@ export default function InvoicePage() {
           status: "Paid",
         };
         // const data = await getInvoiceData(params.userId, invoiceId);
-        setInvoiceData(mockInvoiceData);
+        return mockInvoiceData;
       } catch (error) {
         console.error("Error fetching invoice data:", error);
-      } finally {
-        setIsLoading(false);
       }
-    };
+    }
+
+export default function InvoicePage() {
+  const params = useParams();
+  const searchParams = useSearchParams();
+  const { user, loading: loadingAuth } = useAuth();
+  const invoiceId = searchParams.get("id");
+
+  const [invoiceData, setInvoiceData] = useState<InvoiceData | null>(null);
+  const [isLoading, setIsLoading] = useState(true); // This is for data loading, loadingAuth is for user context
+
+  // Data Fetching Effect
+  useEffect(() => {
+    setIsLoading(true); // Reset loading state when auth loading changes
+    fetchInvoiceData(invoiceId)
+    .then((data) => {
+      if (data) {
+        setInvoiceData(data);
+      } else {
+        setInvoiceData(null);
+      }
+    })
+    .catch((error) => {
+      console.error("Error fetching invoice data:", error);
+      setInvoiceData(null);
+    })
+    .finally(() => setIsLoading(false));
 
     if (loadingAuth) {
       return; // Wait for user context to be loaded before deciding to fetch data
@@ -93,10 +106,10 @@ export default function InvoicePage() {
 
     if (user?.claims.role == "QA") {
       // QA users get mock data regardless of their own authUserId vs params.userId
-      fetchInvoiceData();
+      fetchInvoiceData(invoiceId);
     } else if (user && user?.uid === params.userId) {
       // Non-QA users must be authenticated and authorized
-      fetchInvoiceData();
+      fetchInvoiceData(invoiceId);
     } else if (user?.claims.role !== "QA" && !user) {
       // This case should ideally be caught by the auth useEffect and result in a redirect.
       // If reached, ensure loading stops.

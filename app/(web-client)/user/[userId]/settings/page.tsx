@@ -77,7 +77,6 @@ export default function SettingsPage() {
   );
   const [isLoadingSettings, setIsLoadingSettings] = useState(true);
   const [isSavingProfile, setIsSavingProfile] = useState(false);
-  const [isSavingNotifications, setIsSavingNotifications] = useState(false);
 
   // Stripe Connect related states
   const [isConnectingStripe, setIsConnectingStripe] = useState(false);
@@ -105,7 +104,6 @@ export default function SettingsPage() {
   const [emailGigUpdates, setEmailGigUpdates] = useState(false);
   const [emailPlatformAnnouncements, setEmailPlatformAnnouncements] =
     useState(false);
-  const [smsGigAlerts, setSmsGigAlerts] = useState(false);
   const { authClient } = useFirebase();
 
   const [error, setError] = useState<string | null>(null);
@@ -113,12 +111,10 @@ export default function SettingsPage() {
 
   const fetchSettings = async () => {
     try {
-      let userProfile = null
-      if (user?.uid) {
-        const { success, data, error } = await getProfileInfoUserAction(user?.token);
-        if (!success) throw error;
-        userProfile = data;
-      }
+      if (!user?.uid) throw "User not authenticated."
+      
+      const { success, data: userProfile, error } = await getProfileInfoUserAction(user?.token);
+      if (!success) throw error;
 
       const data: UserSettingsData = {
         displayName: user?.displayName || "",
