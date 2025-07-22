@@ -66,7 +66,7 @@ const PaymentSetupForm = ({ userId }: PaymentSetupFormProps) => {
       elements,
       clientSecret,
       confirmParams: {
-        return_url: `${window.location.origin}/user/${userId}/settings/setup-payment-method-success?customer_id=${stripeCustomerId}`,
+        return_url: `${window.location.origin}/user/${userId}/settings/payment-method-setup-success?customer_id=${stripeCustomerId}`,
       },
     });
 
