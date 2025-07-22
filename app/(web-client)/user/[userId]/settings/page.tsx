@@ -32,40 +32,9 @@ import Logo from "@/app/components/brand/Logo";
 import { toast } from "sonner";
 import { getProfileInfoUserAction, updateNotificationEmailAction, updateNotificationSmsAction, updateProfileVisibilityAction, updateUserProfileAction } from "@/actions/user/user";
 import { useFirebase } from "@/context/FirebaseContext";
-
-interface UserSettingsData {
-  displayName: string;
-  email: string;
-  phone?: string | null; // Added phone field
-  // Stripe Connect related fields (essential for Gig Workers, optional for Buyers unless they also act as sellers)
-  stripeAccountId: string | null; // The Stripe Connect Account ID
-  stripeAccountStatus:
-    | "connected"
-    | "pending_verification"
-    | "incomplete"
-    | "restricted"
-    | "disabled"
-    | null;
-  stripeConnectAccountId: string | null;
-  canReceivePayouts: boolean; // Derived on backend, true if Stripe account is fully setup and can receive payouts
-
-  notificationPreferences: {
-    email: {
-      gigUpdates: boolean;
-      platformAnnouncements: boolean;
-      marketing?: boolean;
-    };
-    sms: {
-      gigAlerts: boolean;
-    };
-  };
-  // Add other settings fields as needed (e.g., privacy settings)
-  privacySettings: {
-    // Added privacy settings field
-    profileVisibility: boolean;
-    // Add other privacy settings fields as needed
-  };
-}
+import StripeModal from "@/app/components/settings/stripeModal";
+import StripeElementsProvider from "@/lib/stripe/StripeElementsProvider";
+import { FlowStep, UserSettingsData } from "@/app/types/SettingsTypes";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -108,11 +77,12 @@ export default function SettingsPage() {
 
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [currentStep, setCurrentStep] = useState<FlowStep>('connecting');
 
   const fetchSettings = async () => {
     try {
       if (!user?.uid) throw "User not authenticated."
-      
+
       const { success, data: userProfile, error } = await getProfileInfoUserAction(user?.token);
       if (!success) throw error;
 
@@ -121,7 +91,7 @@ export default function SettingsPage() {
         email: user?.email || "",
         phone: userProfile?.phone || "",
         // Added mock Stripe data
-        stripeAccountId: userProfile?.stripeCustomerId|| null, // Or a mock ID like 'acct_123abc'
+        stripeAccountId: userProfile?.stripeCustomerId || null, // Or a mock ID like 'acct_123abc'
         stripeAccountStatus: "incomplete",
         stripeConnectAccountId: userProfile?.stripeConnectAccountId || null, // Or 'connected', 'pending_verification', etc.
         canReceivePayouts: false, // Or true
@@ -147,7 +117,7 @@ export default function SettingsPage() {
       setEmailPlatformAnnouncements(
         data.notificationPreferences.email.platformAnnouncements
       );
-      if (!data.stripeAccountId || !data.stripeAccountStatus) {
+      if (data.stripeAccountId || !data.stripeAccountStatus) {
         setShowStripeModal(true)
       }
       // setSmsGigAlerts(data.notificationPreferences.sms.gigAlerts); // SMS commented out
@@ -186,18 +156,18 @@ export default function SettingsPage() {
     event.preventDefault();
     clearMessages();
     setIsSavingProfile(true);
-  
+
     try {
       const { success: updateSuccess, error: updateError } = await updateUserProfileAction(
         { fullName: displayName, phone: phone },
         user?.token
       );
-  
+
       if (!updateSuccess) throw updateError;
-  
+
       const { success: fetchSuccess, error: fetchError } = await getProfileInfoUserAction(user?.token);
       if (!fetchSuccess) throw fetchError;
-  
+
       toast.success("Profile updated successfully");
       setSuccessMessage("Profile updated successfully!");
     } catch (err: unknown) {
@@ -206,7 +176,7 @@ export default function SettingsPage() {
     } finally {
       setIsSavingProfile(false);
     }
-  };  
+  };
 
   const handleChangePassword = async (event: FormEvent) => {
     event.preventDefault();
@@ -283,7 +253,7 @@ export default function SettingsPage() {
   const handleLogout = async () => {
     clearMessages();
     try {
-      if(authClient) {
+      if (authClient) {
         await firebaseSignOut(authClient);
         router.push("/signin");
       }
@@ -298,7 +268,7 @@ export default function SettingsPage() {
 
   // Stripe Connect Onboarding
   const handleStripeConnect = async () => {
-    if (!user) return
+    if (!user) return;
 
     clearMessages();
     setIsConnectingStripe(true);
@@ -309,6 +279,23 @@ export default function SettingsPage() {
       if (response.status === 200 && response.url) {
         window.location.href = response.url;
       }
+
+    } catch (err: any) {
+      setError(err.message || "Failed to initiate Stripe Connect.");
+    } finally {
+      setIsConnectingStripe(false);
+    }
+  };
+
+  const handleOpenStripeConnection = async () => {
+    if (!user) return;
+
+    clearMessages();
+    setIsConnectingStripe(true);
+
+    try {
+      setCurrentStep('payment-method');
+      setIsConnectingStripe(false);
 
     } catch (err: any) {
       setError(err.message || "Failed to initiate Stripe Connect.");
@@ -372,27 +359,27 @@ export default function SettingsPage() {
         { emailProferences: !notificationEmail },
         user?.token
       );
-        setNotificationEmail(error ? notificationEmail : data);
-        toast.success("Email notification updated")
+      setNotificationEmail(error ? notificationEmail : data);
+      toast.success("Email notification updated")
     } catch (error) {
       console.error("Failed to update email notifications", error);
       setNotificationEmail(notificationEmail); // Revert to current value 
     }
   }
-  
+
   async function handleToggleSmsNotification() {
     try {
-      const {data, error } = await updateNotificationSmsAction(
+      const { data, error } = await updateNotificationSmsAction(
         { smsGigAlerts: !notificationSms },
         user?.token
       );
-        setNotificationSms(error ? notificationSms : data);
+      setNotificationSms(error ? notificationSms : data);
     } catch (error) {
       console.error("Failed to update SMS notifications", error);
       setNotificationSms(notificationSms);
     }
   }
-  
+
   async function handleToggleProfileVisibility() {
     try {
       const { data, error } = await updateProfileVisibilityAction(
@@ -404,10 +391,10 @@ export default function SettingsPage() {
     } catch (error) {
       console.error("Failed to update profile visibility", error);
       setProfileVisibility(profileVisibility);
-      
+
     }
   }
-  
+
 
 
   if (isLoadingSettings) {
@@ -722,67 +709,16 @@ export default function SettingsPage() {
           </div>
         )}
         {showStripeModal && (
-          <div
-            className={styles.modalOverlay}
-            onClick={() => setShowStripeModal(false)}
-          >
-            <div
-              className={styles.modalContent}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className={styles.modalHeader}>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <div className={styles.stripeIconWrapper}>
-                    <AlertTriangle size={28} color="#ffc107" />
-                  </div>
-                  <h3 style={{
-                    marginLeft: "10px"
-                  }}>Get Paid with Stripe!</h3>
-                </div>
-                <button
-                  onClick={() => setShowStripeModal(false)}
-                  className={styles.closeButton}
-                  aria-label="Close"
-                >
-                  ×
-                </button>
-              </div>
-
-              <p>
-                To receive payments for your gigs, you must connect your bank
-                account through our payment provider, Stripe. This is secure,
-                free, and only takes a minute.
-              </p>
-
-              <div className={styles.modalActions}>
-                <button
-                  onClick={handleStripeConnect}
-                  className={styles.stripeButton}
-                  disabled={isConnectingStripe}
-                >
-                  {isConnectingStripe
-                    ? "Connecting..."
-                    : "Connect My Bank Account"}
-                </button>
-              </div>
-              <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-              >
-              <AlertTriangle size={20} color="#ffc107" />
-              <p>Not connected</p>
-              </div>
-            </div>
-          </div>
+          <StripeElementsProvider options={{
+            mode: 'setup',
+            currency: 'usd',
+            appearance: {
+              theme: 'night',
+              labels: 'floating',
+            }
+          }}>
+            <StripeModal userId={user?.uid} connectionStep={currentStep} isConnectingStripe={isConnectingStripe} handleCloseModal={() => setShowStripeModal(false)} handleOpenStripeConnection={handleOpenStripeConnection} />
+          </StripeElementsProvider>
         )}
       </div>
     </div>
