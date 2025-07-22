@@ -23,7 +23,6 @@ const SavedPaymentMethodStatus = ({ customerId, setupIntentClientSecret, userId 
         return;
       }
 
-      // Recupera el SetupIntent usando el client_secret
       const { setupIntent } = await stripe.retrieveSetupIntent(
         setupIntentClientSecret as string
       );
