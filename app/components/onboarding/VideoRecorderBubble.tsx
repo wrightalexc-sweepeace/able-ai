@@ -88,9 +88,9 @@ const VideoRecorderBubble = () => {
     <div className={styles.container}>
       {!showRecorder ? (
         <div className={styles.initial}>
-          <MonitorPlay color="#fff" className={styles.monitorPlay} />
           <button onClick={handleRecording} className={styles.recordButton}>
-            RECORD VIDEO
+            <MonitorPlay color="#fff" className={styles.monitorPlay} />
+            <span>RECORD VIDEO</span>
           </button>
         </div>
       ) : (
