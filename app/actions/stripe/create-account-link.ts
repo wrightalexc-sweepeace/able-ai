@@ -1,11 +1,15 @@
 'use server';
 
+import { headers } from 'next/headers';
 import { eq } from 'drizzle-orm';
 import { stripeApi } from '@/lib/stripe-server';
 import { db } from "@/lib/drizzle/db";
 import { UsersTable } from "@/lib/drizzle/schema";
 
 export async function createAccountLink(firebaseUid: string) {
+  const requestHeaders = await headers();
+  const originUrl = requestHeaders.get('host');
+
   try {
     if (!firebaseUid) {
       return { error: 'User ID is required.', status: 400 }
@@ -48,8 +52,8 @@ export async function createAccountLink(firebaseUid: string) {
 
     const accountLink = await stripeApi.accountLinks.create({
       account: stripeAccountId,
-      refresh_url: `${process.env.NEXTAUTH_URL}/user/${userRecord.id}/settings/onboarding-retry`,
-      return_url: `${process.env.NEXTAUTH_URL}/user/${userRecord.id}/settings/onboarding-success?account_id=${stripeAccountId}`,
+      refresh_url: `${originUrl}/user/${userRecord.id}/settings/onboarding-retry`,
+      return_url: `${originUrl}/user/${userRecord.id}/settings/onboarding-success?account_id=${stripeAccountId}`,
       type: 'account_onboarding',
     });
 
