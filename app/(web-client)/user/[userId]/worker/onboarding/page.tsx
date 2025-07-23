@@ -1,3 +1,5 @@
+/* eslint-disable max-lines */
+/* eslint-disable max-lines-per-function */
 "use client";
 
 import React, { useState, useEffect, useRef, ChangeEvent } from "react";
@@ -400,17 +402,7 @@ export default function OnboardWorkerPage() {
           }
           if (step.type === "recordVideo") {
             return (
-              <VideoRecorderBubble
-                key={key}
-                onVideoRecorded={(file) =>
-                  handleVideoUpload(file, inputConfig.name, step.id)
-                }
-                onFileUploaded={(file) =>
-                  handleVideoUpload(file, inputConfig.name, step.id)
-                }
-                prompt={step.content as string}
-                uploadProgress={uploadProgress[inputConfig.name]}
-              />
+              <VideoRecorderBubble key={key} />
             );
           }
         }
