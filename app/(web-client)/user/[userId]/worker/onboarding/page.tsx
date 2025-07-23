@@ -1,5 +1,3 @@
-/* eslint-disable max-lines */
-/* eslint-disable max-lines-per-function */
 "use client";
 
 import React, { useState, useEffect, useRef, ChangeEvent } from "react";
@@ -88,7 +86,7 @@ function extractCoordsFromGoogleMapsUrl(url: string) {
   return null;
 }
 
-// Overhaul: static, linear, step-driven onboarding for workers
+//static, linear, step-driven onboarding for workers
 const workerSteps = [
   { name: "about", type: "textarea", label: "Tell us about yourself:", prompt: "Tell us about yourself and your background as a worker." },
   { name: "experience", type: "textarea", label: "Experience:", prompt: "How many years of experience do you have? What kind of gigs have you done?" },
@@ -116,6 +114,18 @@ export default function OnboardWorkerPage() {
   const [skipped, setSkipped] = useState<Record<string, boolean>>({});
   const stepCounterRef = useRef(1);
   function getNextStepId() { return stepCounterRef.current++; }
+  const [uploadProgress, setUploadProgress] = useState<Record<string, number>>({});
+  const [openVideoStepId, setOpenVideoStepId] = useState<number | null>(null);
+
+  // Add handleInputSubmit if missing
+  function handleInputSubmit(stepId: number, inputName: string) {
+    // Find the step and mark as complete, advance focus, etc.
+    setChatSteps(prevSteps => prevSteps.map(step =>
+      step.id === stepId ? { ...step, isComplete: true } : step
+    ));
+    // Optionally, advance to the next step if needed
+    setCurrentStepIdx(idx => idx + 1);
+  }
 
   useEffect(() => {
     setCurrentStepIdx(0);
@@ -260,6 +270,39 @@ export default function OnboardWorkerPage() {
     return String(value);
   }
 
+  // Uploads a video file to Firebase and marks the step complete
+  const handleVideoUpload = async (
+    file: Blob,
+    name?: string,
+    stepId?: number
+  ) => {
+    if (!user || !name || stepId === undefined) return;
+
+    const filePath = `users/${user.uid}/onboarding-videos/${Date.now()}-${name}.webm`;
+    const fileStorageRef = storageRef(getStorage(firebaseApp), filePath);
+    const uploadTask = uploadBytesResumable(fileStorageRef, file);
+
+    uploadTask.on(
+      "state_changed",
+      (snapshot) => {
+        const progress =
+          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        setUploadProgress((prev) => ({ ...prev, [name]: progress }));
+      },
+      (error) => {
+        console.error("Upload failed:", error);
+        setUploadProgress((prev) => ({ ...prev, [name]: -1 })); // Indicate error
+      },
+      () => {
+        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+          setUploadProgress((prev) => ({ ...prev, [name]: 100 })); // Indicate completion
+          handleInputChange(name, downloadURL);
+          handleInputSubmit(stepId, name);
+        });
+      }
+    );
+  };
+
   if (currentStepIdx >= workerSteps.length) {
     // Show summary and confirm button
     return (
@@ -326,73 +369,114 @@ export default function OnboardWorkerPage() {
             // Only show Confirm if this is the last input step and not confirmed
             const isActive = idx === chatSteps.length - 1 && !confirmed;
             return (
-              <TextAreaBubble
-                key={key}
-                {...commonProps}
-                value={value}
-                placeholder={inputConfig.placeholder}
-                rows={3}
-                onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
-                  handleInputChange(inputConfig.name, e.target.value)
-                }
-                ref={(el: HTMLTextAreaElement | null) => {
-                  if (el && currentFocusedInputName === inputConfig.name)
-                    el.focus();
-                }}
-              />
+              <React.Fragment key={key}>
+                <LocationPickerBubble
+                  label={step.inputConfig.label}
+                  value={formData.location}
+                  onChange={val => handleInputChange('location', val)}
+                  showConfirm={!!formData.location && isActive}
+                  onConfirm={handleConfirm}
+                />
+              </React.Fragment>
             );
           }
-          if (
-            inputConfig.type === "text" ||
-            inputConfig.type === "email" ||
-            inputConfig.type === "number"
-          ) {
-            const value =
-              typeof rawValue === "string" || typeof rawValue === "number"
-                ? rawValue
-                : "";
-            return (
-              <InputBubble
-                key={key}
-                {...commonProps}
-                value={value}
-                type={inputConfig.type}
-                placeholder={inputConfig.placeholder}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  handleInputChange(inputConfig.name, e.target.value)
+          return (
+            <InputBubble
+              key={key}
+              id={step.inputConfig.name}
+              name={step.inputConfig.name}
+              label={step.inputConfig.label}
+              value={formData[step.inputConfig.name] || ""}
+              disabled={false}
+              type={step.inputConfig.type === "number" ? "number" : "text"}
+              placeholder={step.inputConfig.label}
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                handleInputChange(step.inputConfig.name, e.target.value)
+              }
+              onFocus={() => {}}
+              onBlur={() => {}}
+              onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleConfirm();
                 }
-                ref={(el: HTMLInputElement | null) => {
-                  if (el && currentFocusedInputName === inputConfig.name)
-                    el.focus();
-                }}
-              />
-            );
-          }
-          if (step.type === "datePicker") {
-            return (
-              <CalendarPickerBubble
-                onChange={(date) =>
-                  handleCalendarChange(date, step.id, inputConfig.name)
+              }}
+              ref={undefined}
+            />
+          );
+        }
+        if (step.inputConfig?.type === "textarea") {
+          return (
+            <TextAreaBubble
+              key={key}
+              id={step.inputConfig.name}
+              name={step.inputConfig.name}
+              label={step.inputConfig.label}
+              value={formData[step.inputConfig.name] || ""}
+              disabled={false}
+              placeholder={step.inputConfig.label}
+              rows={step.inputConfig.rows || 3}
+              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+                handleInputChange(step.inputConfig.name, e.target.value)
+              }
+              onKeyPress={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  handleConfirm();
                 }
-                key={key}
-              />
-            );
-          }
-          if (step.type === "recordVideo") {
-            return (
-              <VideoRecorderBubble
-                key={key}
-                onVideoRecorded={(file) =>
-                  handleVideoUpload(file, inputConfig.name, step.id)
-                }
-                onFileUploaded={(file) =>
-                  handleVideoUpload(file, inputConfig.name, step.id)
-                }
-                prompt={step.content as string}
-                uploadProgress={uploadProgress[inputConfig.name]}
-              />
-            );
-          }
+              }}
+              ref={undefined}
+            />
+          );
+        }
+        if (step.type === "recordVideo" || step.type === "video") {
+          const isActive = idx === chatSteps.length - 1 && !confirmed;
+          const isOpen = openVideoStepId === step.id;
+          return (
+            <React.Fragment key={key}>
+              {!isOpen ? (
+                <div style={{ display: 'flex', flexDirection: 'row', gap: 12 }}>
+                  <button
+                    style={{ margin: '8px 0', background: '#0f766e', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 16px', fontWeight: 600 }}
+                    onClick={() => setOpenVideoStepId(step.id)}
+                  >
+                    Record Video Introduction
+                  </button>
+                  {isActive && (
+                    <button
+                      style={{ margin: '8px 0', background: '#0f766e', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 16px', fontWeight: 600 }}
+                      onClick={handleSkip}
+                    >
+                      Skip Video Introduction
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <VideoRecorderBubble
+                  onVideoRecorded={file => {
+                    handleVideoUpload(file, step.inputConfig?.name, step.id);
+                    setOpenVideoStepId(null);
+                  }}
+                />
+              )}
+            </React.Fragment>
+          );
+        }
+        if (["stripe", "referral"].includes(step.type)) {
+          // Only show Skip for the last such step (active one), but not for video/recordVideo (handled above)
+          const isActive = idx === chatSteps.length - 1 && !confirmed;
+          return (
+            <div key={key} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {isActive && (
+                <button
+                  style={{ alignSelf: 'flex-end', margin: 8, background: '#0f766e', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 16px', fontWeight: 600 }}
+                  onClick={handleSkip}
+                >
+                  Skip {step.label}
+                </button>
+              )}
+            </div>
+          );
         }
         return null;
       })}

@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import styles from './MapLinkBubble.module.css';
-// @ts-ignore
+
 import { GoogleMap, Marker, useJsApiLoader } from '@react-google-maps/api';
 
 interface MapLinkBubbleProps {
