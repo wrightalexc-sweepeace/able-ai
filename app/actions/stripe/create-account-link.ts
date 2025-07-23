@@ -48,8 +48,8 @@ export async function createAccountLink(firebaseUid: string) {
 
     const accountLink = await stripeApi.accountLinks.create({
       account: stripeAccountId,
-      refresh_url: `${process.env.NEXT_PUBLIC_APP_URL}/user/${userRecord.id}/settings/onboarding-retry`,
-      return_url: `${process.env.NEXT_PUBLIC_APP_URL}/user/${userRecord.id}/settings/onboarding-success?account_id=${stripeAccountId}`,
+      refresh_url: `${process.env.NEXTAUTH_URL}/user/${userRecord.id}/settings/onboarding-retry`,
+      return_url: `${process.env.NEXTAUTH_URL}/user/${userRecord.id}/settings/onboarding-success?account_id=${stripeAccountId}`,
       type: 'account_onboarding',
     });
 
