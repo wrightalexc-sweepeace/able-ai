@@ -10,7 +10,7 @@ interface ChatBotLayoutProps {
   children: ReactNode;
   onScroll?: (event: React.UIEvent<HTMLDivElement>) => void;
   className?: string;
-  onHomeClick: () => void;
+  onHomeClick?: () => void;
 }
 
 const ChatBotLayout = React.forwardRef<HTMLDivElement, ChatBotLayoutProps>(
