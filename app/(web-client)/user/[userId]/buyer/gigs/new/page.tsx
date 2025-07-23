@@ -666,7 +666,7 @@ export default function OnboardBuyerPage() {
             // Custom UI for gigLocation
             if (inputConf.name === "gigLocation") {
               const isActive = isActiveInputStep(step, idx);
-              return (
+            return (
                 <div key={key} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   <LocationPickerBubble
                     label={inputConf.label}
@@ -702,7 +702,7 @@ export default function OnboardBuyerPage() {
             const allowedTypes = ["number", "text", "email", "password", "date", "tel"];
             const safeType = allowedTypes.includes(inputConf.type) ? inputConf.type : "text";
             const isActive = isActiveInputStep(step, idx);
-            return (
+              return (
               <div key={key} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <InputBubble
                   id={inputConf.name}
