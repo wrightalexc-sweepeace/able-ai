@@ -117,7 +117,7 @@ export default function SettingsPage() {
       setEmailPlatformAnnouncements(
         data.notificationPreferences.email.platformAnnouncements
       );
-      if (data.stripeAccountId || !data.stripeAccountStatus) {
+      if (!data.stripeAccountId || !data.stripeAccountStatus) {
         setShowStripeModal(true)
       }
       // setSmsGigAlerts(data.notificationPreferences.sms.gigAlerts); // SMS commented out
