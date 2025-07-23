@@ -64,8 +64,7 @@
   transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 .filterButton:hover {
-  background-color: #3a3a3a;
-  border-color: var(--primary-color);
+  background-color: var(--secondary-color);
 }
 
 .filterSection { /* For the radio button filters */
@@ -96,7 +95,7 @@
   cursor: pointer;
 }
 .filterOptionLabel input[type="radio"] {
-  accent-color: var(--primary-color);
+  accent-color: var(--secondary-color);
   cursor: pointer;
 }
 .filterNote {
@@ -124,7 +123,7 @@
 .amount {
   font-size: 1.25rem; /* Larger amount */
   font-weight: 600;
-  color: var(--primary-color); /* Primary color for amount */
+  color: var(--secondary-color); /* Secondary color for amount */
 }
 
 .actions {
@@ -150,7 +149,7 @@
   transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 .actionButton:hover {
-  background-color: var(--primary-color);
+  background-color: var(--secondary-color);
   color: #ffffff;
 }
 
@@ -178,19 +177,6 @@
   right: 0;
 }
 
-.homeButton {
-  background: none;
-  border: none;
-  color: #a0a0a0;
-  cursor: pointer;
-  padding: 0.75rem;
-  display: flex;
-  align-items: center;
-  transition: color 0.2s ease;
-}
-.homeButton:hover {
-  color: var(--primary-color);
-}
 
 .emptyState, .loadingContainer {
   text-align: center;
@@ -248,7 +234,7 @@
 }
 
 .tooltipValue {
-  color: var(--primary-color);
+  color: var(--secondary-color);
   font-size: 1rem;
   font-weight: 600;
   margin: 0;
