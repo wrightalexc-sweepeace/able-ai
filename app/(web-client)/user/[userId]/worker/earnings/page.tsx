@@ -5,12 +5,13 @@ import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 
 // Using Lucide Icons
-import { Home, Filter, ArrowLeft, Loader2, Briefcase, Wine, Utensils, ExternalLink } from 'lucide-react';
+import { Home, Filter, ArrowLeft, Loader2, Briefcase, Wine, Utensils, ExternalLink, ClipboardList } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 import styles from './EarningsPage.module.css';
 import { useAuth } from '@/context/AuthContext';
 import { getLastRoleUsed } from '@/lib/last-role-used';
+import Image from 'next/image';
 
 // Define interface for earning data
 interface Earning {
@@ -140,35 +141,16 @@ export default function WorkerEarningsPage() {
     <div className={styles.container}>
       <div className={styles.pageWrapper}>
         <header className={styles.header}>
-          <button onClick={() => router.back()} className={styles.backButton} aria-label="Go back">
-            <ArrowLeft size={24} />
-          </button>
-          <h1 className={styles.pageTitle}>My Earnings</h1>
+          <div className={styles.headerLeftContainer}>
+            <ClipboardList size={15} color='#ffffff' />
+            <h1 className={styles.pageTitle}>Earnings</h1>
+          </div>
           <button onClick={() => setShowFilterModal(true)} className={styles.filterButton}>
             <Filter size={16} /> Filter
           </button>
         </header>
 
         {/* Filter Options - Simplified for this example, could be a modal */}
-        {!showFilterModal && (
-            <section className={styles.filterSection}>
-                <div className={styles.filterSectionTitle}>Filter by Gig Type:</div>
-                <div className={styles.filterOptions}>
-                {gigTypes.map(type => (
-                    <label key={type} className={styles.filterOptionLabel}>
-                    <input
-                        type="radio"
-                        name="gigTypeEarningsFilter"
-                        value={type}
-                        checked={filterGigType === type}
-                        onChange={() => setFilterGigType(type)}
-                    />
-                    {type}
-                    </label>
-                ))}
-                </div>
-            </section>
-        )}
         
         {showFilterModal && (
             <div className={styles.modalOverlay} onClick={() => setShowFilterModal(false)}>
@@ -205,28 +187,19 @@ export default function WorkerEarningsPage() {
           <div className={styles.earningsList}>
             {earnings.map(earning => (
               <div key={earning.id} className={styles.earningItem}>
-                <div className={styles.earningHeader}>
+                <div className={styles.earningDetails}>
                   {getGigIcon(earning.gigType)}
-                  <span className={styles.earningGigInfo}>{earning.gigTitle} ({earning.gigType})</span>
-                  <span className={styles.earningDate}>- {new Date(earning.date).toLocaleDateString()}</span>
+                  <div className={styles.earningHeader}>
+                    <span className={styles.earningGigInfo}>{earning.gigType}</span>
+                    <span className={styles.earningDate}>{new Date(earning.date).toLocaleDateString()}</span>
+                  </div>                  
                 </div>
-                <p className={styles.earningBuyerName}>From: {earning.buyerName}</p>
-                
-                <div className={styles.earningFooter}>
-                  <span className={styles.amount}>£{earning.amount.toFixed(2)}</span>
-                  <div className={styles.actions}>
-                    <Link href={`/user/${pageUserId}/worker/gigs/${earning.gigId}`} passHref>
-                        <button className={styles.actionButton}>
-                            <ExternalLink size={14} /> View Gig Details
-                        </button>
-                    </Link>
-                  </div>
-                </div>
+                <span className={styles.amount}>£{earning.amount.toFixed(2)}</span>
               </div>
             ))}
           </div>
         )}
-
+{/* 
         <div className={styles.barChartContainer}>
           {isLoadingEarnings ? "Loading chart data..." : earnings.length > 0 && chartData.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
@@ -239,13 +212,11 @@ export default function WorkerEarningsPage() {
               </BarChart>
             </ResponsiveContainer>
           ) : !isLoadingEarnings ? "No earnings data available for chart." : ""}
-        </div>
+        </div> */}
 
         <footer className={styles.footer}>
           <Link href={`/user/${pageUserId}/worker`} passHref>
-            <button className={styles.homeButton} aria-label="Go to Home">
-                <Home size={24} />
-            </button>
+            <Image src="/images/home.svg" alt="Home" width={40} height={40} />
           </Link>
         </footer>
       </div>

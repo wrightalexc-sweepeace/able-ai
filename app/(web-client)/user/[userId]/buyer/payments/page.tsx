@@ -1,3 +1,4 @@
+/* eslint-disable max-lines-per-function */
 "use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
@@ -5,12 +6,13 @@ import { useRouter, useParams } from 'next/navigation';
 import Link from 'next/link';
 
 // Using Lucide Icons
-import { Home, Filter, FileText, Repeat, ArrowLeft, Loader2, Wine, Utensils, Briefcase } from 'lucide-react';
+import { Home, Filter, FileText, Repeat, ArrowLeft, Loader2, Wine, Utensils, Briefcase, ClipboardList } from 'lucide-react';
 // Import Recharts components
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
 
 import styles from './PaymentsPage.module.css';
 import { useAuth } from '@/context/AuthContext';
+import Image from 'next/image';
 
 // Define interfaces for payment data
 interface Payment {
@@ -126,41 +128,18 @@ export default function BuyerPaymentsPage() {
     <div className={styles.container}>
       <div className={styles.pageWrapper}>
         <header className={styles.header}>
-          <button onClick={() => router.back()} className={styles.backButton} aria-label="Go back">
-            <ArrowLeft size={24} />
-          </button>
-          <h1 className={styles.pageTitle}>Payments</h1>
+          <div className={styles.headerLeftContainer}>
+            <ClipboardList size={15} color='#ffffff' />
+            <h1 className={styles.pageTitle}>Payments</h1>
+          </div>
           <button onClick={() => setShowFilterModal(true)} className={styles.filterButton}>
             <Filter size={16} /> Filter
           </button>
         </header>
-
-        {/* Filter Options (could be in a modal triggered by the Filter button) */}
-        {/* For simplicity, showing inline filters here. Modal is a UX choice. */}
-        {!showFilterModal && ( // Simple inline toggle for now
-            <section className={styles.filterSection}>
-                <div className={styles.filterSectionTitle}>Filter by Gig Type:</div>
-                <div className={styles.filterOptions}>
-                {gigTypes.map(type => (
-                    <label key={type} className={styles.filterOptionLabel}>
-                    <input
-                        type="radio"
-                        name="gigTypeFilter"
-                        value={type}
-                        checked={filterGigType === type}
-                        onChange={() => setFilterGigType(type)}
-                    />
-                    {type}
-                    </label>
-                ))}
-                </div>
-                <p className={styles.filterNote}>Totals include Able AI & payment provider fees.</p>
-            </section>
-        )}
-        
+        <p className={styles.totalsNote}>Totals include Able AI & payment provider fees.</p>
         {/* Example of how a filter modal might be structured */}
         {showFilterModal && (
-            <div className={styles.modalOverlay} onClick={() => setShowFilterModal(false)}>
+              <div className={styles.modalOverlay} onClick={() => setShowFilterModal(false)}>
                 <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
                     <h3 className={styles.modalHeader}>Filter Payments</h3>
                     <div className={styles.filterOptions} style={{flexDirection: 'column'}}>
@@ -195,37 +174,38 @@ export default function BuyerPaymentsPage() {
           <div className={styles.paymentList}>
             {payments.map(payment => (
               <div key={payment.id} className={styles.paymentItem}>
-                <div className={styles.paymentHeader}>
-                  {getGigIcon(payment.gigType)}
-                  <span className={styles.paymentGigInfo}>{payment.gigType}</span>
-                  <span className={styles.paymentDate}>- {new Date(payment.date).toLocaleDateString()}</span>
-                </div>
-                <p className={styles.paymentWorkerName}>With: {payment.workerName}</p>
-                
-                <div className={styles.paymentFooter}>
-                  <span className={styles.amount}>{payment.amount.toFixed(2)}</span>
-                  <div className={styles.actions}>
-                    {payment.status === 'Paid' && (
+                <div className={styles.paymentCard}>
+                  <div className={styles.paymentDetails}>
+                    {getGigIcon(payment.gigType)}
+                    <div className={styles.paymentHeader}> 
+                      <span className={styles.paymentGigInfo}>{payment.gigType}, {payment.workerName}</span>
+                      <span className={styles.paymentDate}>{new Date(payment.date).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                  
+                  {payment.status === 'Paid' && (
                       <Link 
                         href={`/user/${params.userId}/buyer/payments/invoice?id=${payment.id}`}
-                        className={styles.actionButton}
+                        className={styles.generateInvoice}
                       >
-                        <FileText size={14} /> View Invoice
+                        <FileText size={20} /> Generate Invoice
                       </Link>
                     )}
-                    {payment.status === 'Paid' && !payment.invoiceUrl && (
-                       <button onClick={() => handleGenerateInvoice(payment.id)} className={styles.actionButton}>
-                         <FileText size={14} /> Generate Invoice
-                       </button>
-                    )}
+                </div>
+                
+                
+                <div className={styles.paymentRight}>
+                  <span className={styles.amount}>&euro;{payment.amount.toFixed(2)}</span>
+                  <div className={styles.actions}>
+                    
                      {payment.status === 'Pending' && (
                        <button onClick={() => alert(`Payment for ${payment.id} would be initiated here.`)} className={`${styles.actionButton} ${styles.primaryAction}`}>
                          Pay Now
                        </button>
                     )}
-                    {payment.gigId && (
+                    {payment.status === 'Paid' && (
                         <button onClick={() => handleRepeatGig(payment.gigId)} className={styles.actionButton}>
-                            <Repeat size={14} /> Repeat Gig
+                           Repeat Gig
                         </button>
                     )}
                   </div>
@@ -236,7 +216,7 @@ export default function BuyerPaymentsPage() {
         )}
 
         {/* Bar Chart Visualization */}
-        <div className={styles.barChartContainer}>
+        {/* <div className={styles.barChartContainer}>
           {isLoadingPayments ? (
             <div className={styles.loadingContainer}>
               <Loader2 className="animate-spin" size={28}/> Loading chart data...
@@ -275,13 +255,11 @@ export default function BuyerPaymentsPage() {
           ) : !isLoadingPayments ? (
             <div className={styles.emptyState}>No data available for chart.</div>
           ) : null}
-        </div>
+        </div> */}
 
         <footer className={styles.footer}>
           <Link href={`/user/${pageUserId}/buyer`} passHref>
-            <button className={styles.homeButton} aria-label="Go to Home">
-                <Home size={24} />
-            </button>
+            <Image src="/images/home.svg" alt="Home" width={40} height={40} />
           </Link>
         </footer>
       </div>

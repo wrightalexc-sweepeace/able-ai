@@ -3,16 +3,24 @@ import styles from './ChatBotLayout.module.css';
 import Logo from '../brand/Logo';
 import TextAreaBubble from './TextAreaBubble';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 
 interface ChatBotLayoutProps {
   children: ReactNode;
   onScroll?: (event: React.UIEvent<HTMLDivElement>) => void;
-  onHomeClick?: () => void;
   className?: string;
 }
 
 const ChatBotLayout = React.forwardRef<HTMLDivElement, ChatBotLayoutProps>(
-  ({ children, onScroll, onHomeClick, className }, ref) => {
+  ({ children, onScroll, className }, ref) => {
+
+    const router = useRouter();
+    const { user } = useAuth();
+    console.log('User in ChatBotLayout:', user);
+    const onHomeClick = () => {
+      router.push(`/user/${user?.uid}/worker`);
+    }
     return (
       <div className={`${styles.chatContainerWrapper} ${className}`}>
         <div className={styles.chatContainer} onScroll={onScroll} ref={ref}>
