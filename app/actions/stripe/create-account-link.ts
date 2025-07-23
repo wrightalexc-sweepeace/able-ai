@@ -8,7 +8,7 @@ import { UsersTable } from "@/lib/drizzle/schema";
 
 export async function createAccountLink(firebaseUid: string) {
   const requestHeaders = await headers();
-  const originUrl = requestHeaders.get('host');
+  const originUrl = requestHeaders.get('origin') || requestHeaders.get('host');
 
   try {
     if (!firebaseUid) {
