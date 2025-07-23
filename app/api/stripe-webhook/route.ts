@@ -56,8 +56,8 @@ export async function POST(req: Request) {
         await db.update(UsersTable)
           .set({
             updatedAt: new Date(),
-            canReceivePayouts: payoutsEnabled,
-            stripeAccountStatus: transfersActive && payoutsEnabled? 'connected': 'incomplete',
+            // canReceivePayouts: payoutsEnabled,
+            // stripeAccountStatus: transfersActive && payoutsEnabled? 'connected': 'incomplete',
           })
           .where(eq(UsersTable.id, parsedUserId));
 
