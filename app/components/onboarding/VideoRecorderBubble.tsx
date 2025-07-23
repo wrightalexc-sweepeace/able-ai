@@ -4,7 +4,13 @@ import Webcam from "react-webcam";
 import styles from "./VideoRecorderBubble.module.css";
 import { MonitorPlay } from "lucide-react";
 
-const VideoRecorderBubble = () => {
+// Add prop type for onVideoRecorded
+interface VideoRecorderBubbleProps {
+  onVideoRecorded?: (file: Blob) => void;
+  prompt?: string;
+}
+
+const VideoRecorderBubble: React.FC<VideoRecorderBubbleProps> = ({ onVideoRecorded, prompt }) => {
   const webcamRef = useRef<Webcam>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const [isRecording, setIsRecording] = useState(false);
@@ -13,6 +19,7 @@ const VideoRecorderBubble = () => {
   const [blob, setBlob] = useState<Blob | null>(null);
   const [recordedChunks, setRecordedChunks] = useState<Blob[]>([]);
   const [imageSrc, setImageSrc] = useState<string | null>(null);
+  const [permissionError, setPermissionError] = useState<string | null>(null);
 
   const capture = useCallback(() => {
     const imageSrc = webcamRef.current?.getScreenshot();
@@ -71,7 +78,9 @@ const VideoRecorderBubble = () => {
     if (!blob) return;
     const url = URL.createObjectURL(blob);
     console.log("Video URL:", url);
-    // onUploadComplete(url); // Uncomment once Firebase is connected
+    if (onVideoRecorded) {
+      onVideoRecorded(blob);
+    }
   };
 
   useEffect(() => {
@@ -86,6 +95,7 @@ const VideoRecorderBubble = () => {
 
   return (
     <div className={styles.container}>
+      {prompt && <div className={styles.prompt}>{prompt}</div>}
       {!showRecorder ? (
         <div className={styles.initial}>
           <button onClick={handleRecording} className={styles.recordButton}>
@@ -95,6 +105,9 @@ const VideoRecorderBubble = () => {
         </div>
       ) : (
         <>
+          {permissionError && (
+            <div style={{ color: 'red', marginTop: 12 }}>{permissionError}</div>
+          )}
           {!videoURL ? (
             <div className={styles.recorder}>
               <Webcam
@@ -102,8 +115,16 @@ const VideoRecorderBubble = () => {
                 audio={true}
                 mirrored={true}
                 screenshotFormat="image/jpeg"
-                videoConstraints={{ facingMode: "user" }}
+                videoConstraints={true}
                 className={styles.webcam}
+                onUserMedia={() => {
+                  setPermissionError(null);
+                  console.log("Webcam stream started");
+                }}
+                onUserMediaError={err => {
+                  setPermissionError("Camera access denied or not available. Please allow camera access and refresh the page.");
+                  console.error("Webcam error", err);
+                }}
               />
               <button
                 onClick={isRecording ? stopRecording : startRecording}
