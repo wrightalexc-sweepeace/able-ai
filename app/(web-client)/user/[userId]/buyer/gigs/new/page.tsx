@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, FormEvent, useMemo } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 import ChatBotLayout from "@/app/components/onboarding/ChatBotLayout";
@@ -9,12 +9,18 @@ import InputBubble from "@/app/components/onboarding/InputBubble"; // Corrected 
 import TextAreaBubble from "@/app/components/onboarding/TextAreaBubble"; // Corrected path
 // import FileUploadBubble from '@/app/components/onboarding/FileUploadBubble'; // Corrected path - Uncomment if used
 import WorkerCard, { WorkerData } from "@/app/components/onboarding/WorkerCard"; // Import shared WorkerCard and WorkerData
+import MapLinkBubble from '@/app/components/onboarding/MapLinkBubble';
+import LocationPickerBubble from "@/app/components/onboarding/LocationPickerBubble";
+import CalendarPickerBubble from "@/app/components/onboarding/CalendarPickerBubble";
 
 import Loader from "@/app/components/shared/Loader";
 
 import pageStyles from "./page.module.css";
 import { useAuth } from "@/context/AuthContext";
 import { StepInputConfig } from "@/app/types/form";
+import { geminiAIAgent } from '@/lib/firebase/ai';
+import { useFirebase } from '@/context/FirebaseContext';
+import { Schema } from '@firebase/ai';
 
 interface OnboardingStep {
   id: number;
@@ -177,379 +183,373 @@ const baseInitialSteps: OnboardingStep[] = [
   },
 ];
 
+// Define required fields and their configs
+const requiredFields = [
+  { name: "gigDescription", type: "text", label: "Gig Description:", defaultPrompt: "Hi! Tell me about yourself and what gig or gigs you need filling - we can assemble a team if you need one!" },
+  { name: "additionalInstructions", type: "textarea", label: "Additional Instructions:", defaultPrompt: "We have some great bartenders available. Do you need any special skills or do you have instructions for your hire?" },
+  { name: "hourlyRate", type: "number", label: "Hourly Rate:", defaultPrompt: "How much you would like to pay per hour? We suggest £15 plus tips to keep a motivated and happy team!" },
+  { name: "gigLocation", type: "text", label: "Gig Location:", defaultPrompt: "Where is the gig? What time and day do you need someone and for how long?" },
+  { name: "gigDate", type: "date", label: "Date of Gig:", defaultPrompt: "What is the date of the gig?" },
+];
+
+const gigStepSchema = Schema.object({
+  properties: {
+    field: Schema.string(),
+    prompt: Schema.string(),
+    isComplete: Schema.boolean(),
+  },
+});
+const gigSummarySchema = Schema.object({
+  properties: {
+    gigDescription: Schema.string(),
+    additionalInstructions: Schema.string(),
+    hourlyRate: Schema.number(),
+    gigLocation: Schema.string(),
+    gigDate: Schema.string(),
+    discountCode: Schema.string(),
+    selectedWorker: Schema.string(),
+  },
+  optionalProperties: ["discountCode", "selectedWorker"],
+});
+
+function buildPromptFromFormData(formData: Record<string, any>, lastField: string, lastValue: any) {
+  return `
+You are an onboarding assistant for gig creation. Here is the conversation so far:
+
+${Object.entries(formData)
+  .map(([field, value]) => `User answered "${value}" for "${field}".`)
+  .join('\n')}
+
+The last question was about "${lastField}", and the user answered: "${lastValue}".
+
+Your job is to:
+- Respond in a friendly, helpful, and concise way, like the following examples:
+  - "Hi! Tell me about yourself and what gig or gigs you need filling - we can assemble a team if you need one!"
+  - "We have some great bartenders available. Do you need any special skills or do you have instructions for your hire?"
+  - "How much you would like to pay per hour? We suggest £15 plus tips to keep a motivated and happy team!"
+  - "Where is the gig? What time and day do you need someone and for how long?"
+- If the answer is clear, confirm it and move to the next logical question (e.g., ask about pay, location, date, etc.).
+- If the answer is unclear, ask for clarification.
+- If all required info is collected, summarize and confirm.
+
+Respond as a single message, as if you are the bot in a chat.`;
+}
+
+type ChatStep = {
+  id: number;
+  type: "bot" | "user" | "input";
+  content?: string;
+  inputConfig?: StepInputConfig;
+  isComplete?: boolean;
+};
+
+// Define the onboarding steps statically, following the original order and messages
+const staticOnboardingSteps: ChatStep[] = [
+  {
+    id: 1,
+    type: "bot",
+    content: "Hi! Tell me about yourself and what gig or gigs you need filling - we can assemble a team if you need one!",
+  },
+  {
+    id: 2,
+    type: "input",
+    inputConfig: {
+      type: "text",
+      name: "gigDescription",
+      label: "Gig Description:",
+    },
+    isComplete: false,
+  },
+  {
+    id: 3,
+    type: "bot",
+    content: "We have some great bartenders available. Do you need any special skills or do you have instructions for your hire?",
+  },
+  {
+    id: 4,
+    type: "input",
+    inputConfig: {
+      type: "textarea",
+      name: "additionalInstructions",
+      placeholder: "e.g., Cocktail making experience would be ideal",
+      label: "Additional Instructions:",
+      rows: 3,
+    },
+    isComplete: false,
+  },
+  {
+    id: 5,
+    type: "bot",
+    content: "How much you would like to pay per hour? We suggest £15 plus tips to keep a motivated and happy team!",
+  },
+  {
+    id: 6,
+    type: "input",
+    inputConfig: {
+      type: "number",
+      name: "hourlyRate",
+      placeholder: "£15",
+      label: "Hourly Rate:",
+    },
+    isComplete: false,
+  },
+  {
+    id: 7,
+    type: "bot",
+    content: "Where is the gig? What time and day do you need someone and for how long?",
+  },
+  {
+    id: 8,
+    type: "input",
+    inputConfig: {
+      type: "text",
+      name: "gigLocation",
+      placeholder: "e.g., The Green Tavern, Rye Lane, Peckham, SE15 5AR",
+      label: "Gig Location:",
+    },
+    isComplete: false,
+  },
+  {
+    id: 9,
+    type: "input",
+    inputConfig: {
+      type: "date",
+      name: "gigDate",
+      label: "Date of Gig:",
+    },
+    isComplete: false,
+  },
+];
+
+// Helper to extract coordinates from Google Maps URL
+function extractCoordsFromGoogleMapsUrl(url: string) {
+  // Try to match @lat,lng or q=lat,lng
+  const atMatch = url.match(/@(-?\d+\.\d+),(-?\d+\.\d+)/);
+  if (atMatch) return { lat: parseFloat(atMatch[1]), lng: parseFloat(atMatch[2]) };
+  const qMatch = url.match(/[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/);
+  if (qMatch) return { lat: parseFloat(qMatch[1]), lng: parseFloat(qMatch[2]) };
+  return null;
+}
+
+// Typing indicator component
+const TypingIndicator: React.FC = () => (
+  <div style={{ display: 'flex', alignItems: 'center', padding: '8px 16px', color: '#0f766e', fontWeight: 600 }}>
+    <span className="typing-dot" style={{ animation: 'blink 1s infinite' }}>.</span>
+    <span className="typing-dot" style={{ animation: 'blink 1s infinite 0.2s' }}>.</span>
+    <span className="typing-dot" style={{ animation: 'blink 1s infinite 0.4s' }}>.</span>
+    <style>{`
+      @keyframes blink { 0%, 80%, 100% { opacity: 0.2; } 40% { opacity: 1; } }
+    `}</style>
+  </div>
+);
+
 export default function OnboardBuyerPage() {
   const router = useRouter();
   const { user } = useAuth();
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const endOfChatRef = useRef<HTMLDivElement>(null);
+  const { ai } = useFirebase();
 
-  const isQA = user?.claims.role === "QA";
-
-  const [onboardingSteps, setOnboardingSteps] = useState<OnboardingStep[]>(
-    baseInitialSteps.map((s) => ({ ...s, isComplete: false }))
-  );
   const [formData, setFormData] = useState<Record<string, any>>({});
-  const [chatMessages, setChatMessages] = useState<OnboardingStep[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [currentFocusedInputName, setCurrentFocusedInputName] = useState<
-    string | null
-  >(null);
-  const [workerName, setWorkerName] = useState<string | null>(null); // Added state
-  const [workerPrice, setWorkerPrice] = useState<number | null>(null); // Added state
+  const [currentFocusedInputName, setCurrentFocusedInputName] = useState<string | null>(null);
+  const [chatSteps, setChatSteps] = useState<ChatStep[]>([{
+    id: 1,
+    type: "bot",
+    content: "Hi! Tell me about yourself and what gig or gigs you need filling - we can assemble a team if you need one!",
+  }, {
+    id: 2,
+    type: "input",
+    inputConfig: {
+      type: "text",
+      name: "gigDescription",
+      label: "Gig Description:",
+    },
+    isComplete: false,
+  }]);
+  // Expanded state for summary fields
+  const [expandedSummaryFields, setExpandedSummaryFields] = useState<Record<string, boolean>>({});
+  // Add state for typing animation
+  const [isTyping, setIsTyping] = useState(false);
 
-  // QA mode: fill formData and steps with mock data if isQA
-  useEffect(() => {
-    if (isQA) {
-      const qaFormData: Record<string, any> = {};
-      baseInitialSteps.forEach((step) => {
-        if (step.inputConfig?.name) {
-          // Check if inputConfig and its name exist
-          const inputConf = step.inputConfig; // Safe to use after check
-          switch (inputConf.type) {
-            case "file":
-              qaFormData[inputConf.name] = `sample-${inputConf.name}.pdf`;
-              break;
-            case "date":
-              qaFormData[inputConf.name] = new Date()
-                .toISOString()
-                .split("T")[0];
-              break;
-            case "number":
-              qaFormData[inputConf.name] = 15;
-              break;
-            default: // text, textarea, email etc.
-              qaFormData[inputConf.name] = `QA: ${
-                inputConf.label || inputConf.name || "Sample"
-              }`;
-          }
-        }
-      });
-      setFormData(qaFormData);
-      setOnboardingSteps(
-        baseInitialSteps.map((s) => ({ ...s, isComplete: true }))
-      );
-    } else {
-      setOnboardingSteps(
-        baseInitialSteps.map((s) => ({ ...s, isComplete: false }))
-      );
-      setFormData({});
-    }
-  }, [isQA]);
+  // Helper to get next required field not in formData
+  function getNextRequiredField(formData: Record<string, any>) {
+    return requiredFields.find(f => !formData[f.name]);
+  }
 
-  useEffect(() => {
-    if (isQA) {
-      // QA mode: show all steps and user responses as complete
-      const newMessages: OnboardingStep[] = [];
-      let currentStepIdForDependency = 0;
-      baseInitialSteps.forEach((step) => {
-        const messageToAdd = {
-          ...step,
-          content: step.content,
-          isComplete: true,
-          dependsOn: currentStepIdForDependency,
-        };
-        newMessages.push(messageToAdd);
-        currentStepIdForDependency = step.id;
-        if (
-          step.inputConfig?.name && // Check if inputConfig and its name exist
-          (step.type === "userInput" ||
-            step.type === "fileUpload" ||
-            step.type === "datePicker" ||
-            step.type === "terms") // "terms" might not have inputConfig, needs review if it's an input type
-        ) {
-          const inputConf = step.inputConfig; // Safe to use after check
-          let qaValue = formData[inputConf.name];
-          if (qaValue === undefined) {
-            switch (inputConf.type) {
-              case "file":
-                qaValue = `sample-${inputConf.name}.pdf`;
-                break;
-              case "date":
-                qaValue = new Date().toISOString().split("T")[0];
-                break;
-              case "number":
-                qaValue = 15;
-                break;
-              default: // text, textarea, email etc.
-                qaValue = `QA: ${
-                  inputConf.label || inputConf.name || "Sample Answer"
-                }`;
-            }
+  // Helper to determine if this is the active input step
+  function isActiveInputStep(step: ChatStep, idx: number) {
+    // The last input step in chatSteps and not complete
+    return step.type === 'input' && !step.isComplete && idx === chatSteps.length - 1 && !isTyping;
+  }
+
+  async function handleInputSubmit(stepId: number, inputName: string) {
+    if (!formData[inputName]) return;
+    // Prepare updated formData with the just-submitted value
+    const updatedFormData = { ...formData };
+    setChatSteps((prev) => {
+      const updated = prev.map((step) =>
+        step.id === stepId ? { ...step, isComplete: true } : step
+      );
+      const userMsg: ChatStep = {
+        id: Date.now(),
+        type: "user",
+        content: updatedFormData[inputName],
+      };
+      return [...updated, userMsg];
+    });
+    setIsTyping(true);
+    // Check if all required fields are collected and non-empty (using updatedFormData)
+    const allFilled = requiredFields.every(f => updatedFormData[f.name]);
+    if (allFilled) {
+      setTimeout(() => {
+        setChatSteps((prev) => {
+          if (!prev.some(s => s.type === 'bot' && s.content?.startsWith('Thank you!'))) {
+            return [
+              ...prev,
+              {
+                id: Date.now() + 1,
+                type: "bot",
+                content: `Thank you! Here is a summary of your gig:\n${JSON.stringify(updatedFormData, null, 2)}`,
+              },
+            ];
           }
-          newMessages.push({
-            id: step.id + 0.5,
-            type: "userResponseDisplay",
-            senderType: "user",
-            content: String(qaValue),
-            isComplete: true,
-            dependsOn: currentStepIdForDependency,
-          });
-          currentStepIdForDependency = step.id + 0.5;
-        }
-      });
-      setChatMessages(newMessages);
+          return prev;
+        });
+        setIsTyping(false);
+      }, 700);
       return;
     }
-    let firstUncompletedInputFound = false;
-    let nextFocusTargetSet = false;
-    const newMessages: OnboardingStep[] = [];
-    for (let i = 0; i < onboardingSteps.length; i++) {
-      const step = onboardingSteps[i];
-      if (step.dependsOn) {
-        const dependentStep = onboardingSteps.find(
-          (s) => s.id === step.dependsOn
-        );
-        if (
-          dependentStep &&
-          !dependentStep.isComplete &&
-          step.type !== "workerCard"
-        ) {
-          // Worker cards can show even if prev input not done
-          break;
-        }
-        if (
-          step.type === "workerCard" &&
-          dependentStep &&
-          !newMessages.some((nm) => nm.id === dependentStep.id)
-        ) {
-          break;
-        }
+    // Determine the next required field in order
+    const nextRequiredIdx = requiredFields.findIndex(f => !updatedFormData[f.name]);
+    const nextField = requiredFields[nextRequiredIdx];
+    // Call AI to get next prompt, but instruct it to always proceed in order
+    const aiPrompt = `Here is the data collected so far: ${JSON.stringify(updatedFormData)}. The required fields, in order, are: gigDescription, additionalInstructions, hourlyRate, gigLocation, gigDate. The next required field is: ${nextField.name}. Please ask for this, or ask a brief clarifying question if needed, but always proceed in this order. Respond as a JSON object: { field: string, prompt: string, isComplete: boolean, isClarification?: boolean }`;
+    const result = await geminiAIAgent(
+      "gemini-2.5-flash-preview-05-20",
+      { prompt: aiPrompt, responseSchema: gigStepSchema },
+      ai
+    );
+    let aiField: string | undefined;
+    let aiPromptText: string | undefined;
+    let isClarification = false;
+    if (result.ok) {
+      const aiData: any = result.data;
+      aiField = aiData.field;
+      aiPromptText = aiData.prompt;
+      if (aiField && aiField !== nextField.name && !updatedFormData[aiField]) {
+        isClarification = true;
+      } else if (aiField !== nextField.name) {
+        setIsTyping(false);
+        return;
       }
-      newMessages.push({
-        ...step,
-        value: formData[step.inputConfig?.name || ""],
-      });
-      if (
-        (step.type === "userInput" ||
-          step.type === "fileUpload" ||
-          step.type === "datePicker") &&
-        !step.isComplete &&
-        !firstUncompletedInputFound
-      ) {
-        firstUncompletedInputFound = true;
-        if (!currentFocusedInputName && !nextFocusTargetSet) {
-          setCurrentFocusedInputName(step.inputConfig?.name || null);
-          nextFocusTargetSet = true;
-        }
-      }
-      if (
-        (step.type === "userInput" ||
-          step.type === "fileUpload" ||
-          step.type === "datePicker") &&
-        !step.isComplete
-      ) {
-        break;
-      }
-    }
-    setChatMessages(newMessages);
-  }, [onboardingSteps, formData, isQA]);
-
-  useEffect(() => {
-    if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop =
-        chatContainerRef.current.scrollHeight;
-    }
-    if (!isQA && currentFocusedInputName) {
-      const inputElement = document.querySelector(
-        `[name="${currentFocusedInputName}"]`
-      ) as HTMLElement;
-      inputElement?.focus();
-    }
-  }, [chatMessages, currentFocusedInputName, isQA]);
-
-  const handleInputChange = (name: string, value: any) => {
-    if (isQA) return; // Disable editing in QA mode
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleInputSubmit = (stepId: number, inputName: string) => {
-    if (isQA) return; // Disable submission in QA mode
-    if (formData[inputName] === undefined || formData[inputName] === "") {
-      const stepBeingSubmitted = onboardingSteps.find((s) => s.id === stepId);
-      if (
-        stepBeingSubmitted?.inputConfig?.type !== "file" &&
-        stepBeingSubmitted?.inputConfig?.type !== "date"
-      ) {
+      if (aiField === nextField.name && updatedFormData[aiField]) {
+        setIsTyping(false);
         return;
       }
     }
-    const stepIndex = onboardingSteps.findIndex((s) => s.id === stepId);
-    if (stepIndex !== -1) {
-      const updatedSteps = [...onboardingSteps];
-      updatedSteps[stepIndex].isComplete = true;
-      if (formData[inputName] !== undefined && formData[inputName] !== "") {
-        const userResponseStep: OnboardingStep = {
-          id: Date.now(),
-          type: "userResponseDisplay",
-          senderType: "user",
-          content: formData[inputName],
-          dependsOn: stepId,
-          isComplete: true,
+    if (!aiField) {
+      aiField = nextField.name;
+      aiPromptText = nextField.defaultPrompt;
+    }
+    if (aiField !== nextField.name) {
+      aiField = nextField.name;
+      aiPromptText = nextField.defaultPrompt;
+    }
+    setTimeout(() => {
+      if (aiField) {
+        const botMsg: ChatStep = {
+          id: Date.now() + 2,
+          type: "bot",
+          content: aiPromptText,
         };
-        let insertAtIndex = -1;
-        for (let i = 0; i < updatedSteps.length; i++) {
-          if (updatedSteps[i].id === stepId) {
-            insertAtIndex = i + 1;
-            break;
-          }
-        }
-        if (insertAtIndex !== -1) {
-          updatedSteps.splice(insertAtIndex, 0, userResponseStep);
-        } else {
-          updatedSteps.push(userResponseStep);
-        }
+        const inputStep: ChatStep = {
+          id: Date.now() + 3,
+          type: "input",
+          inputConfig: {
+            type: nextField.type as any,
+            name: aiField,
+            label: aiPromptText,
+          },
+          isComplete: false,
+        };
+        setCurrentFocusedInputName(aiField);
+        setChatSteps((prev) => [...prev, botMsg, inputStep]);
       }
-      setOnboardingSteps(updatedSteps);
-    }
-    let nextFocus: string | null = null;
-    const currentStepInFlowIndex = onboardingSteps.findIndex(
-      (s) => s.id === stepId
-    );
-    for (let i = currentStepInFlowIndex + 1; i < onboardingSteps.length; i++) {
-      const nextStepDef = onboardingSteps[i];
-      if (
-        (nextStepDef.type === "userInput" ||
-          nextStepDef.type === "fileUpload" ||
-          nextStepDef.type === "datePicker") &&
-        !nextStepDef.isComplete
-      ) {
-        const depStep = onboardingSteps.find(
-          (s) => s.id === nextStepDef.dependsOn
-        );
-        if ((depStep && depStep.isComplete) || !nextStepDef.dependsOn) {
-          nextFocus = nextStepDef.inputConfig?.name || null;
-          break;
-        }
-      }
-    }
-    setCurrentFocusedInputName(nextFocus);
+      setIsTyping(false);
+    }, 700);
+  }
+
+  // After the last input, show a summary message (optionally call AI for summary)
+  // useEffect(() => {
+  //   if (chatSteps.length > 0 && chatSteps[chatSteps.length - 1].type === "input" && !chatSteps[chatSteps.length - 1].isComplete) {
+  //     // All fields collected, show summary
+  //     const summaryMsg: ChatStep = {
+  //       id: Date.now() + 1,
+  //       type: "bot",
+  //       content: `Thank you! Here is a summary of your gig:\n${JSON.stringify(formData, null, 2)}`,
+  //     };
+  //     setChatSteps((prev) => [...prev, summaryMsg]);
+  //   }
+  // }, [chatSteps.length, formData]);
+
+  const handleInputChange = (name: string, value: any) => {
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleBookWorker = (name: string, price: number) => {
-    if (isQA) return; // Disable booking in QA mode
-    setWorkerName(name);
-    setWorkerPrice(price);
-    // Mark all preceding steps as complete to show final message
-    const stepsToComplete = baseInitialSteps.filter(
-      (s) => s.type !== "workerCard" && s.type !== "botMessage" && s.id < 11
-    ); // Assuming 11 is the "Here are our workers" message
-    const updatedSteps = onboardingSteps.map((os) =>
-      stepsToComplete.find((sc) => sc.id === os.id)
-        ? { ...os, isComplete: true }
-        : os
-    );
-    // Add user's "booking action" as a response if desired
-    const bookingResponseStep: OnboardingStep = {
+    if (!user) return; // Disable booking if not logged in
+    setIsSubmitting(true);
+    const bookingResponseStep: ChatStep = {
       id: Date.now(),
-      type: "userResponseDisplay",
-      senderType: "user",
+      type: "user",
       content: `Booking ${name} for £${price.toFixed(2)}...`,
-      dependsOn: 11, // Depends on the message before cards
-      isComplete: true,
     };
     // Find index of step 11 to insert after it
-    const lastBotMessageIndex = updatedSteps.findIndex((s) => s.id === 11);
+    const lastBotMessageIndex = chatSteps.findIndex((s) => s.id === 11);
     if (lastBotMessageIndex !== -1) {
-      updatedSteps.splice(lastBotMessageIndex + 1, 0, bookingResponseStep);
+      setChatSteps((prev) => [...prev.slice(0, lastBotMessageIndex + 1), bookingResponseStep, ...prev.slice(lastBotMessageIndex + 1)]);
     } else {
-      updatedSteps.push(bookingResponseStep);
+      setChatSteps((prev) => [...prev, bookingResponseStep]);
     }
-
-    setOnboardingSteps(updatedSteps);
-    handleFinalSubmit(); // Trigger final submission logic
+    setIsSubmitting(false);
     console.log(`Booking ${name} for £${price.toFixed(2)}`);
   };
 
-  const handleFinalSubmit = async (event?: FormEvent) => {
-    if (isQA) return; // Disable submission in QA mode
-    if (!workerName) return; // Allow final submit in QA if a worker was "booked"
-    event?.preventDefault();
+  const handleFinalSubmit = async () => {
+    if (!user) return; // Disable submission if not logged in
     setIsSubmitting(true);
-    console.log(
-      "Mock Buyer Onboarding Data:",
-      formData,
-      "Booked Worker:",
-      workerName,
-      "Price:",
-      workerPrice
-    );
+    const submissionData = {
+      ...formData,
+      gigLocationCoords: formData.gigLocationCoords,
+      workerName: null, // No longer needed
+      workerPrice: null, // No longer needed
+    };
+    console.log("Mock Buyer Onboarding Data:", submissionData);
     await new Promise((resolve) => setTimeout(resolve, 1500));
     console.log("Mock submission successful!");
 
     const contentMessage =
-      workerName && workerPrice
-        ? `Great! ${workerName} is booked for £${workerPrice.toFixed(
-            2
-          )}. We've applied your discount. (Mocked)`
-        : "Thanks! Your request is being processed (Mocked).";
+      "Thanks! Your request is being processed (Mocked).";
 
-    const successMessageStep: OnboardingStep = {
+    const successMessageStep: ChatStep = {
       id: Date.now() + 1,
-      type: "botMessage",
+      type: "bot",
       content: contentMessage,
     };
 
-    const allBaseStepsNowComplete = onboardingSteps.map((bs) => ({
-      ...bs,
-      isComplete: true,
-    }));
-    const finalOnboardingState = [
-      ...allBaseStepsNowComplete,
-      successMessageStep,
-    ];
-
-    const finalChatMessages: OnboardingStep[] = [];
-    let lastIdForDep = 0;
-    finalOnboardingState.forEach((step) => {
-      finalChatMessages.push({ ...step, dependsOn: lastIdForDep });
-      lastIdForDep = step.id;
-      if (
-        step.inputConfig?.name && // Check if inputConfig and its name exist
-        formData[step.inputConfig.name] && // Access formData using config.name
-        step.type !== "botMessage" &&
-        step.type !== "userResponseDisplay" &&
-        step.type !== "workerCard"
-      ) {
-        finalChatMessages.push({
-          id: step.id + 0.5,
-          type: "userResponseDisplay",
-          senderType: "user",
-          content: String(formData[step.inputConfig.name]), // Use config.name
-          isComplete: true,
-          dependsOn: step.id,
-        });
-        lastIdForDep = step.id + 0.5;
-      } else if (step.type === "workerCard" && step.workerData) {
-        // Worker card is already in finalOnboardingState, no separate user response for it
-      }
-    });
-    setChatMessages(finalChatMessages);
-    setOnboardingSteps(finalOnboardingState);
+    setChatSteps((prev) => [...prev, successMessageStep]);
     setIsSubmitting(false);
   };
 
-  const allInteractiveStepsComplete = useMemo(() => {
-    if (isQA) return true;
-    const interactiveSteps = onboardingSteps.filter(
-      (step) =>
-        step.type !== "userResponseDisplay" &&
-        step.type !== "botMessage" &&
-        step.type !== "workerCard" && // Worker cards are not "inputs" for completion
-        (step.type === "userInput" ||
-          step.type === "fileUpload" ||
-          step.type === "datePicker" ||
-          step.type === "discountCode")
-    );
-    return interactiveSteps.every((step) => step.isComplete);
-  }, [onboardingSteps, isQA]);
-
-  const handleHomeClick = () => {
-    if (isSubmitting) return; // Prevent home click while submitting
-    if (!allInteractiveStepsComplete) {
-      alert("Please complete all steps before going home.");
-      return;
+  // Auto-scroll to the bottom (Confirm button or latest message) whenever chatSteps or isTyping changes
+  useEffect(() => {
+    if (endOfChatRef.current) {
+      setTimeout(() => {
+        endOfChatRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 0);
     }
-    router.push(`/user/${user?.uid || "this_user"}/buyer`); // Redirect to buyer home
-  };
+  }, [chatSteps, isTyping]);
 
   if (!user) {
     return <Loader />;
@@ -557,33 +557,83 @@ export default function OnboardBuyerPage() {
 
   return (
     <>
-      {isQA && (
-        <div
-          style={{
-            background: "rgba(255,220,220,0.8)",
-            borderBottom: "1px solid rgba(200,0,0,0.3)",
-            color: "#8B0000",
-            textAlign: "center",
-            padding: "8px 5px",
-            fontSize: "0.85em",
-            fontWeight: "500",
-          }}
-        >
-          QA Mode: Full Chat Preview
-        </div>
-      )}
       <ChatBotLayout
         ref={chatContainerRef}
         onScroll={() => {}}
-        onHomeClick={handleHomeClick}
+        onHomeClick={() => router.push(`/user/${user?.uid || "this_user"}/buyer`)}
         className={pageStyles.container}
       >
-        {chatMessages.map((step) => {
-          const key = `step-${step.id}-${step.senderType || step.type}-${
-            step.inputConfig?.name || Math.random()
-          }`;
-
-          if (step.type === "botMessage") {
+        {chatSteps.map((step, idx) => {
+          const key = `step-${step.id}-${step.type}-${step.inputConfig?.name || Math.random()}`;
+          if (step.type === "bot" && typeof step.content === "string" && step.content.startsWith("Thank you! Here is a summary of your gig:")) {
+            // Try to extract and parse the JSON
+            const match = step.content.match(/Thank you! Here is a summary of your gig:\n([\s\S]*)/);
+            let summaryData = null;
+            if (match) {
+              try {
+                summaryData = JSON.parse(match[1]);
+              } catch (e) {
+                summaryData = null;
+              }
+            }
+            if (summaryData) {
+              return (
+                <div key={key} style={{ background: '#222', color: '#fff', borderRadius: 8, padding: 16, margin: '16px 0', boxShadow: '0 2px 8px #0002' }}>
+                  <h3 style={{ marginTop: 0 }}>Gig Summary</h3>
+                  <ul style={{ listStyle: 'none', padding: 0 }}>
+                    {Object.entries(summaryData).map(([field, value]) => {
+                      if (field === 'gigLocation' && typeof value === 'string' && value.length > 40) {
+                        return (
+                          <li key={field} style={{ marginBottom: 8 }}>
+                            <strong style={{ textTransform: 'capitalize' }}>{field.replace(/([A-Z])/g, ' $1')}: </strong>
+                            <span
+                              style={{
+                                cursor: 'pointer',
+                                wordBreak: 'break-all',
+                                display: 'inline-block',
+                                maxWidth: expandedSummaryFields[field] ? '100%' : 220,
+                                whiteSpace: expandedSummaryFields[field] ? 'normal' : 'nowrap',
+                                overflow: 'hidden',
+                                textOverflow: expandedSummaryFields[field] ? 'clip' : 'ellipsis',
+                                verticalAlign: 'bottom',
+                              }}
+                              title={expandedSummaryFields[field] ? 'Click to collapse' : 'Click to expand'}
+                              onClick={() =>
+                                setExpandedSummaryFields(prev => ({
+                                  ...prev,
+                                  [field]: !prev[field]
+                                }))
+                              }
+                            >
+                              {expandedSummaryFields[field] ? value : value.slice(0, 37) + '...'}
+                            </span>
+                          </li>
+                        );
+                      }
+                      return (
+                        <li key={field} style={{ marginBottom: 8 }}>
+                          <strong style={{ textTransform: 'capitalize' }}>{field.replace(/([A-Z])/g, ' $1')}: </strong>
+                          <span>
+                            {value && typeof value === 'object' && 'lat' in value && 'lng' in value
+                              ? `Lat: ${value.lat}, Lng: ${value.lng}`
+                              : typeof value === 'object'
+                                ? JSON.stringify(value)
+                                : String(value)}
+                          </span>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                  <button
+                    style={{ marginTop: 16, background: "#0f766e", color: "#fff", border: "none", borderRadius: 8, padding: "8px 16px", fontWeight: 600 }}
+                    onClick={() => router.push(`/user/${user?.uid || "this_user"}/buyer/dashboard`)}
+                  >
+                    Confirm & Go to Dashboard
+                  </button>
+                </div>
+              );
+            }
+            // Fallback to raw message if parsing fails
             return (
               <MessageBubble
                 key={key}
@@ -592,138 +642,110 @@ export default function OnboardBuyerPage() {
               />
             );
           }
-          if (
-            step.type === "userResponseDisplay" &&
-            step.senderType === "user"
-          ) {
+          if (step.type === "bot") {
             return (
               <MessageBubble
                 key={key}
                 text={step.content as string}
+                senderType="bot"
+              />
+            );
+          }
+          if (step.type === "user") {
+            return (
+              <MessageBubble
+                key={key}
+                text={typeof step.content === 'object' ? JSON.stringify(step.content) : String(step.content)}
                 senderType="user"
                 showAvatar={false}
               />
             );
           }
-          if (step.type === "discountCode") {
-            // Render discount code as a specific message bubble or styled text
-            return (
-              <MessageBubble
-                key={key}
-                text={step.content as string}
-                senderType="user"
-                showAvatar={false}
-              />
-            ); // Example: user "says" their discount code
-          }
-          if (step.type === "workerCard" && step.workerData) {
-            return (
-              <WorkerCard
-                key={key}
-                worker={step.workerData}
-                onBook={isQA ? () => {} : handleBookWorker}
-              />
-            );
-          }
-
-          if (
-            (step.type === "userInput" ||
-              step.type === "fileUpload" ||
-              step.type === "datePicker") &&
-            step.inputConfig && // Ensure inputConfig exists
-            !step.isComplete &&
-            !isQA
-          ) {
-            const inputConf = step.inputConfig;
-            const commonProps = {
-              id: inputConf.name,
-              name: inputConf.name,
-              label: inputConf.label,
-              value: formData[inputConf.name] || "",
-              disabled: isSubmitting || isQA,
-              onFocus: () => setCurrentFocusedInputName(inputConf.name || null),
-              onBlur: () => {
-                if (
-                  formData[inputConf.name] ||
-                  inputConf.type === "date" || // Check against inputConfig.type
-                  inputConf.type === "file"
-                ) {
-                  handleInputSubmit(step.id, inputConf.name);
-                }
-              },
-              onKeyPress: (
-                e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>
-              ) => {
-                if (
-                  e.key === "Enter" &&
-                  (inputConf.type === "text" ||
-                    inputConf.type === "email" ||
-                    inputConf.type === "number")
-                ) {
-                  e.preventDefault();
-                  handleInputSubmit(step.id, inputConf.name);
-                }
-              },
-            };
-
-            if (inputConf.type === "textarea") {
+          if (step.type === "input" && !step.isComplete) {
+            const inputConf = step.inputConfig!;
+            // Custom UI for gigLocation
+            if (inputConf.name === "gigLocation") {
+              const isActive = isActiveInputStep(step, idx);
               return (
-                <TextAreaBubble
-                  key={key}
-                  {...commonProps}
-                  placeholder={inputConf.placeholder}
-                  rows={inputConf.rows || 3} // Use configured rows or default
-                  onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                    handleInputChange(inputConf.name, e.target.value)
-                  }
-                  ref={(el: HTMLTextAreaElement | null) => {
-                    if (el && currentFocusedInputName === inputConf.name)
-                      el.focus();
-                  }}
-                />
+                <div key={key} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <LocationPickerBubble
+                    label={inputConf.label}
+                    value={formData.gigLocation}
+                    onChange={val => handleInputChange('gigLocation', val)}
+                    showConfirm={!!formData.gigLocation && isActive}
+                    onConfirm={() => handleInputSubmit(step.id, 'gigLocation')}
+                  />
+                </div>
               );
             }
-            // Handle text, email, number, date inputs
-            if (
-              inputConf.type === "text" ||
-              inputConf.type === "email" ||
-              inputConf.type === "number" ||
-              inputConf.type === "date"
-            ) {
+            // Custom UI for gigDate (calendar picker)
+            if (inputConf.name === "gigDate") {
+              const isActive = isActiveInputStep(step, idx);
               return (
+                <div key={key} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <CalendarPickerBubble
+                    value={formData.gigDate ? new Date(formData.gigDate) : null}
+                    onChange={date => handleInputChange('gigDate', date ? date.toISOString() : "")}
+                  />
+                  {isActive && formData.gigDate && (
+                    <button
+                      style={{ margin: '8px 0', background: '#0f766e', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 16px', fontWeight: 600 }}
+                      onClick={() => handleInputSubmit(step.id, 'gigDate')}
+                    >
+                      Confirm
+                    </button>
+                  )}
+                </div>
+              );
+            }
+            // Only allow supported types for InputBubble
+            const allowedTypes = ["number", "text", "email", "password", "date", "tel"];
+            const safeType = allowedTypes.includes(inputConf.type) ? inputConf.type : "text";
+            const isActive = isActiveInputStep(step, idx);
+            return (
+              <div key={key} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <InputBubble
-                  key={key}
-                  {...commonProps}
-                  type={inputConf.type}
+                  id={inputConf.name}
+                  name={inputConf.name}
+                  label={inputConf.label}
+                  value={formData[inputConf.name] || ""}
+                  disabled={isSubmitting}
+                  type={safeType as "number" | "text" | "email" | "password" | "date" | "tel"}
                   placeholder={inputConf.placeholder}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     handleInputChange(inputConf.name, e.target.value)
                   }
+                  onFocus={() => setCurrentFocusedInputName(inputConf.name)}
+                  onBlur={() => {}}
+                  onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleInputSubmit(step.id, inputConf.name);
+                    }
+                  }}
                   ref={(el: HTMLInputElement | null) => {
-                    if (el && currentFocusedInputName === inputConf.name)
-                      el.focus();
+                    if (el && currentFocusedInputName === inputConf.name) el.focus();
                   }}
                 />
-              );
-            }
-            // Potentially add a case for inputConf.type === "file" here if FileUploadBubble is used
-            // For example:
-            // if (inputConf.type === "file") {
-            //   return (
-            //     <FileUploadBubble
-            //       key={key}
-            //       {...commonProps} // May need adjustments for file specific props
-            //       label={inputConf.label || "Upload File"} // or step.fileLabel if that was distinct
-            //       multiple={inputConf.multiple || false}
-            //       onChange={(e) => handleInputChange(inputConf.name, e.target.files)}
-            //       ref={(el) => { /* ref logic */ }}
-            //     />
-            //   );
-            // }
+                {isActive && formData[inputConf.name] && (
+                  <button
+                    style={{ margin: '8px 0', background: '#0f766e', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 16px', fontWeight: 600 }}
+                    onClick={() => handleInputSubmit(step.id, inputConf.name)}
+                  >
+                    Confirm
+                  </button>
+                )}
+              </div>
+            );
+          }
+          // Typing animation
+          if (isTyping && idx === chatSteps.length - 1) {
+            return <MessageBubble key={key + '-typing'} text={<TypingIndicator />} senderType="bot" />;
           }
           return null;
         })}
-        {isSubmitting && !isQA && (
+        <div ref={endOfChatRef} />
+        {isSubmitting && (
           <MessageBubble
             key="submitting-msg"
             text="Processing..."
