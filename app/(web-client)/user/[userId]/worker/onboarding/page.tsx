@@ -1,3 +1,5 @@
+/* eslint-disable max-lines */
+/* eslint-disable max-lines-per-function */
 "use client";
 
 import React, { useState, useEffect, useRef, ChangeEvent } from "react";
@@ -324,81 +326,73 @@ export default function OnboardWorkerPage() {
             // Only show Confirm if this is the last input step and not confirmed
             const isActive = idx === chatSteps.length - 1 && !confirmed;
             return (
-              <React.Fragment key={key}>
-                <LocationPickerBubble
-                  label={step.inputConfig.label}
-                  value={formData.location}
-                  onChange={val => handleInputChange('location', val)}
-                  showConfirm={!!formData.location && isActive}
-                  onConfirm={handleConfirm}
-                />
-              </React.Fragment>
+              <TextAreaBubble
+                key={key}
+                {...commonProps}
+                value={value}
+                placeholder={inputConfig.placeholder}
+                rows={3}
+                onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
+                  handleInputChange(inputConfig.name, e.target.value)
+                }
+                ref={(el: HTMLTextAreaElement | null) => {
+                  if (el && currentFocusedInputName === inputConfig.name)
+                    el.focus();
+                }}
+              />
             );
           }
-          return (
-            <InputBubble
-              key={key}
-              id={step.inputConfig.name}
-              name={step.inputConfig.name}
-              label={step.inputConfig.label}
-              value={formData[step.inputConfig.name] || ""}
-              disabled={false}
-              type={step.inputConfig.type === "number" ? "number" : "text"}
-              placeholder={step.inputConfig.label}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                handleInputChange(step.inputConfig.name, e.target.value)
-              }
-              onFocus={() => {}}
-              onBlur={() => {}}
-              onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  handleConfirm();
+          if (
+            inputConfig.type === "text" ||
+            inputConfig.type === "email" ||
+            inputConfig.type === "number"
+          ) {
+            const value =
+              typeof rawValue === "string" || typeof rawValue === "number"
+                ? rawValue
+                : "";
+            return (
+              <InputBubble
+                key={key}
+                {...commonProps}
+                value={value}
+                type={inputConfig.type}
+                placeholder={inputConfig.placeholder}
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  handleInputChange(inputConfig.name, e.target.value)
                 }
-              }}
-              ref={undefined}
-            />
-          );
-        }
-        if (step.inputConfig?.type === "textarea") {
-          return (
-            <TextAreaBubble
-              key={key}
-              id={step.inputConfig.name}
-              name={step.inputConfig.name}
-              label={step.inputConfig.label}
-              value={formData[step.inputConfig.name] || ""}
-              disabled={false}
-              placeholder={step.inputConfig.label}
-              rows={step.inputConfig.rows || 3}
-              onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                handleInputChange(step.inputConfig.name, e.target.value)
-              }
-              onKeyPress={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  handleConfirm();
+                ref={(el: HTMLInputElement | null) => {
+                  if (el && currentFocusedInputName === inputConfig.name)
+                    el.focus();
+                }}
+              />
+            );
+          }
+          if (step.type === "datePicker") {
+            return (
+              <CalendarPickerBubble
+                onChange={(date) =>
+                  handleCalendarChange(date, step.id, inputConfig.name)
                 }
-              }}
-              ref={undefined}
-            />
-          );
-        }
-        if (["stripe", "video", "referral"].includes(step.type)) {
-          // Only show Skip for the last such step (active one)
-          const isActive = idx === chatSteps.length - 1 && !confirmed;
-          return (
-            <div key={key} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {isActive && (
-                <button
-                  style={{ alignSelf: 'flex-end', margin: 8, background: '#0f766e', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 16px', fontWeight: 600 }}
-                  onClick={handleSkip}
-                >
-                  Skip {step.label}
-                </button>
-              )}
-            </div>
-          );
+                key={key}
+              />
+            );
+          }
+          if (step.type === "recordVideo") {
+            return (
+              <VideoRecorderBubble
+                key={key}
+                onVideoRecorded={(file) =>
+                  handleVideoUpload(file, inputConfig.name, step.id)
+                }
+                onFileUploaded={(file) =>
+                  handleVideoUpload(file, inputConfig.name, step.id)
+                }
+                prompt={step.content as string}
+                uploadProgress={uploadProgress[inputConfig.name]}
+              />
+            );
+          }
         }
         return null;
       })}

@@ -3,7 +3,7 @@
   min-height: 100vh;
   background-color: #161616;
   color: #e0e0e0;
-  padding: 1.5rem;
+  /* padding: 1.5rem; */
   font-family: var(--font-family);
 }
 
@@ -21,36 +21,40 @@
   align-items: center;
   justify-content: space-between;
   margin-bottom: 1.5rem;
+  height: 53px;
+  background-color: #2b2b2b;
+  padding: 0.5rem;
 }
 
-.backButton {
-  background: none;
-  border: none;
-  color: #a0a0a0;
-  cursor: pointer;
-  padding: 0.5rem;
-  margin-right: 0.75rem;
+.headerLeftContainer {
   display: flex;
+  gap: 0.5rem;
   align-items: center;
-  transition: color 0.2s ease;
 }
-.backButton:hover {
-  color: var(--primary-color);
+
+.totalsNote {
+  color: #ffffff;
+  font-size: 14px;
+  font-family: "Open Sans";
+  font-style: italic;
+  line-height: 18px;
+  padding-left: 1.5rem;
 }
 
 .pageTitle {
-  font-size: 1.75rem;
+  font-size: 1.25rem;
   font-weight: 600;
   color: #ffffff;
   margin: 0;
 }
 
 .filterButton { /* For the main "Filter" button */
-  background-color: #2b2b2b;
-  color: #e0e0e0;
-  border: 1px solid #3a3a3a;
+  background-color: #ffffff;
+  color: #0f0f0f;
+  border: none;
+  outline: none;
   padding: 0.6rem 1rem;
-  border-radius: 0.5rem; /* 8px */
+  border-radius: 1.5rem; /* 8px */
   cursor: pointer;
   font-size: 0.875rem;
   font-weight: 500;
@@ -60,8 +64,7 @@
   transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 .filterButton:hover {
-  background-color: #3a3a3a;
-  border-color: var(--primary-color);
+  background-color: var(--secondary-color);
 }
 
 .filterSection { /* For the radio button filters */
@@ -92,7 +95,7 @@
   cursor: pointer;
 }
 .filterOptionLabel input[type="radio"] {
-  accent-color: var(--primary-color);
+  accent-color: var(--secondary-color);
   cursor: pointer;
 }
 .filterNote {
@@ -104,67 +107,23 @@
 .paymentList {
   display: flex;
   flex-direction: column;
+  padding: 1.5rem;
   gap: 1rem; /* Space between payment items */
 }
 
-.paymentItem {
-  background-color: #1f1f1f; /* Dark card background */
-  border-radius: 0.75rem;
-  padding: 1.25rem;
-  box-sizing: border-box;
-  border: 1px solid #2b2b2b;
-  transition: border-color 0.2s ease;
-}
-.paymentItem:hover {
-    border-color: #3a3a3a;
-}
 
-.paymentHeader {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 0.75rem;
-}
-.paymentGigIcon {
-    color: var(--primary-color);
-}
-.paymentGigInfo {
-    font-size: 1rem;
-    font-weight: 500;
-    color: #ffffff;
-}
-.paymentDate {
-    font-size: 0.8rem;
-    color: #737373;
-    margin-left: 0.25rem; /* If icon and title are together */
-}
-
-.paymentWorkerName {
-    font-size: 0.85rem;
-    color: #a0a0a0;
-    margin-bottom: 1rem;
-}
-
-
-.paymentFooter {
-  display: flex;
-  flex-direction: column; /* Stack amount and actions on mobile */
-  gap: 0.75rem;
-  align-items: flex-start; /* Align to start on mobile */
-}
 @media (min-width: 600px) { /* Side-by-side on larger screens */
-    .paymentFooter {
+    .paymentRight {
         flex-direction: row;
         justify-content: space-between;
         align-items: center;
     }
 }
 
-
 .amount {
   font-size: 1.25rem; /* Larger amount */
   font-weight: 600;
-  color: var(--primary-color); /* Primary color for amount */
+  color: var(--secondary-color); /* Secondary color for amount */
 }
 
 .actions {
@@ -174,22 +133,23 @@
 }
 
 .actionButton {
-  background-color: #2b2b2b;
-  color: #c2c2c2;
-  border: 1px solid #3a3a3a;
-  padding: 0.5rem 0.9rem;
-  border-radius: 0.5rem;
+  background-color: #ffffff;
+  color: #161616;
+  width: 100px;
+  height: 32px;
+  padding: 0px 8px;
+  border: 0;
+  border-radius: 1.5rem;
   cursor: pointer;
   font-size: 0.8rem;
   font-weight: 500;
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  justify-content: center;
   transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 .actionButton:hover {
-  background-color: #3a3a3a;
-  border-color: var(--primary-color);
+  background-color: var(--secondary-color);
   color: #ffffff;
 }
 
@@ -207,26 +167,16 @@
 }
 
 .footer {
-  margin-top: auto;
-  padding-top: 1.5rem;
+  padding-top: 1rem;
   display: flex;
   justify-content: center;
-  border-top: 1px solid #2b2b2b;
+  background-color: #2b2b2b;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
 }
 
-.homeButton {
-  background: none;
-  border: none;
-  color: #a0a0a0;
-  cursor: pointer;
-  padding: 0.75rem;
-  display: flex;
-  align-items: center;
-  transition: color 0.2s ease;
-}
-.homeButton:hover {
-  color: var(--primary-color);
-}
 
 .emptyState, .loadingContainer {
   text-align: center;
@@ -284,8 +234,64 @@
 }
 
 .tooltipValue {
-  color: var(--primary-color);
+  color: var(--secondary-color);
   font-size: 1rem;
   font-weight: 600;
   margin: 0;
 } 
+
+.paymentItem {
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  box-sizing: border-box;
+  border: 1px solid #2b2b2b;
+  transition: border-color 0.2s ease;
+  display: flex;
+  justify-content: space-between;
+}
+.paymentItem:hover {
+    border-color: #3a3a3a;
+}
+
+.paymentGigIcon {
+    color: '#ffffff';
+    width: 30px;
+    height: 32px;
+}
+
+.paymentCard{
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.paymentDetails {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.paymentHeader {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    font-size: 0.875rem;
+}
+
+.generateInvoice {
+  color: #ffffff;
+  font-size: 0.875rem;
+  font-family: var(--font-family);
+  font-weight: 500;
+  line-height: 19px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-left: 5px;
+}
+
+.paymentRight {
+  display: flex;
+  flex-direction: column; /* Stack amount and actions on mobile */
+  gap: 0.75rem;
+  align-items: flex-start; /* Align to start on mobile */
+}
