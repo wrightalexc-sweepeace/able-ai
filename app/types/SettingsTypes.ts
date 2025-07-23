@@ -1,6 +1,8 @@
 
 export type FlowStep = 'connecting' | 'payment-method' | 'success';
 
+export type UserRole = 'BUYER' | 'GIG_WORKER';
+
 export interface UserSettingsData {
   displayName: string;
   email: string;
@@ -17,6 +19,7 @@ export interface UserSettingsData {
   stripeConnectAccountId: string | null;
   canReceivePayouts: boolean; // Derived on backend, true if Stripe account is fully setup and can receive payouts
 
+  lastRole: UserRole;
   notificationPreferences: {
     email: {
       gigUpdates: boolean;

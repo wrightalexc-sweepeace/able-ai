@@ -34,7 +34,7 @@ import { getProfileInfoUserAction, updateNotificationEmailAction, updateNotifica
 import { useFirebase } from "@/context/FirebaseContext";
 import StripeModal from "@/app/components/settings/stripeModal";
 import StripeElementsProvider from "@/lib/stripe/StripeElementsProvider";
-import { FlowStep, UserSettingsData } from "@/app/types/SettingsTypes";
+import { FlowStep, UserRole, UserSettingsData } from "@/app/types/SettingsTypes";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -95,7 +95,7 @@ export default function SettingsPage() {
         stripeAccountStatus: "incomplete",
         stripeConnectAccountId: userProfile?.stripeConnectAccountId || null, // Or 'connected', 'pending_verification', etc.
         canReceivePayouts: false, // Or true
-
+        lastRole: userProfile?.lastRoleUsed as UserRole,
         privacySettings: {
           // Added mock privacy data
           profileVisibility: true, // Example initial value
@@ -117,7 +117,7 @@ export default function SettingsPage() {
       setEmailPlatformAnnouncements(
         data.notificationPreferences.email.platformAnnouncements
       );
-      if (!data.stripeAccountId || !data.stripeAccountStatus) {
+      if (data.stripeAccountId || !data.stripeAccountStatus) {
         setShowStripeModal(true)
       }
       // setSmsGigAlerts(data.notificationPreferences.sms.gigAlerts); // SMS commented out
@@ -709,16 +709,20 @@ export default function SettingsPage() {
           </div>
         )}
         {showStripeModal && (
-          <StripeElementsProvider options={{
-            mode: 'setup',
-            currency: 'usd',
-            appearance: {
-              theme: 'night',
-              labels: 'floating',
-            }
-          }}>
-            <StripeModal userId={user?.uid} connectionStep={currentStep} isConnectingStripe={isConnectingStripe} handleCloseModal={() => setShowStripeModal(false)} handleOpenStripeConnection={handleOpenStripeConnection} />
-          </StripeElementsProvider>
+          userSettings?.lastRole === 'BUYER' ?
+            <>
+              <StripeElementsProvider options={{
+                mode: 'setup',
+                currency: 'usd',
+                appearance: {
+                  theme: 'night',
+                  labels: 'floating',
+                }
+              }}>
+                <StripeModal userId={user?.uid} userRole={userSettings.lastRole} connectionStep={currentStep} isConnectingStripe={isConnectingStripe} handleCloseModal={() => setShowStripeModal(false)} handleOpenStripeConnection={handleOpenStripeConnection} />
+              </StripeElementsProvider>
+            </>
+            : <StripeModal userId={user?.uid} userRole={userSettings.lastRole} connectionStep={currentStep} isConnectingStripe={isConnectingStripe} handleCloseModal={() => setShowStripeModal(false)} handleOpenStripeConnection={handleStripeConnect} />
         )}
       </div>
     </div>

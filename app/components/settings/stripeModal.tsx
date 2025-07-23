@@ -3,16 +3,18 @@ import {
 } from "lucide-react";
 import styles from './stripeModal.module.css';
 import PaymentSetupForm from "./PaymentSetupForm";
-import { FlowStep } from "@/app/types/SettingsTypes";
+import { FlowStep, UserRole } from "@/app/types/SettingsTypes";
 
 const StripeModal = ({
   userId,
+  userRole,
   connectionStep,
   isConnectingStripe,
   handleCloseModal,
   handleOpenStripeConnection,
 }: {
   userId: string;
+  userRole: UserRole;
   connectionStep: FlowStep;
   isConnectingStripe: boolean;
   handleCloseModal: () => void;
@@ -40,7 +42,13 @@ const StripeModal = ({
             </div>
             <h3 style={{
               marginLeft: "10px"
-            }}>Get Paid with Stripe!</h3>
+            }}>
+              {
+                userRole === 'BUYER' ?
+                  'Pay Securely with Stripe!' :
+                  'Get Paid with Stripe!'
+              }
+            </h3>
           </div>
           <button
             onClick={handleCloseModal}
@@ -50,12 +58,19 @@ const StripeModal = ({
             ×
           </button>
         </div>
-
-        <p>
-          To receive payments for your gigs, you must connect your bank
-          account through our payment provider, Stripe. This is secure,
-          free, and only takes a minute.
-        </p>
+        {
+          userRole === 'BUYER' ?
+            <p>
+              To pay for your services, you'll do so through our payment provider, Stripe.
+              Stripe ensures your transactions are secure, free, and processed quickly.
+            </p>
+            :
+            <p>
+              To receive payments for your gigs, you must connect your bank
+              account through our payment provider, Stripe. This is secure,
+              free, and only takes a minute.
+            </p>
+        }
         {
           connectionStep === 'connecting' &&
           <>
