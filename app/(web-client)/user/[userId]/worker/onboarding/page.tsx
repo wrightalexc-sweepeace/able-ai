@@ -400,6 +400,21 @@ export default function OnboardWorkerPage() {
             </div>
           );
         }
+        if (step.type === "recordVideo") {
+          return (
+            <VideoRecorderBubble
+              key={key}
+              onVideoRecorded={(file) =>
+                handleVideoUpload(file, step.inputConfig.name, step.id)
+              }
+              onFileUploaded={(file) =>
+                handleVideoUpload(file, step.inputConfig.name, step.id)
+              }
+              prompt={step.content as string}
+              uploadProgress={uploadProgress[step.inputConfig.name]}
+            />
+          );
+        }
         return null;
       })}
       {/* Confirm button for non-location, non-calendar steps */}
