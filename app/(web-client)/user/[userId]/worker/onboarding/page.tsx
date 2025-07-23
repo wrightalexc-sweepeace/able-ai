@@ -408,8 +408,6 @@ export default function OnboardWorkerPage() {
         }
         return null;
       })}
-      <VideoRecorderBubble
-      />
     </ChatBotLayout>
   );
 }
