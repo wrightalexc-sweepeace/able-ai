@@ -14,12 +14,12 @@ interface ChatBotLayoutProps {
 }
 
 const ChatBotLayout = React.forwardRef<HTMLDivElement, ChatBotLayoutProps>(
-  ({ children, onScroll, className }, ref) => {
+  ({ children, onScroll, className, onHomeClick }, ref) => {
 
     const router = useRouter();
     const { user } = useAuth();
     console.log('User in ChatBotLayout:', user);
-    const onHomeClick = () => {
+    const onHomeClickInternal = () => {
       router.push(`/user/${user?.uid}/worker`);
     }
     return (
@@ -40,7 +40,7 @@ const ChatBotLayout = React.forwardRef<HTMLDivElement, ChatBotLayoutProps>(
               }
             }} />
             <button 
-              onClick={onHomeClick}
+              onClick={onHomeClick || onHomeClickInternal}
               style={{ 
                 background: 'none',
                 border: 'none',
