@@ -1,9 +1,6 @@
 import React, { useState } from "react";
-import Feedback, {
-  GigDetails,
-  WorkerFeedbackFormData,
-  BuyerFeedbackFormData,
-} from "./Feedback";
+import Feedback from "./Feedback";
+import { BuyerFeedbackFormData, GigDetails, WorkerFeedbackFormData } from "@/app/types/GigFeedbackTypes";
 
 // Add user type for claims
 interface User {

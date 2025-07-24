@@ -5,7 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import FeedbackContainer from "@/app/components/gigs/FeedbackContainer";
-import { GigDetails, BuyerFeedbackFormData, WorkerFeedbackFormData } from "@/app/components/gigs/Feedback";
+import { BuyerFeedbackFormData, GigDetails, WorkerFeedbackFormData } from "@/app/types/GigFeedbackTypes";
 
 async function fetchGigForBuyerFeedback(
   gigId: string
@@ -50,7 +50,7 @@ export default function BuyerFeedbackPage() {
                         (user && authUserId === pageUserId && gigId);
     if (shouldFetch) {
       setIsLoadingGig(true);
-      fetchGigForBuyerFeedback(authUserId!)
+      fetchGigForBuyerFeedback(gigId)
         .then((data) => {
           if (data) {
             setGigData(data);
