@@ -237,10 +237,13 @@ Respond as a single message, as if you are the bot in a chat.`;
 
 type ChatStep = {
   id: number;
-  type: "bot" | "user" | "input";
+  type: "bot" | "user" | "input" | "sanitized";
   content?: string;
   inputConfig?: StepInputConfig;
   isComplete?: boolean;
+  sanitizedValue?: string;
+  originalValue?: string;
+  fieldName?: string;
 };
 
 // Define the onboarding steps statically, following the original order and messages
@@ -343,6 +346,26 @@ const TypingIndicator: React.FC = () => (
   </div>
 );
 
+// Add a helper to safely extract AI response properties
+type AIResponse = {
+  sufficient?: boolean;
+  clarificationPrompt?: string;
+  sanitized?: string;
+  summary?: string;
+  nextField?: string;
+  nextPrompt?: string;
+};
+function parseAIResponse(data: any): Required<AIResponse> {
+  return {
+    sufficient: typeof data.sufficient === 'boolean' ? data.sufficient : false,
+    clarificationPrompt: typeof data.clarificationPrompt === 'string' ? data.clarificationPrompt : '',
+    sanitized: typeof data.sanitized === 'string' ? data.sanitized : '',
+    summary: typeof data.summary === 'string' ? data.summary : '',
+    nextField: typeof data.nextField === 'string' ? data.nextField : '',
+    nextPrompt: typeof data.nextPrompt === 'string' ? data.nextPrompt : '',
+  };
+}
+
 export default function OnboardBuyerPage() {
   const router = useRouter();
   const { user } = useAuth();
@@ -371,6 +394,12 @@ export default function OnboardBuyerPage() {
   const [expandedSummaryFields, setExpandedSummaryFields] = useState<Record<string, boolean>>({});
   // Add state for typing animation
   const [isTyping, setIsTyping] = useState(false);
+  // Update state to track reformulation
+  const [pendingSanitization, setPendingSanitization] = useState<null | { field: string; value: string }>(null);
+  const [sanitizing, setSanitizing] = useState(false);
+  const [sanitizedValue, setSanitizedValue] = useState<string | null>(null);
+  const [sanitizedStepId, setSanitizedStepId] = useState<number | null>(null);
+  const [reformulateField, setReformulateField] = useState<string | null>(null);
 
   // Helper to get next required field not in formData
   function getNextRequiredField(formData: Record<string, any>) {
@@ -383,10 +412,24 @@ export default function OnboardBuyerPage() {
     return step.type === 'input' && !step.isComplete && idx === chatSteps.length - 1 && !isTyping;
   }
 
+  // Remove staticOnboardingSteps and requiredFields logic for dynamic AI-driven flow
+  // Only the first question is hardcoded
+  const FIRST_QUESTION = "Hi! Tell me about yourself and what gig or gigs you need filling - we can assemble a team if you need one!";
+
+  // Helper to build AI prompt for validation, sanitization, and next question
+  function buildAIPrompt(conversation: ChatStep[], formData: Record<string, any>) {
+    // Find the last bot question and user answer
+    const lastBot = [...conversation].reverse().find(s => s.type === 'bot');
+    const lastUser = [...conversation].reverse().find(s => s.type === 'user');
+    const lastQuestion = lastBot?.content || '';
+    const lastAnswer = lastUser?.content || '';
+    return `You are an onboarding assistant for gig creation. Here is the conversation so far:\n\n${conversation.map(s => s.type === 'bot' ? `Bot: ${s.content}` : s.type === 'user' ? `User: ${s.content}` : '').filter(Boolean).join('\n')}\n\nHere is the data collected: ${JSON.stringify(formData)}\nThe last question was: "${lastQuestion}"\nThe user answered: "${lastAnswer}"\nIs this answer sufficient? If not, provide a clarification prompt. If yes, sanitize the answer and provide the next question (or summary if done). Respond as JSON: { sufficient: boolean, sanitized?: string, clarificationPrompt?: string, nextField?: string, nextPrompt?: string, summary?: string }`;
+  }
+
+  // Update handleInputSubmit to trigger AI validation/sanitization/next-question
   async function handleInputSubmit(stepId: number, inputName: string) {
     if (!formData[inputName]) return;
-    // Prepare updated formData with the just-submitted value
-    const updatedFormData = { ...formData };
+    // Mark input as complete and add user message
     setChatSteps((prev) => {
       const updated = prev.map((step) =>
         step.id === stepId ? { ...step, isComplete: true } : step
@@ -394,90 +437,12 @@ export default function OnboardBuyerPage() {
       const userMsg: ChatStep = {
         id: Date.now(),
         type: "user",
-        content: updatedFormData[inputName],
+        content: formData[inputName],
       };
       return [...updated, userMsg];
     });
-    setIsTyping(true);
-    // Check if all required fields are collected and non-empty (using updatedFormData)
-    const allFilled = requiredFields.every(f => updatedFormData[f.name]);
-    if (allFilled) {
-      setTimeout(() => {
-        setChatSteps((prev) => {
-          if (!prev.some(s => s.type === 'bot' && s.content?.startsWith('Thank you!'))) {
-            return [
-              ...prev,
-              {
-                id: Date.now() + 1,
-                type: "bot",
-                content: `Thank you! Here is a summary of your gig:\n${JSON.stringify(updatedFormData, null, 2)}`,
-              },
-            ];
-          }
-          return prev;
-        });
-        setIsTyping(false);
-      }, 700);
-      return;
-    }
-    // Determine the next required field in order
-    const nextRequiredIdx = requiredFields.findIndex(f => !updatedFormData[f.name]);
-    const nextField = requiredFields[nextRequiredIdx];
-    // Call AI to get next prompt, but instruct it to always proceed in order
-    const aiPrompt = `Here is the data collected so far: ${JSON.stringify(updatedFormData)}. The required fields, in order, are: gigDescription, additionalInstructions, hourlyRate, gigLocation, gigDate. The next required field is: ${nextField.name}. Please ask for this, or ask a brief clarifying question if needed, but always proceed in this order. Respond as a JSON object: { field: string, prompt: string, isComplete: boolean, isClarification?: boolean }`;
-    const result = await geminiAIAgent(
-      "gemini-2.5-flash-preview-05-20",
-      { prompt: aiPrompt, responseSchema: gigStepSchema },
-      ai
-    );
-    let aiField: string | undefined;
-    let aiPromptText: string | undefined;
-    let isClarification = false;
-    if (result.ok) {
-      const aiData: any = result.data;
-      aiField = aiData.field;
-      aiPromptText = aiData.prompt;
-      if (aiField && aiField !== nextField.name && !updatedFormData[aiField]) {
-        isClarification = true;
-      } else if (aiField !== nextField.name) {
-        setIsTyping(false);
-        return;
-      }
-      if (aiField === nextField.name && updatedFormData[aiField]) {
-        setIsTyping(false);
-        return;
-      }
-    }
-    if (!aiField) {
-      aiField = nextField.name;
-      aiPromptText = nextField.defaultPrompt;
-    }
-    if (aiField !== nextField.name) {
-      aiField = nextField.name;
-      aiPromptText = nextField.defaultPrompt;
-    }
-    setTimeout(() => {
-      if (aiField) {
-        const botMsg: ChatStep = {
-          id: Date.now() + 2,
-          type: "bot",
-          content: aiPromptText,
-        };
-        const inputStep: ChatStep = {
-          id: Date.now() + 3,
-          type: "input",
-          inputConfig: {
-            type: nextField.type as any,
-            name: aiField,
-            label: aiPromptText,
-          },
-          isComplete: false,
-        };
-        setCurrentFocusedInputName(aiField);
-        setChatSteps((prev) => [...prev, botMsg, inputStep]);
-      }
-      setIsTyping(false);
-    }, 700);
+    setSanitizing(true);
+    setPendingSanitization({ field: inputName, value: formData[inputName] });
   }
 
   // After the last input, show a summary message (optionally call AI for summary)
@@ -492,6 +457,178 @@ export default function OnboardBuyerPage() {
   //     setChatSteps((prev) => [...prev, summaryMsg]);
   //   }
   // }, [chatSteps.length, formData]);
+
+  // Replace sanitization effect with AI-driven validation/sanitization/next-question
+  useEffect(() => {
+    if (pendingSanitization && sanitizing) {
+      (async () => {
+        // Build conversation history for AI
+        const conversation = chatSteps.filter(s => s.type === 'bot' || s.type === 'user');
+        const aiPrompt = buildAIPrompt(conversation, formData);
+        const aiSchema = Schema.object({
+          properties: {
+            sufficient: Schema.boolean(),
+            sanitized: Schema.string(),
+            clarificationPrompt: Schema.string(),
+            nextField: Schema.string(),
+            nextPrompt: Schema.string(),
+            summary: Schema.string(),
+          },
+          optionalProperties: ["sanitized", "clarificationPrompt", "nextField", "nextPrompt", "summary"]
+        });
+        const result = await geminiAIAgent(
+          "gemini-2.5-flash-preview-05-20",
+          { prompt: aiPrompt, responseSchema: aiSchema },
+          ai
+        );
+        let aiData = result.ok && result.data ? result.data : {};
+        const { sufficient, clarificationPrompt, sanitized } = parseAIResponse(aiData);
+        if (!sufficient) {
+          // Ask for clarification
+          setChatSteps((prev) => [
+            ...prev,
+            {
+              id: Date.now() + 1,
+              type: "bot",
+              content: clarificationPrompt || "Could you clarify your answer?",
+            },
+            {
+              id: Date.now() + 2,
+              type: "input",
+              inputConfig: {
+                type: "text",
+                name: pendingSanitization.field,
+                label: clarificationPrompt || "Please clarify:",
+              },
+              isComplete: false,
+            },
+          ]);
+          setSanitizing(false);
+          setPendingSanitization(null);
+          return;
+        }
+        // If sufficient, show sanitized version for confirmation
+        setSanitizedValue(sanitized || pendingSanitization.value);
+        setSanitizedStepId(Date.now());
+        setSanitizing(false);
+      })();
+    }
+  }, [pendingSanitization, sanitizing, ai, chatSteps, formData]);
+
+  // Update sanitized confirmation effect to use AI's next question or summary
+  useEffect(() => {
+    if (sanitizedValue && sanitizedStepId) {
+      setChatSteps((prev) => [
+        ...prev,
+        {
+          id: sanitizedStepId,
+          type: "sanitized",
+          content: sanitizedValue,
+          sanitizedValue: sanitizedValue,
+          originalValue: pendingSanitization?.value,
+          fieldName: pendingSanitization?.field,
+        },
+      ]);
+      setSanitizedValue(null);
+      setPendingSanitization(null);
+    }
+  }, [sanitizedValue, sanitizedStepId, pendingSanitization]);
+
+  function handleSanitizedConfirm(fieldName: string, sanitized: string) {
+    // Update formData
+    setFormData((prev) => ({ ...prev, [fieldName]: sanitized }));
+    setReformulateField(null);
+    setChatSteps((prev) => prev.map((step) =>
+      step.type === "sanitized" && step.fieldName === fieldName ? { ...step, isComplete: true } : step
+    ));
+    // After confirmation, ask AI for next question or summary
+    (async () => {
+      const conversation = chatSteps.filter(s => s.type === 'bot' || s.type === 'user');
+      const aiPrompt = buildAIPrompt(conversation, { ...formData, [fieldName]: sanitized });
+      const aiSchema = Schema.object({
+        properties: {
+          sufficient: Schema.boolean(),
+          sanitized: Schema.string(),
+          clarificationPrompt: Schema.string(),
+          nextField: Schema.string(),
+          nextPrompt: Schema.string(),
+          summary: Schema.string(),
+        },
+        optionalProperties: ["sanitized", "clarificationPrompt", "nextField", "nextPrompt", "summary"]
+      });
+      const result = await geminiAIAgent(
+        "gemini-2.5-flash-preview-05-20",
+        { prompt: aiPrompt, responseSchema: aiSchema },
+        ai
+      );
+      let aiData = result.ok && result.data ? result.data : {};
+      const { summary, nextField, nextPrompt } = parseAIResponse(aiData);
+      if (summary) {
+        setTimeout(() => {
+          setChatSteps((prev) => [
+            ...prev,
+            {
+              id: Date.now() + 1,
+              type: "bot",
+              content: summary,
+            },
+          ]);
+        }, 700);
+        return;
+      }
+      if (nextField && nextPrompt) {
+        setTimeout(() => {
+          setChatSteps((prev) => [
+            ...prev,
+            {
+              id: Date.now() + 2,
+              type: "bot",
+              content: nextPrompt,
+            },
+            {
+              id: Date.now() + 3,
+              type: "input",
+              inputConfig: {
+                type: "text",
+                name: nextField,
+                label: nextPrompt,
+              },
+              isComplete: false,
+            },
+          ]);
+        }, 700);
+      }
+    })();
+  }
+
+  function handleSanitizedReformulate(fieldName: string) {
+    setReformulateField(fieldName);
+    // Find the required field config and map to StepInputConfig (exclude defaultPrompt)
+    const fieldConfig = requiredFields.find(f => f.name === fieldName);
+    let inputConfig: Partial<StepInputConfig> = {};
+    if (fieldConfig) {
+      inputConfig = {
+        name: fieldConfig.name,
+        type: fieldConfig.type as StepInputConfig['type'],
+        label: fieldConfig.label,
+      };
+      if ('placeholder' in fieldConfig && fieldConfig.placeholder) {
+        (inputConfig as any).placeholder = fieldConfig.placeholder;
+      }
+      if ('rows' in fieldConfig && fieldConfig.rows) {
+        (inputConfig as any).rows = fieldConfig.rows;
+      }
+    }
+    setChatSteps((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        type: "input",
+        inputConfig: inputConfig as StepInputConfig,
+        isComplete: false,
+      },
+    ]);
+  }
 
   const handleInputChange = (name: string, value: any) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -741,6 +878,29 @@ export default function OnboardBuyerPage() {
           // Typing animation
           if (isTyping && idx === chatSteps.length - 1) {
             return <MessageBubble key={key + '-typing'} text={<TypingIndicator />} senderType="bot" />;
+          }
+          // Handle the new sanitized step type
+          if (step.type === "sanitized" && step.fieldName) {
+            return (
+              <div key={key} style={{ background: '#f5f5f5', borderRadius: 8, padding: 16, margin: '16px 0', boxShadow: '0 2px 8px #0001' }}>
+                <div style={{ marginBottom: 8, color: '#0f766e', fontWeight: 600 }}>This is what you wanted?</div>
+                <div style={{ marginBottom: 12, fontStyle: 'italic' }}>{step.sanitizedValue}</div>
+                <div style={{ display: 'flex', gap: 12 }}>
+                  <button
+                    style={{ background: '#0f766e', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 16px', fontWeight: 600 }}
+                    onClick={() => handleSanitizedConfirm(step.fieldName!, step.sanitizedValue!)}
+                  >
+                    Confirm
+                  </button>
+                  <button
+                    style={{ background: '#fff', color: '#0f766e', border: '1px solid #0f766e', borderRadius: 8, padding: '6px 16px', fontWeight: 600 }}
+                    onClick={() => handleSanitizedReformulate(step.fieldName!)}
+                  >
+                    Reformulate
+                  </button>
+                </div>
+              </div>
+            );
           }
           return null;
         })}
