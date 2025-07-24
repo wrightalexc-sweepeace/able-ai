@@ -15,9 +15,12 @@ export const subscribeFcmTopicAction = async (token: string) => {
       "general"
     );
 
+    const { uid } = await isUserAuthenticated(token);
+    if (!uid) throw ERROR_CODES.UNAUTHORIZED;
+
     let uidSubscribed = null;
     if (token) {
-      uidSubscribed = await messaging.subscribeToTopic(token, token);
+      uidSubscribed = await messaging.subscribeToTopic(token, uid);
     }
 
     return { success: true, data: { topicSubscribed, uidSubscribed } };
