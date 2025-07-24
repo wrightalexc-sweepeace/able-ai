@@ -136,7 +136,7 @@ const BuyerCalendarPage = () => {
       </main>
       <footer className={styles.footer}>
         <button className={styles.homeButton} onClick={() => router.push(`/user/${pageUserId}/buyer`)}>
-          <Image src="/images/home.svg" alt="Home" width={24} height={24} />
+          <Image src="/images/home.svg" alt="Home" width={40} height={40} />
         </button>
       </footer>
       {/* No footer for buyer view as per design */}

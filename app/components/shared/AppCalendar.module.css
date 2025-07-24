@@ -11,6 +11,7 @@
   border-radius: 0.75rem;
   border: 1px solid #2b2b2b;
   color: #e0e0e0; /* Default text color for calendar parts */
+  margin-bottom: 4rem;
 }
 
 /* --- react-big-calendar Overrides --- */

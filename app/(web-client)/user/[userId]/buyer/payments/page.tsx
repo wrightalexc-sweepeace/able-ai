@@ -105,9 +105,7 @@ export default function BuyerPaymentsPage() {
         return;
     }
     console.log("Repeat gig ID:", gigId);
-    // TODO: Navigate to a pre-filled hire/booking page for this gig/worker
-    // router.push(`/buyer/hire?repeatGigId=${gigId}`);
-    alert(`Rehiring for gig ${gigId} would be initiated here.`);
+    router.push(`gigs/${gigId}/rehire`);
   };
   
   const chartData = useMemo(() => getChartData(payments), [payments]);
@@ -195,7 +193,7 @@ export default function BuyerPaymentsPage() {
                 
                 
                 <div className={styles.paymentRight}>
-                  <span className={styles.amount}>&euro;{payment.amount.toFixed(2)}</span>
+                  <span className={styles.amount}>£{payment.amount.toFixed(2)}</span>
                   <div className={styles.actions}>
                     
                      {payment.status === 'Pending' && (

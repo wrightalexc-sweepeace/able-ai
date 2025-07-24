@@ -40,25 +40,23 @@ const CalendarHeader: React.FC<CalendarHeaderProps> = ({
 
   return (
     <div className={styles.headerContainer}>
-      <div className={styles.topBar}>
-        <button className={styles.menuButton} aria-label="Open menu">☰</button>
-        <div className={styles.viewSwitcher}>
-          {VIEW_OPTIONS.map((opt) => (
-            <button
-              key={opt.value}
-              className={
-                view === opt.value
-                  ? `${styles.viewButton} ${styles.activeView}`
-                  : styles.viewButton
-              }
-              onClick={() => onViewChange(opt.value)}
-              type="button"
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
+      <div className={styles.viewSwitcher}>
+        {VIEW_OPTIONS.map((opt) => (
+          <button
+            key={opt.value}
+            className={
+              view === opt.value
+                ? `${styles.viewButton} ${styles.activeView}`
+                : styles.viewButton
+            }
+            onClick={() => onViewChange(opt.value)}
+            type="button"
+          >
+            {opt.label}
+          </button>
+        ))}
       </div>
+     
       <div className={styles.dateRow}>
         <button
           className={styles.navButton}

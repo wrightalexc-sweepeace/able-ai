@@ -18,6 +18,7 @@
   flex-direction: column;
   position: relative;
   max-width: 450px;
+  min-height: 100vh;
 }
 
 .pageHeader {

@@ -9,6 +9,8 @@ export interface OriginalGigInfo {
   role: string;
   originalDate: string;
   originalLocation: string;
+  startTime: string;
+  endTime: string;
 }
 export interface RehireWorkerData {
   workerId: string;
@@ -33,7 +35,7 @@ interface RehireContainerProps {
   userId: string;
 }
 
-const RehireContainer: React.FC<RehireContainerProps> = ({ initialData, userId }) => {
+const RehireContainer: React.FC<RehireContainerProps> = ({ initialData, userId, timeDifference }) => {
   const { user, loading: loadingAuth } = useAuth();
   const chatContainerRef = useRef<HTMLDivElement>(null) as React.RefObject<HTMLDivElement>;
 
@@ -51,7 +53,7 @@ const RehireContainer: React.FC<RehireContainerProps> = ({ initialData, userId }
           {
             id: 1,
             type: "bot",
-            content: `Awesome, you want to rehire ${initialData.originalGig.workerName} for a ${initialData.originalGig.role} shift, similar to your gig on ${initialData.originalGig.originalDate} at ${initialData.originalGig.originalLocation}? (Proposing a 4 hour shift for next Friday at 6pm - you can edit this.)`,
+            content: `Awesome, you want to rehire ${initialData.originalGig.workerName} for a ${timeDifference} hour shift at ${initialData.originalGig.originalLocation}? (Proposing a 4 hour shift for next Friday at 6pm - you can edit this.)`,
           },
           {
             id: 2,
