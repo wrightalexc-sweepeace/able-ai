@@ -33,7 +33,7 @@ interface RehireContainerProps {
     workerForRehire: RehireWorkerData;
   } | null;
   userId: string;
-  timeDifference: number;
+  timeDifference: string;
 }
 
 const RehireContainer: React.FC<RehireContainerProps> = ({ initialData, userId, timeDifference }) => {
