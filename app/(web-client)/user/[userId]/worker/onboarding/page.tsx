@@ -278,7 +278,7 @@ export default function OnboardWorkerPage() {
   ) => {
     if (!user || !name || stepId === undefined) return;
 
-    const filePath = `users/${user.uid}/onboarding-videos/${Date.now()}-${name}.webm`;
+    const filePath = `workers/${user.uid}/introVideo/introduction-${encodeURI(user.email??user.uid)}.webm`;
     const fileStorageRef = storageRef(getStorage(firebaseApp), filePath);
     const uploadTask = uploadBytesResumable(fileStorageRef, file);
 
