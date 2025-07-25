@@ -8,7 +8,7 @@ const fetchRehireData = async (buyerUserId: string, gigId: string) => {
     originalGig: {
       workerName: "Jerimiah Jones",
       role: "Bartender",
-      originalDate: "last Tuesday",
+      originalDate: "Tuesday",
       originalLocation: "Central Station",
       startTime: "18:00",
       endTime: "22:00",
@@ -49,5 +49,5 @@ export default async function RehirePage({ params }: RehirePageProps) {
 
   const timeDifference = (endMinutes - startMinutes) / 60;
 
-  return <RehireContainer initialData={data} userId={userId} timeDifference={timeDifference} />;
+  return <RehireContainer initialData={data} userId={userId} timeDifference={timeDifference.toString()} />;
 }

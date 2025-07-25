@@ -33,6 +33,7 @@ interface RehireContainerProps {
     workerForRehire: RehireWorkerData;
   } | null;
   userId: string;
+  timeDifference: string;
 }
 
 const RehireContainer: React.FC<RehireContainerProps> = ({ initialData, userId, timeDifference }) => {
@@ -53,12 +54,12 @@ const RehireContainer: React.FC<RehireContainerProps> = ({ initialData, userId, 
           {
             id: 1,
             type: "bot",
-            content: `Awesome, you want to rehire ${initialData.originalGig.workerName} for a ${timeDifference} hour shift at ${initialData.originalGig.originalLocation}? (Proposing a 4 hour shift for next Friday at 6pm - you can edit this.)`,
+            content: `Awesome, you want to rehire ${initialData.originalGig.workerName} for a ${timeDifference} hour shift at ${initialData.originalGig.originalLocation} next ${initialData.originalGig.originalDate} starting at ${initialData.originalGig.startTime}.? `
           },
           {
             id: 2,
             type: "bot",
-            content: `Perfect, ${initialData.originalGig.workerName} is generally available. Click the card to edit details or book them now!`,
+            content: `Perfect, ${initialData.originalGig.workerName} is available next Friday - Click here to book them now!`,
           },
         ]
       : []
