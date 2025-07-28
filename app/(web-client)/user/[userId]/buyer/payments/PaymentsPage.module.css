@@ -61,10 +61,11 @@
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  transition: background-color 0.2s ease, border-color 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 .filterButton:hover {
   background-color: var(--secondary-color);
+  color: #ffffff;
 }
 
 .filterSection { /* For the radio button filters */
@@ -109,6 +110,7 @@
   flex-direction: column;
   padding: 1.5rem;
   gap: 1rem; /* Space between payment items */
+  margin-bottom: 4rem;
 }
 
 

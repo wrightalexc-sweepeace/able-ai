@@ -18,7 +18,6 @@ const ChatBotLayout = React.forwardRef<HTMLDivElement, ChatBotLayoutProps>(
 
     const router = useRouter();
     const { user } = useAuth();
-    console.log('User in ChatBotLayout:', user);
     const onHomeClickInternal = () => {
       router.push(`/user/${user?.uid}/worker`);
     }

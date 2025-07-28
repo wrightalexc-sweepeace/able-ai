@@ -26,27 +26,27 @@
 
 .viewSwitcher {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 0.5rem;
-  background: #232323;
-  border-radius: 1.5rem;
   padding: 0.15rem;
 }
 
 .viewButton {
-  background: #3a3a3a;
-  color: #e0e0e0;
+  background: #fff;
+  color: #181818;
   border: none;
-  border-radius: 1rem;
-  padding: 0.45rem 1.1rem;
-  font-size: 0.98rem;
+  border-radius: 0.5rem;
+  padding: 0.45rem 1.2rem;
+  font-size: 0.8rem;
   font-weight: 500;
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
 }
 
 .activeView {
-  background: #fff;
-  color: #181818;
+  background: #3a3a3a;
+  color: #e0e0e0;
   font-weight: 700;
   box-shadow: 0 1px 4px rgba(0,0,0,0.08);
 }
@@ -60,7 +60,7 @@
 }
 
 .dateDisplay {
-  font-size: 1.45rem;
+  font-size: 1.25rem;
   font-weight: 700;
   color: #fff;
   letter-spacing: 0.01em;
@@ -85,18 +85,20 @@
 
 .filterRow {
   display: flex;
+  justify-content: center;
   gap: 0.7rem;
   margin-top: 0.2rem;
   margin-bottom: 0.2rem;
 }
 
 .filterPill {
-  background: #3a3a3a;
+  background: #808080;
   color: #e0e0e0;
   border: none;
-  border-radius: 1.2rem;
+  border-radius: 1.5rem;
   padding: 0.45rem 1.2rem;
-  font-size: 0.98rem;
+  width: 100px;
+  font-size: 0.8rem;
   font-weight: 500;
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
