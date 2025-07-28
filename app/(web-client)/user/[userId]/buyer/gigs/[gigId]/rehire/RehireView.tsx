@@ -23,7 +23,6 @@ interface RehireViewProps {
   workerToRehire?: RehireWorkerData | null;
   chatMessages: ChatMessage[];
   chatContainerRef: React.RefObject<HTMLDivElement>;
-  handleEditDetails: () => void;
   handleBookWorker: () => void;
   isBooking: boolean;
   userId: string;
@@ -36,7 +35,6 @@ const RehireView: React.FC<RehireViewProps> = ({
   workerToRehire,
   chatMessages,
   chatContainerRef,
-  handleEditDetails,
   handleBookWorker,
   isBooking,
   userId,
@@ -82,7 +80,6 @@ const RehireView: React.FC<RehireViewProps> = ({
           <div className={styles.rehireCardContainer}>
             <RehireWorkerCard
               workerData={workerToRehire}
-              onEdit={handleEditDetails}
               onBook={handleBookWorker}
               isBooking={isBooking}
             />

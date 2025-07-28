@@ -77,10 +77,6 @@ const RehireContainer: React.FC<RehireContainerProps> = ({ initialData, userId, 
     }
   }, [chatMessages]);
 
-  const handleEditDetails = () => {
-    if (!initialData?.workerForRehire) return;
-    alert("Gig detail editing form would open here. You'd adjust proposed date, time, hours.");
-  };
 
   const handleBookWorker = async () => {
     if (!initialData?.workerForRehire || !initialData?.originalGig) return;
@@ -134,7 +130,6 @@ const RehireContainer: React.FC<RehireContainerProps> = ({ initialData, userId, 
       workerToRehire={initialData?.workerForRehire}
       chatMessages={chatMessages}
       chatContainerRef={chatContainerRef}
-      handleEditDetails={handleEditDetails}
       handleBookWorker={handleBookWorker}
       isBooking={isBooking}
       userId={user?.uid || userId}

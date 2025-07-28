@@ -1,33 +1,9 @@
 .card {
-  background-color: #1f1f1f; /* Darker card background */
   border-radius: 0.75rem; /* 12px */
   padding: 1rem;
   border: 1px solid #2b2b2b;
   position: relative; /* For positioning the edit button */
   box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-}
-
-.editButton {
-  position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
-  background: none;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.editButton svg {
-  width: 40px;
-  height: 33px;
-  transition: all 0.2s ease;
-}
-
-.editButton svg:hover {
-  fill: var(--primary-color);
 }
 
 .profileHeader {

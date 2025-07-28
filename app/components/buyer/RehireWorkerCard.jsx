@@ -22,7 +22,6 @@ import { UserCircle, Loader2, Pencil } from 'lucide-react'; // Added UserCircle 
 
 const RehireWorkerCard = ({
   workerData, // : RehireWorkerData
-  onEdit,
   onBook,
   isBooking = false,
 }) => {
@@ -37,9 +36,6 @@ const RehireWorkerCard = ({
 
   return (
     <div className={styles.card}>
-      <button onClick={onEdit} className={styles.editButton} aria-label="Edit rehire details">
-        <Pencil fill='#ffffff'/>
-      </button>
       <div className={styles.profileHeader}>
         {workerData.avatarUrl ? (
           <Image src={workerData.avatarUrl} alt={workerData.name} width={60} height={60} className={styles.avatar} />

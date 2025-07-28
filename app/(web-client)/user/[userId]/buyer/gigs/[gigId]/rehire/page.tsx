@@ -1,4 +1,3 @@
-import { start } from "repl";
 import RehireContainer from "./RehireContainer";
 
 // Mock fetch function (can be moved to a shared file later)
