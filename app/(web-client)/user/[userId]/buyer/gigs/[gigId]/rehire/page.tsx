@@ -16,7 +16,7 @@ const fetchRehireData = async (buyerUserId: string, gigId: string) => {
     workerForRehire: {
       workerId: "jerimiah-jones-id",
       name: "Jerimiah Jones",
-      avatarUrl: "/images/avatar-jerimiah.jpg",
+      avatarUrl: "/images/jessica.jpeg",
       role: "Bartender",
       ableGigs: 15,
       experienceYears: "3+",

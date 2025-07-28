@@ -25,11 +25,11 @@ const ChatBotLayout = React.forwardRef<HTMLDivElement, ChatBotLayoutProps>(
       <div className={`${styles.chatContainerWrapper} ${className}`}>
         <div className={styles.chatContainer} onScroll={onScroll} ref={ref}>
           <div className={styles.header}>
-            <span className={styles.headerText}>Chat with me, Able</span>
-            <Logo width={65} height={65} />
+            <span className={styles.headerText}>Chat with Able</span>
+            <Logo width={50} height={50} />
           </div>
           <div className={styles.chatContent}>{children}</div>
-          <div className={styles.footer}>
+          {/* <div className={styles.footer}>
             <TextAreaBubble placeholder='Chat with Able here ...' onKeyPress={(e) => {
               if (e.key === 'Enter') {
                 const target = e.target as HTMLInputElement;
@@ -52,7 +52,7 @@ const ChatBotLayout = React.forwardRef<HTMLDivElement, ChatBotLayoutProps>(
             >
               <Image src='/images/home.svg' width={40} height={40} alt='home' style={{ margin: 'auto' }} />
             </button>
-          </div>
+          </div> */}
         </div>
       </div>
     );

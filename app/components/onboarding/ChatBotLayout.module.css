@@ -24,12 +24,12 @@
 .chatContainer {
   width: 100%;
   position: relative;
-  max-width: 480px; /* Max width for chat content, can be adjusted */
+  max-width: 450px; /* Max width for chat content, can be adjusted */
   height: 100vh; /* Adjust based on padding of wrapper */
   overflow-y: auto;
   display: flex;
   flex-direction: column;
-  padding: 0.5rem 1rem; 
+  padding: 0.5rem 1rem;
 }
 
 .chatContent {

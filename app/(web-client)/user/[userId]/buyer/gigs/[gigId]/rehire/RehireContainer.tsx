@@ -58,8 +58,13 @@ const RehireContainer: React.FC<RehireContainerProps> = ({ initialData, userId, 
           },
           {
             id: 2,
+            type: "userAction",
+            content: "Yes, I want to rehire him.",
+          },
+          {
+            id: 3,
             type: "bot",
-            content: `Perfect, ${initialData.originalGig.workerName} is available next Friday - Click here to book them now!`,
+            content: `Perfect, ${initialData.originalGig.workerName} is available next Friday - Click here to book him now!`,
           },
         ]
       : []
