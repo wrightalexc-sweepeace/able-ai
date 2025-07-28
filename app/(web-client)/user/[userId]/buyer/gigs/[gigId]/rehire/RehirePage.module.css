@@ -54,6 +54,7 @@
   max-width: 450px;
   margin: auto; /* Center footer if ChatBotLayout is wider */
 }
+
 .homeButtonNav {
   background: none;
   border: none;
@@ -62,6 +63,7 @@
   padding: 0.5rem;
   display: flex;
 }
+
 .homeButtonNav:hover {
   color: var(--primary-color);
 }
