@@ -12,6 +12,7 @@ import ReviewCardItem from "@/app/components/shared/ReviewCardItem";
 import PieChartComponent from "@/app/components/shared/PiChart";
 import BarChartComponent from "@/app/components/shared/BarChart";
 import { useAuth } from "@/context/AuthContext";
+import { getGigWorkerProfile } from "@/actions/buyer/profile";
 
 // Types
 interface Badge {
@@ -91,7 +92,7 @@ const mockDashboardData: DashboardData = {
         { id: "rw1", workerName: "Benji A.", date: "2023-10-15", reviewText: "Alexander is a great manager, very clear with instructions and fair. Always a pleasure to work for Friendship Cafe!", rating: 5, workerAvatarUrl: "/images/benji.jpeg" },
         { id: "rw2", workerName: "Sarah K.", date: "2023-09-20", reviewText: "Professional environment and prompt payment. Would definitely work with Alexander again.", rating: 4, workerAvatarUrl: "/images/jessica.jpeg" },
     ],
-};
+}; // TODO: Replace with real data fetching logic
 
 
 export default function BuyerProfilePage() {
@@ -107,19 +108,27 @@ export default function BuyerProfilePage() {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     setError] = useState<string | null>(null);
 
-    useEffect(() => {
-
-
-        // At this point, user is authenticated and authorized for this pageUserId
-        if (user) { // This check is somewhat redundant due to above, but keeps structure similar
+    const fetchUserProfile = async () => {
             if (user?.claims.role === "QA") {
                 setDashboardData(mockDashboardData);
                 setIsLoadingData(false);
             } else {
                 // TODO: Replace with real data fetching logic for non-QA users
-                setDashboardData(null);
+                const {profile, success, error} = await getGigWorkerProfile({userId: authUserId})
+            if (!success) {
+                setError(error || "Failed to fetch profile data");
+                setIsLoadingData(false);
+                return;
+            } else {
+                setDashboardData(profile);
                 setIsLoadingData(false);
             }
+            }
+    }
+    useEffect(() => {
+        // At this point, user is authenticated and authorized for this pageUserId
+        if (user) { // This check is somewhat redundant due to above, but keeps structure similar
+            fetchUserProfile()
         }
     }, [loadingAuth, user, authUserId, pageUserId, , pathname, router]);
 
