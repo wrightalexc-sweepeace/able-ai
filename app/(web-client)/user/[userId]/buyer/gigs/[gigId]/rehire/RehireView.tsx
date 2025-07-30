@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Home, Loader2 } from "lucide-react";
 import styles from "./RehirePage.module.css";
 import type { OriginalGigInfo, RehireWorkerData } from "./RehireContainer";
+import Image from "next/image";
 
 const BOT_AVATAR_SRC = "/images/logo-placeholder.svg";
 
@@ -22,7 +23,6 @@ interface RehireViewProps {
   workerToRehire?: RehireWorkerData | null;
   chatMessages: ChatMessage[];
   chatContainerRef: React.RefObject<HTMLDivElement>;
-  handleEditDetails: () => void;
   handleBookWorker: () => void;
   isBooking: boolean;
   userId: string;
@@ -35,7 +35,6 @@ const RehireView: React.FC<RehireViewProps> = ({
   workerToRehire,
   chatMessages,
   chatContainerRef,
-  handleEditDetails,
   handleBookWorker,
   isBooking,
   userId,
@@ -81,7 +80,6 @@ const RehireView: React.FC<RehireViewProps> = ({
           <div className={styles.rehireCardContainer}>
             <RehireWorkerCard
               workerData={workerToRehire}
-              onEdit={handleEditDetails}
               onBook={handleBookWorker}
               isBooking={isBooking}
             />
@@ -98,7 +96,7 @@ const RehireView: React.FC<RehireViewProps> = ({
       <footer className={styles.footerNav}>
         <Link href={`/user/${userId}/buyer`} passHref>
           <button className={styles.homeButtonNav} aria-label="Go to Home">
-            <Home size={24} />
+            <Image src="/images/home.svg" width={40} height={40} alt="home" />
           </button>
         </Link>
       </footer>

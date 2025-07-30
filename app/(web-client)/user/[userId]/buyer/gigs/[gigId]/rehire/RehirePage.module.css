@@ -5,6 +5,9 @@
   background-color: #161616;
   color: #e0e0e0;
   font-family: var(--font-family);
+  width: 100%;
+  max-width: 450px; /* Match the max width of the chat content */
+  margin: auto;
   /* ChatBotLayout will handle its own padding and scrolling within the space it's given */
 }
 
@@ -39,14 +42,19 @@
 
 
 .footerNav {
-  padding: 0.75rem;
   background-color: #1f1f1f; /* Footer background */
   border-top: 1px solid #2b2b2b;
   display: flex;
-  justify-content: center;
   align-items: center;
   flex-shrink: 0; /* Prevent footer from shrinking */
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  max-width: 450px;
+  margin: auto; /* Center footer if ChatBotLayout is wider */
 }
+
 .homeButtonNav {
   background: none;
   border: none;
@@ -55,6 +63,7 @@
   padding: 0.5rem;
   display: flex;
 }
+
 .homeButtonNav:hover {
   color: var(--primary-color);
 }

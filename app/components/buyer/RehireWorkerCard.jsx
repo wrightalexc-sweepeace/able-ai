@@ -2,7 +2,7 @@
 import React from 'react';
 import Image from 'next/image'; // Or your Avatar component
 import styles from './RehireWorkerCard.module.css'; // Create this CSS module
-import { Edit, UserCircle, Loader2 } from 'lucide-react'; // Added UserCircle and Loader2
+import { UserCircle, Loader2, Pencil } from 'lucide-react'; // Added UserCircle and Loader2
 
 // Interface for the data needed for this card
 // interface RehireWorkerData {
@@ -22,7 +22,6 @@ import { Edit, UserCircle, Loader2 } from 'lucide-react'; // Added UserCircle an
 
 const RehireWorkerCard = ({
   workerData, // : RehireWorkerData
-  onEdit,
   onBook,
   isBooking = false,
 }) => {
@@ -37,19 +36,16 @@ const RehireWorkerCard = ({
 
   return (
     <div className={styles.card}>
-      <button onClick={onEdit} className={styles.editButton} aria-label="Edit rehire details">
-        <Edit size={18} />
-      </button>
       <div className={styles.profileHeader}>
         {workerData.avatarUrl ? (
-          <Image src={workerData.avatarUrl} alt={workerData.name} width={70} height={70} className={styles.avatar} />
+          <Image src={workerData.avatarUrl} alt={workerData.name} width={60} height={60} className={styles.avatar} />
         ) : (
           <div className={styles.avatarPlaceholder}><UserCircle size={40}/></div> // Assuming UserCircle exists
         )}
         <div className={styles.nameRole}>
           <h3 className={styles.name}>{workerData.name}</h3>
           <p className={styles.role}>
-            {workerData.role}, {workerData.ableGigs} Able gigs, {workerData.experienceYears} experience
+            {workerData.role}, {workerData.ableGigs} Able gigs, {workerData.experienceYears} years experience
           </p>
         </div>
       </div>
@@ -60,11 +56,10 @@ const RehireWorkerCard = ({
 
       <div className={styles.pricingAndAction}>
         <div className={styles.pricingDetails}>
-          <p className={styles.rate}>£{workerData.proposedHourlyRate.toFixed(2)}/hr</p>
-          <p className={styles.totalCost}>
-            Total incl. Able & payment provider fees: <br/>
-            <span className={styles.totalAmount}>£{totalCost.toFixed(2)}</span>
-            {/* Tooltip/Info icon could show fee breakdown on hover */}
+          <p className={styles.rate}>
+            £{workerData.proposedHourlyRate.toFixed(2)}/hr, 
+            total incl. Able & <br /> payment provider fees: <br />
+            £{totalCost.toFixed(2)}
           </p>
         </div>
         <button onClick={onBook} className={styles.bookButton} disabled={isBooking}>

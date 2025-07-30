@@ -1,4 +1,3 @@
-import { start } from "repl";
 import RehireContainer from "./RehireContainer";
 
 // Mock fetch function (can be moved to a shared file later)
@@ -16,7 +15,7 @@ const fetchRehireData = async (buyerUserId: string, gigId: string) => {
     workerForRehire: {
       workerId: "jerimiah-jones-id",
       name: "Jerimiah Jones",
-      avatarUrl: "/images/avatar-jerimiah.jpg",
+      avatarUrl: "/images/jessica.jpeg",
       role: "Bartender",
       ableGigs: 15,
       experienceYears: "3+",

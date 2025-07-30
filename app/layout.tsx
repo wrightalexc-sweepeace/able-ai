@@ -1,8 +1,6 @@
-import { AuthProvider } from "@/context/AuthContext";
+import ClientProviders from "./components/shared/ClientProviders";
 import "./globals.css";
-import RouteTracker from "./components/route-tracker/RouteTracker";
-import { Toaster } from "sonner";
-import { FirebaseProvider } from "@/context/FirebaseContext";
+import Debuggur from "./components/shared/Debuggur";
 
 export const metadata = {
   title: "AbleAI",
@@ -12,7 +10,8 @@ export const metadata = {
 export const viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1.0,
+  maximumScale: "1.0",
+  minimumScale: "1.0",
   userScalable: "no",
 };
 
@@ -24,13 +23,10 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body>
-        <FirebaseProvider>
-          <AuthProvider>
-            <RouteTracker />
-            <Toaster position="bottom-right" richColors />
-            {children}
-          </AuthProvider>
-        </FirebaseProvider>
+        <ClientProviders>
+          <Debuggur />
+          {children}
+        </ClientProviders>
       </body>
     </html>
   );
