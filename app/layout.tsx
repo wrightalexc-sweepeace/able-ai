@@ -1,5 +1,6 @@
 import ClientProviders from "./components/shared/ClientProviders";
 import "./globals.css";
+import Debuggur from "./components/shared/Debuggur";
 
 export const metadata = {
   title: "AbleAI",
@@ -9,7 +10,8 @@ export const metadata = {
 export const viewport = {
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1.0,
+  maximumScale: "1.0",
+  minimumScale: "1.0",
   userScalable: "no",
 };
 
@@ -22,6 +24,7 @@ export default async function RootLayout({
     <html lang="en">
       <body>
         <ClientProviders>
+          <Debuggur />
           {children}
         </ClientProviders>
       </body>
