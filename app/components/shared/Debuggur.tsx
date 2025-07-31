@@ -45,7 +45,7 @@ export default function ConsoleViewer() {
       window.removeEventListener('error', handleError)
       window.removeEventListener('unhandledrejection', handleRejection)
     }
-  }, [])
+  }, [logs])
 
   return (
     <div style={{
