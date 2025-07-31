@@ -1,7 +1,7 @@
 import ClientProviders from "./components/shared/ClientProviders";
 import "./globals.css";
 import Debuggur from "./components/shared/Debuggur";
-import { ErrorBoundary } from "./components/shared/ErrorBoundary";
+import ErrorBoundary from "./components/shared/ErrorBoundary";
 
 export const metadata = {
   title: "AbleAI",
