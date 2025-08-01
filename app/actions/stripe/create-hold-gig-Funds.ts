@@ -74,7 +74,7 @@ async function holdGigAmount(params: HoldGigAmountParams) {
       amountGross: serviceAmountInCents.toString(),
       ableFeeAmount: appFeeAmount.toString(),
       amountNetToWorker: paymentIntent.transfer_data?.amount?.toString() as string,
-      stripeFeeAmount: '',
+      stripeFeeAmount: '0',
     });
 
   return paymentIntent;

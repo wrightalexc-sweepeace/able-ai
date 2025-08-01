@@ -40,7 +40,10 @@ const findOriginalPaymentIntent = async (gigId: string) => {
 
   if (!paymentIntent) throw new Error('Payment Intent not found');
 
-  const originalPaymentIntent = await stripeApi.paymentIntents.retrieve(paymentIntent?.id, { expand: ['latest_charge.balance_transaction'] });
+  const originalPaymentIntent = await stripeApi.paymentIntents.retrieve(
+    paymentIntent?.stripePaymentIntentId as string,
+    { expand: ['latest_charge.balance_transaction'] }
+  );
 
   if (!originalPaymentIntent || originalPaymentIntent.status !== 'requires_capture') {
     throw new Error(`Payment Intent ${paymentIntent.id} is no in status 'requires_capture' (current: ${originalPaymentIntent?.status}).`);

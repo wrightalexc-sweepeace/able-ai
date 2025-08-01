@@ -3,6 +3,7 @@ import { Send } from "lucide-react";
 import { BuyerFeedbackFormData, GigDetails } from "@/app/types/GigFeedbackTypes";
 import styles from "@/app/(web-client)/user/[userId]/buyer/gigs/[gigId]/feedback/FeedbackPage.module.css";
 import stylesFeed from "@/app/components/gigs/Feedback.module.css";
+import stylesLoader from '@/app/components/shared/Loader.module.css'; // Adjust the path as necessary
 
 type BuyerFeedbackFieldsProps = {
   gigDetails: GigDetails;
@@ -105,7 +106,17 @@ const BuyerFeedbackFields: React.FC<BuyerFeedbackFieldsProps> = ({
         disabled={submitting}
         aria-label="Submit feedback"
       >
-        <Send size={16} /> End gig, release payment
+
+        {
+          submitting ?
+            <div className={stylesFeed.loaderContainer}>
+              <div className={stylesLoader.loader}></div>
+            </div>:
+            <>
+              <Send size={16} /> End gig, release payment
+            </>
+        }
+
       </button>
     </div>
   </>

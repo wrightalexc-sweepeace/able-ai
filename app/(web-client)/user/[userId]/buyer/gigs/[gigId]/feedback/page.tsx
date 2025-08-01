@@ -12,6 +12,7 @@ import { processGigPayment } from "@/app/actions/stripe/process-gig-payment";
 async function fetchGigForBuyerFeedback(
   gigId: string
 ): Promise<GigDetails | null> {
+
   await new Promise((resolve) => setTimeout(resolve, 500));
   if (gigId === "gig123-accepted") {
     return {
@@ -89,14 +90,15 @@ export default function BuyerFeedbackPage() {
     setTimeout(() => {
       setSuccessMessage(`Feedback for ${gigData.workerName} submitted successfully!`);
       setIsSubmitting(false);
-    }, 1200);
-    router.push(`/user/${user?.uid || "this_user"}/buyer`); // Redirect to buyer home
+      router.push(`/user/${user?.uid || "this_user"}/buyer`); // Redirect to buyer home
+    }, 1500);
   };
 
   const onProcessPayment = async () => {
-    if (!user || !gigData) return
+    if (!user || !gigData) return;
 
     await processGigPayment({ firebaseUid: user?.uid, gigId, finalAmountToCaptureInCents: Number(gigData?.earnings), currency: 'usd', additionalCostInCents: 0 });
+    setSuccessMessage(`Work paid successfully!`);
   };
 
   if (loadingAuth || isLoadingGig) {

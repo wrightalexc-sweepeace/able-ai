@@ -74,11 +74,11 @@ const FeedbackContainer: React.FC<FeedbackContainerProps> = ({
     setFormData((prev: WorkerFeedbackFormData | BuyerFeedbackFormData) => ({ ...prev, teamBuilder: !prev.teamBuilder }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
     try {
-      onSubmit(formData);
+      await onSubmit(formData);
     } finally {
       setSubmitting(false);
     }

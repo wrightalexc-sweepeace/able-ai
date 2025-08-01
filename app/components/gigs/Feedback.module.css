@@ -249,3 +249,9 @@
 .releaseButton:hover:not(:disabled) {
   opacity: 0.85;
 }
+
+.loaderContainer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
