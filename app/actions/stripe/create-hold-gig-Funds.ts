@@ -61,6 +61,8 @@ async function holdGigAmount(params: HoldGigAmountParams) {
   console.log(`Payment Intent created (HOLD) for Gig ${gigId}: ${paymentIntent.id}, status: ${paymentIntent.status}`);
 
   const appFeeAmount = paymentIntent.application_fee_amount?.toString(10) || '';
+  const amountToWorker = paymentIntent.transfer_data?.amount ? paymentIntent.transfer_data?.amount :
+    paymentIntent.amount - (paymentIntent?.application_fee_amount || 0);
 
   await db
     .insert(PaymentsTable)
@@ -73,8 +75,9 @@ async function holdGigAmount(params: HoldGigAmountParams) {
       internalNotes: `Initial hold for Gig: ${gigId}`,
       amountGross: serviceAmountInCents.toString(),
       ableFeeAmount: appFeeAmount.toString(),
-      amountNetToWorker: paymentIntent.transfer_data?.amount?.toString() as string,
+      amountNetToWorker: amountToWorker.toString(),
       stripeFeeAmount: '0',
+      status: 'PENDING',
     });
 
   return paymentIntent;
