@@ -24,6 +24,15 @@ interface PaymentToAdditionalCostParams {
   currency: string;
 }
 
+type ExpandedLatestCharge = Stripe.Charge & {
+  balance_transaction: Stripe.BalanceTransaction;
+};
+
+type ExpandedPaymentIntent = Stripe.PaymentIntent & {
+  latest_charge: ExpandedLatestCharge | null;
+};
+
+
 const findOriginalPaymentIntent = async (gigId: string) => {
   const paymentIntent = await db.query.PaymentsTable.findFirst({
     where: eq(PaymentsTable.gigId, gigId),
@@ -31,22 +40,22 @@ const findOriginalPaymentIntent = async (gigId: string) => {
 
   if (!paymentIntent) throw new Error('Payment Intent not found');
 
-  const originalPaymentIntent = await stripeApi.paymentIntents.retrieve(paymentIntent?.id, { expand: ['charges.data.balance_transaction'] });
+  const originalPaymentIntent = await stripeApi.paymentIntents.retrieve(paymentIntent?.id, { expand: ['latest_charge.balance_transaction'] });
 
   if (!originalPaymentIntent || originalPaymentIntent.status !== 'requires_capture') {
     throw new Error(`Payment Intent ${paymentIntent.id} is no in status 'requires_capture' (current: ${originalPaymentIntent?.status}).`);
   }
 
-  return originalPaymentIntent;
+  return originalPaymentIntent as ExpandedPaymentIntent;
 };
 
-async function updatePaymentHold(stripePaymentIntentId: string, stripeFeeAmount: string, capturedAmount: number, additionalAmount: number) {
-  
+async function updatePaymentHold(stripePaymentIntentId: string, stripeFeeAmount: number, capturedAmount: number, additionalAmount: number) {
+
   const totalCapturedAmount = capturedAmount + additionalAmount
   const paymentHoldUpdate = await db
     .update(PaymentsTable)
     .set({
-      stripeFeeAmount,
+      stripeFeeAmount: stripeFeeAmount.toString(),
       amountNetToWorker: (totalCapturedAmount * 0.935).toString(),
       amountGross: totalCapturedAmount.toString(),
       ableFeeAmount: (totalCapturedAmount * 0.065).toString(),
@@ -147,7 +156,11 @@ export async function processGigPayment(params: ProcessGigPaymentParams) {
       buyerStripeCustomerId
     });
 
-    await updatePaymentHold(gigId, originalPaymentIntent?.latest_charge?.balance_transaction?.fee, captureResult.amount, Number(additionalPaymentResult?.amount) || 0);
+    await updatePaymentHold(
+      gigId,
+      Number(originalPaymentIntent?.latest_charge?.balance_transaction?.fee),
+      captureResult.amount, Number(additionalPaymentResult?.amount) || 0
+    );
 
     return { paymentCapture: captureResult?.object, additionalPayment: additionalPaymentResult?.object, status: 200 };
 
