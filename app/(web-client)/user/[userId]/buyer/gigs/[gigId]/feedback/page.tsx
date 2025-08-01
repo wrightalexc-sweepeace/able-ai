@@ -96,7 +96,7 @@ export default function BuyerFeedbackPage() {
   const onProcessPayment = async () => {
     if (!user || !gigData) return
 
-    await processGigPayment({ firebaseUid: user?.uid, gigId, finalAmountToCaptureInCents: Number(gigData?.earnings), currency: 'usd', additionalCostInCents: 35000 });
+    await processGigPayment({ firebaseUid: user?.uid, gigId, finalAmountToCaptureInCents: Number(gigData?.earnings), currency: 'usd', additionalCostInCents: 0 });
   };
 
   if (loadingAuth || isLoadingGig) {
