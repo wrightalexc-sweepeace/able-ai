@@ -5,7 +5,7 @@ import { and, eq } from 'drizzle-orm';
 import { stripeApi } from '@/lib/stripe-server';
 import { db } from "@/lib/drizzle/db";
 import { PaymentsTable, UsersTable } from "@/lib/drizzle/schema";
-import { getPaymentAccountDetailsForGig } from './get-payment-account-details-for-gig';
+import { getPaymentAccountDetailsForGig } from '@/lib/stripe/get-payment-account-details-for-gig';
 
 interface ProcessGigPaymentParams {
   firebaseUid: string;
@@ -40,13 +40,20 @@ const findOriginalPaymentIntent = async (gigId: string) => {
   return originalPaymentIntent;
 };
 
-async function updatePaymentHold(gigId: string, stripeFeeAmount: string,) {
+async function updatePaymentHold(stripePaymentIntentId: string, stripeFeeAmount: string, capturedAmount: number, additionalAmount: number) {
+  
+  const totalCapturedAmount = capturedAmount + additionalAmount
   const paymentHoldUpdate = await db
     .update(PaymentsTable)
     .set({
       stripeFeeAmount,
+      amountNetToWorker: (totalCapturedAmount * 0.935).toString(),
+      amountGross: totalCapturedAmount.toString(),
+      ableFeeAmount: (totalCapturedAmount * 0.065).toString(),
+      paidAt: new Date(),
+      status: 'COMPLETED',
     })
-    .where(eq(PaymentsTable.gigId, gigId))
+    .where(eq(PaymentsTable.stripePaymentIntentId, stripePaymentIntentId))
     .returning();
 
   return paymentHoldUpdate;
@@ -129,6 +136,7 @@ export async function processGigPayment(params: ProcessGigPaymentParams) {
     });
 
     console.log(`Capture of the PI ${originalPaymentIntent.id} completed. Status: ${captureResult.status}`);
+
     const customerPaymentMethodId = originalPaymentIntent.payment_method as string;
     const additionalPaymentResult = await createPaymentToAdditionalCost({
       buyerPaymentMethodId: customerPaymentMethodId,
@@ -138,6 +146,8 @@ export async function processGigPayment(params: ProcessGigPaymentParams) {
       currency,
       buyerStripeCustomerId
     });
+
+    await updatePaymentHold(gigId, originalPaymentIntent?.latest_charge?.balance_transaction?.fee, captureResult.amount, Number(additionalPaymentResult?.amount) || 0);
 
     return { paymentCapture: captureResult?.object, additionalPayment: additionalPaymentResult?.object, status: 200 };
 

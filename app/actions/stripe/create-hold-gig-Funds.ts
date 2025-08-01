@@ -3,12 +3,13 @@
 import { eq } from 'drizzle-orm';
 import { stripeApi } from '@/lib/stripe-server';
 import { db } from "@/lib/drizzle/db";
-import { GigsTable, PaymentsTable, UsersTable } from "@/lib/drizzle/schema";
+import { PaymentsTable, UsersTable } from "@/lib/drizzle/schema";
+import { getPaymentAccountDetailsForGig } from '../../../lib/stripe/get-payment-account-details-for-gig';
 
 interface HoldGigFundsParams {
   firebaseUid: string;
   gigId: string;
-  serviceAmountInCents: number; // The amount to be withheld in cents (e.g. 15000 for $150.00)
+  serviceAmountInCents: number;
   currency?: string;
 }
 
@@ -37,6 +38,8 @@ async function holdGigAmount(params: HoldGigAmountParams) {
     currency: currency || 'usd',
     customer: buyerStripeCustomerId,
     payment_method: customerPaymentMethodId,
+    on_behalf_of: destinationAccountId,
+    application_fee_amount: serviceAmountInCents * 0.065,
     payment_method_options: {
       card: {
         capture_method: 'manual',
@@ -50,59 +53,31 @@ async function holdGigAmount(params: HoldGigAmountParams) {
       type: 'initial_gig_hold',
     },
     description: `Initial hold for Gig: ${gigId}`,
-    application_fee_amount: 20,
     transfer_data: {
       destination: destinationAccountId,
-      amount: serviceAmountInCents - 20,
-    }
+    },
   });
 
   console.log(`Payment Intent created (HOLD) for Gig ${gigId}: ${paymentIntent.id}, status: ${paymentIntent.status}`);
 
-  const stripeFee = paymentIntent.application_fee_amount?.toString(10) || '';
+  const appFeeAmount = paymentIntent.application_fee_amount?.toString(10) || '';
+
   await db
     .insert(PaymentsTable)
     .values({
-      gigId: '6a1da7e1-9bd0-493c-9d7b-ce6fc8849244',
+      gigId,
       stripePaymentIntentId: paymentIntent.id,
+      stripeChargeId: paymentIntent.latest_charge as string,
       payerUserId,
       receiverUserId,
       internalNotes: `Initial hold for Gig: ${gigId}`,
       amountGross: serviceAmountInCents.toString(),
-      ableFeeAmount: '5',
-      amountNetToWorker: '70',
-      stripeFeeAmount: stripeFee,
+      ableFeeAmount: appFeeAmount.toString(),
+      amountNetToWorker: paymentIntent.transfer_data?.amount?.toString() as string,
+      stripeFeeAmount: '',
     });
+
   return paymentIntent;
-}
-
-async function getPaymentAccountDetailsForGig(gigId: string) {
-  const gigRecord = await db.query.GigsTable.findFirst({
-    where: eq(GigsTable.id, gigId),
-    columns: {
-      buyerUserId: true,
-      workerUserId: true,
-      id: true,
-    }
-  });
-
-  if (!gigRecord) {
-    throw new Error('Gig not found');
-  }
-
-  const receiverUserRecord = await db.query.UsersTable.findFirst({
-    where: eq(UsersTable.id, gigRecord.workerUserId as string),
-    columns: {
-      id: true,
-      stripeConnectAccountId: true,
-    }
-  });
-
-  if (!receiverUserRecord?.stripeConnectAccountId) {
-    throw new Error('Receiver is not connected with stripe');
-  }
-
-  return { receiverAccountId: receiverUserRecord.stripeConnectAccountId, gig: gigRecord };
 }
 
 export async function holdGigFunds(params: HoldGigFundsParams) {
@@ -125,17 +100,17 @@ export async function holdGigFunds(params: HoldGigFundsParams) {
       throw new Error('User is not connected with stripe');
     }
 
-    const {receiverAccountId: destinationAccountId, gig } = await getPaymentAccountDetailsForGig(gigId);
+    const { receiverAccountId, gig } = await getPaymentAccountDetailsForGig(gigId);
 
     const paymentIntent = await holdGigAmount({
       buyerStripeCustomerId,
-      destinationAccountId,
+      destinationAccountId: receiverAccountId as string,
       currency,
       serviceAmountInCents,
       gigPaymentInfo: {
         gigId: gigId,
         payerUserId: userRecord.id,
-        receiverUserId: 'gigRecord.workerUserId as string',
+        receiverUserId: gig?.workerUserId as string,
       },
     });
 
