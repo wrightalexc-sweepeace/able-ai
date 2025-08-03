@@ -5,6 +5,60 @@
   max-width: 90%; /* Bubbles don't take full width */
 }
 
+.messageWrapperNew {
+  animation: slideInPrimary 0.5s ease-out;
+  opacity: 0;
+  animation-fill-mode: forwards;
+}
+
+@keyframes slideInPrimary {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+    filter: drop-shadow(0 0 0 rgba(65, 161, 232, 0));
+  }
+  50% {
+    opacity: 0.8;
+    transform: translateY(-2px);
+    filter: drop-shadow(0 4px 12px rgba(65, 161, 232, 0.3));
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: drop-shadow(0 2px 8px rgba(65, 161, 232, 0.1));
+  }
+}
+
+/* Buyer-specific animation */
+.messageWrapperNew[data-role="BUYER"] {
+  animation: slideInSecondary 0.5s ease-out;
+}
+
+@keyframes slideInSecondary {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+    filter: drop-shadow(0 0 0 rgba(126, 238, 249, 0));
+  }
+  50% {
+    opacity: 0.8;
+    transform: translateY(-2px);
+    filter: drop-shadow(0 4px 12px rgba(126, 238, 249, 0.3));
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: drop-shadow(0 2px 8px rgba(126, 238, 249, 0.1));
+  }
+}
+
+/* Stagger animation for multiple new messages */
+.messageWrapperNew:nth-child(1) { animation-delay: 0.1s; }
+.messageWrapperNew:nth-child(2) { animation-delay: 0.2s; }
+.messageWrapperNew:nth-child(3) { animation-delay: 0.3s; }
+.messageWrapperNew:nth-child(4) { animation-delay: 0.4s; }
+.messageWrapperNew:nth-child(5) { animation-delay: 0.5s; }
+
 .alignBot {
   align-self: flex-start;
 }
@@ -26,6 +80,16 @@
   font-family: var(--font-family);
   font-size: 0.95rem; 
   white-space: pre-line; 
+  transition: all 0.3s ease;
+}
+
+.bubble:hover {
+  box-shadow: 0 2px 8px rgba(65, 161, 232, 0.1);
+}
+
+/* Buyer-specific hover effect */
+.bubble[data-role="BUYER"]:hover {
+  box-shadow: 0 2px 8px rgba(126, 238, 249, 0.1);
 }
 
 .bubbleBot {
@@ -48,4 +112,48 @@
     font-family: 'Source Sans Pro';
     line-height: 18px;
     outline: none;
+    border: 1px solid transparent;
+    transition: all 0.3s ease;
   }
+
+.bubbleUser:hover {
+  border-color: rgba(65, 161, 232, 0.3);
+  box-shadow: 0 2px 8px rgba(65, 161, 232, 0.1);
+}
+
+/* Buyer-specific user bubble hover */
+.bubbleUser[data-role="BUYER"]:hover {
+  border-color: rgba(126, 238, 249, 0.3);
+  box-shadow: 0 2px 8px rgba(126, 238, 249, 0.1);
+}
+
+/* Confirm button styles */
+.confirmButton {
+  background: var(--primary-color);
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(65, 161, 232, 0.3);
+}
+
+.confirmButton:hover {
+  background: var(--primary-darker-color);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(65, 161, 232, 0.5);
+}
+
+/* Buyer-specific confirm button */
+.confirmButton[data-role="BUYER"] {
+  background: var(--secondary-color);
+  box-shadow: 0 2px 8px rgba(126, 238, 249, 0.3);
+}
+
+.confirmButton[data-role="BUYER"]:hover {
+  background: var(--secondary-darker-color);
+  box-shadow: 0 4px 12px rgba(126, 238, 249, 0.5);
+}
