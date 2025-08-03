@@ -8,6 +8,7 @@ interface SanitizedConfirmationBubbleProps {
   onReformulate?: (fieldName: string) => void;
   showReformulate?: boolean;
   isProcessing?: boolean;
+  role?: 'BUYER' | 'GIG_WORKER';
 }
 
 const SanitizedConfirmationBubble: React.FC<SanitizedConfirmationBubbleProps> = ({
@@ -17,10 +18,18 @@ const SanitizedConfirmationBubble: React.FC<SanitizedConfirmationBubbleProps> = 
   onConfirm,
   onReformulate,
   showReformulate = false,
-  isProcessing: externalIsProcessing = false
+  isProcessing: externalIsProcessing = false,
+  role = 'BUYER' // Default to buyer for safety
 }) => {
   const [internalIsProcessing, setInternalIsProcessing] = React.useState(false);
   const isProcessing = externalIsProcessing || internalIsProcessing;
+
+  // Determine colors based on role
+  const isBuyer = role === 'BUYER';
+  const primaryColor = isBuyer ? 'var(--secondary-color)' : 'var(--primary-color)';
+  const primaryDarkerColor = isBuyer ? 'var(--secondary-darker-color)' : 'var(--primary-darker-color)';
+  const primaryColorRgba = isBuyer ? 'rgba(126, 238, 249, ' : 'rgba(65, 161, 232, ';
+  const primaryDarkerColorRgba = isBuyer ? 'rgba(91, 192, 232, ' : 'rgba(37, 99, 235, ';
 
   const handleConfirm = () => {
     if (isProcessing) return;
@@ -39,37 +48,54 @@ const SanitizedConfirmationBubble: React.FC<SanitizedConfirmationBubbleProps> = 
       borderRadius: 12, 
       padding: 16, 
       margin: '16px 0', 
-      boxShadow: '0 4px 12px rgba(15, 118, 110, 0.2)', 
-      border: '1px solid #0f766e',
-      animation: 'slideInScale 0.5s ease-out',
+      boxShadow: `0 4px 20px ${primaryDarkerColorRgba}0.3), 0 0 0 1px ${primaryDarkerColorRgba}0.1)`, 
+      border: `2px solid ${primaryDarkerColor}`,
+      animation: 'slideInScalePrimary 0.6s ease-out',
       opacity: 0,
       animationFillMode: 'forwards',
       transform: 'scale(0.95)',
-      transformOrigin: 'center'
+      transformOrigin: 'center',
+      position: 'relative'
     }}>
       <style>{`
-        @keyframes slideInScale {
-          from {
+        @keyframes slideInScalePrimary {
+          0% {
             opacity: 0;
             transform: scale(0.95) translateY(20px);
+            box-shadow: 0 4px 20px ${primaryDarkerColorRgba}0.1), 0 0 0 1px ${primaryDarkerColorRgba}0.05);
           }
-          to {
+          50% {
+            opacity: 0.8;
+            transform: scale(1.02) translateY(-2px);
+            box-shadow: 0 8px 30px ${primaryDarkerColorRgba}0.4), 0 0 0 2px ${primaryDarkerColorRgba}0.2);
+          }
+          100% {
             opacity: 1;
             transform: scale(1) translateY(0);
+            box-shadow: 0 4px 20px ${primaryDarkerColorRgba}0.3), 0 0 0 1px ${primaryDarkerColorRgba}0.1);
+          }
+        }
+        
+        @keyframes primaryPulse {
+          0%, 100% {
+            box-shadow: 0 4px 20px ${primaryDarkerColorRgba}0.3), 0 0 0 1px ${primaryDarkerColorRgba}0.1);
+          }
+          50% {
+            box-shadow: 0 6px 25px ${primaryDarkerColorRgba}0.5), 0 0 0 2px ${primaryDarkerColorRgba}0.2);
           }
         }
       `}</style>
       <div style={{ 
         marginBottom: 8, 
-        color: '#0f766e', 
+        color: '#ffffff', 
         fontWeight: 600, 
-        fontSize: '14px' 
+        fontSize: '14px'
       }}>
         This is what you wanted?
       </div>
              <div style={{ 
          marginBottom: 16, 
-         fontStyle: 'italic', 
+         fontStyle: 'italic',
          color: '#e5e5e5', 
          fontSize: '15px', 
          lineHeight: '1.4' 
@@ -90,14 +116,15 @@ const SanitizedConfirmationBubble: React.FC<SanitizedConfirmationBubbleProps> = 
                (sanitizedValue.includes('.webm') || sanitizedValue.includes('.mp4') || sanitizedValue.includes('.mov'))) {
              return (
                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                 <span style={{ color: '#0f766e', fontWeight: 600 }}>Video uploaded ✓</span>
+                 <span style={{ color: '#ffffff', fontWeight: 600 }}>Video uploaded ✓</span>
                  <video 
                    controls 
                    style={{ 
                      maxWidth: '100%', 
                      maxHeight: '200px', 
                      borderRadius: '8px',
-                     border: '1px solid #333'
+                     border: `2px solid ${primaryDarkerColor}`,
+                     boxShadow: `0 2px 10px ${primaryDarkerColorRgba}0.2)`
                    }}
                    preload="metadata"
                  >
@@ -115,8 +142,8 @@ const SanitizedConfirmationBubble: React.FC<SanitizedConfirmationBubbleProps> = 
       <div style={{ display: 'flex', gap: 12 }}>
         <button
           style={{ 
-            background: isProcessing ? '#555' : '#0f766e', 
-            color: '#fff', 
+            background: isProcessing ? '#555' : primaryColor, 
+            color: '#000', 
             border: 'none', 
             borderRadius: 8, 
             padding: '8px 16px', 
@@ -125,20 +152,24 @@ const SanitizedConfirmationBubble: React.FC<SanitizedConfirmationBubbleProps> = 
             cursor: isProcessing ? 'not-allowed' : 'pointer', 
             transition: 'all 0.3s ease',
             transform: 'scale(1)',
-            opacity: isProcessing ? 0.6 : 1
+            opacity: isProcessing ? 0.6 : 1,
+            boxShadow: isProcessing ? 'none' : `0 2px 8px ${primaryColorRgba}0.4)`,
+            textShadow: '0 0 5px rgba(0, 0, 0, 0.3)'
           }}
           onClick={handleConfirm}
           disabled={isProcessing}
           onMouseOver={(e) => {
             if (!isProcessing) {
-              e.currentTarget.style.background = '#0d5a52';
+              e.currentTarget.style.background = primaryDarkerColor;
               e.currentTarget.style.transform = 'scale(1.05)';
+              e.currentTarget.style.boxShadow = `0 4px 12px ${primaryColorRgba}0.6)`;
             }
           }}
           onMouseOut={(e) => {
             if (!isProcessing) {
-              e.currentTarget.style.background = '#0f766e';
+              e.currentTarget.style.background = primaryColor;
               e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.boxShadow = `0 2px 8px ${primaryColorRgba}0.4)`;
             }
           }}
         >
@@ -148,8 +179,8 @@ const SanitizedConfirmationBubble: React.FC<SanitizedConfirmationBubbleProps> = 
           <button
             style={{ 
               background: isProcessing ? '#555' : 'transparent', 
-              color: isProcessing ? '#999' : '#0f766e', 
-              border: '1px solid #0f766e', 
+              color: isProcessing ? '#999' : primaryColor, 
+              border: `2px solid ${primaryColor}`, 
               borderRadius: 8, 
               padding: '8px 16px', 
               fontWeight: 600, 
@@ -157,22 +188,28 @@ const SanitizedConfirmationBubble: React.FC<SanitizedConfirmationBubbleProps> = 
               cursor: isProcessing ? 'not-allowed' : 'pointer', 
               transition: 'all 0.3s ease',
               transform: 'scale(1)',
-              opacity: isProcessing ? 0.6 : 1
+              opacity: isProcessing ? 0.6 : 1,
+              boxShadow: isProcessing ? 'none' : `0 2px 8px ${primaryColorRgba}0.3)`,
+              textShadow: isProcessing ? 'none' : `0 0 5px ${primaryColorRgba}0.4)`
             }}
             onClick={handleReformulate}
             disabled={isProcessing}
             onMouseOver={(e) => { 
               if (!isProcessing) {
-                e.currentTarget.style.background = '#0f766e'; 
-                e.currentTarget.style.color = '#fff'; 
+                e.currentTarget.style.background = primaryColor; 
+                e.currentTarget.style.color = '#000'; 
                 e.currentTarget.style.transform = 'scale(1.05)';
+                e.currentTarget.style.boxShadow = `0 4px 12px ${primaryColorRgba}0.5)`;
+                e.currentTarget.style.textShadow = '0 0 5px rgba(0, 0, 0, 0.3)';
               }
             }}
             onMouseOut={(e) => { 
               if (!isProcessing) {
                 e.currentTarget.style.background = 'transparent'; 
-                e.currentTarget.style.color = '#0f766e'; 
+                e.currentTarget.style.color = primaryColor; 
                 e.currentTarget.style.transform = 'scale(1)';
+                e.currentTarget.style.boxShadow = `0 2px 8px ${primaryColorRgba}0.3)`;
+                e.currentTarget.style.textShadow = `0 0 5px ${primaryColorRgba}0.4)`;
               }
             }}
           >

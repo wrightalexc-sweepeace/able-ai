@@ -161,7 +161,6 @@ export default function ChatStepRenderer({
       return (
         <div key={key} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <LocationPickerBubble
-            label={inputConf.label}
             value={formData.gigLocation}
             onChange={val => handleInputChange('gigLocation', val)}
             showConfirm={!!formData.gigLocation && isActive}
@@ -242,7 +241,6 @@ export default function ChatStepRenderer({
         <InputBubble
           id={inputConf.name}
           name={inputConf.name}
-          label={inputConf.label}
           value={formData[inputConf.name] || ""}
           disabled={isSubmitting}
           type={safeType as "number" | "text" | "email" | "password" | "date" | "tel"}
@@ -258,7 +256,6 @@ export default function ChatStepRenderer({
               handleInputSubmit(step.id, inputConf.name);
             }
           }}
-          ref={undefined}
         />
         {isActive && formData[inputConf.name] && (
           <button

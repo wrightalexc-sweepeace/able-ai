@@ -98,15 +98,17 @@ const LocationPickerBubble: React.FC<LocationPickerBubbleProps> = ({ value, onCh
           <div style={{ color: '#0f766e', fontSize: 15, marginTop: 8 }}>
             Selected: {typeof value === 'object' && value !== null && 'lat' in value && 'lng' in value && typeof value.lat === 'number' && typeof value.lng === 'number' 
               ? `Lat: ${value.lat.toFixed(6)}, Lng: ${value.lng.toFixed(6)}` 
-              : String(value).slice(0, 40) + (String(value).length > 40 ? '...' : '')}
+              : String(value)}
           </div>
         )}
-        {showConfirm && (
+        {showConfirm && value && onConfirm && (
           <button
-            style={{ margin: '8px 0', background: '#0f766e', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 16px', fontWeight: 600 }}
+            style={{
+              background: '#0f766e', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', fontWeight: 600, cursor: 'pointer', fontSize: 14, marginTop: 8
+            }}
             onClick={onConfirm}
           >
-            Confirm
+            Confirm Location
           </button>
         )}
       </div>
