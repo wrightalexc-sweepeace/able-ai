@@ -2,14 +2,11 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 import ChatBotLayout from "@/app/components/onboarding/ChatBotLayout";
 import MessageBubble from "@/app/components/onboarding/MessageBubble";
-import InputBubble from "@/app/components/onboarding/InputBubble"; // Corrected path
-import TextAreaBubble from "@/app/components/onboarding/TextAreaBubble"; // Corrected path
-// import FileUploadBubble from '@/app/components/onboarding/FileUploadBubble'; // Corrected path - Uncomment if used
 import WorkerCard, { WorkerData } from "@/app/components/onboarding/WorkerCard"; // Import shared WorkerCard and WorkerData
-import MapLinkBubble from '@/app/components/onboarding/MapLinkBubble';
 import LocationPickerBubble from "@/app/components/onboarding/LocationPickerBubble";
 import CalendarPickerBubble from "@/app/components/onboarding/CalendarPickerBubble";
 
@@ -185,6 +182,7 @@ const baseInitialSteps: OnboardingStep[] = [
 
 // Define required fields and their configs
 const requiredFields = [
+  { name: "gigDescription", type: "text", placeholder: "Tell me about your gig...", defaultPrompt: "Hi! Tell me about yourself and what gig or gigs you need filling - we can assemble a team if you need one!" },
   { name: "additionalInstructions", type: "text", placeholder: "Any specific requirements or instructions?", defaultPrompt: "Do you need any special skills or do you have instructions for your hire?", rows: 3 },
   { name: "hourlyRate", type: "number", placeholder: "£15", defaultPrompt: "How much you would like to pay per hour? We suggest £15 plus tips to keep a motivated and happy team!" },
   { name: "gigLocation", type: "text", placeholder: "Where is the gig?", defaultPrompt: "Where is the gig? What time and day do you need someone and for how long?" },
@@ -298,7 +296,7 @@ Respond as a single message, as if you are the bot in a chat.`;
 
 type ChatStep = {
   id: number;
-  type: "bot" | "user" | "input" | "sanitized" | "typing";
+  type: "bot" | "user" | "input" | "sanitized" | "typing" | "calendar" | "location" | "confirm";
   content?: string;
   inputConfig?: StepInputConfig;
   isComplete?: boolean;
@@ -402,7 +400,7 @@ const TypingIndicator: React.FC = () => (
     display: 'flex', 
     alignItems: 'center', 
     padding: '12px 16px', 
-    color: '#0f766e', 
+    color: 'var(--secondary-color)', 
     fontWeight: 600,
     animation: 'slideIn 0.3s ease-out',
     opacity: 0,
@@ -411,10 +409,10 @@ const TypingIndicator: React.FC = () => (
     <div style={{ 
       display: 'flex', 
       gap: '4px',
-      background: 'rgba(15, 118, 110, 0.1)',
+      background: 'rgba(126, 238, 249, 0.1)',
       padding: '8px 12px',
       borderRadius: '20px',
-      border: '1px solid rgba(15, 118, 110, 0.2)'
+      border: '1px solid rgba(126, 238, 249, 0.2)'
     }}>
       <span className="typing-dot" style={{ 
         animation: 'typingBounce 1.4s infinite ease-in-out',
@@ -453,9 +451,31 @@ const TypingIndicator: React.FC = () => (
           opacity: 1;
         }
       }
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes typingBounce {
+        0%, 60%, 100% {
+          transform: translateY(0);
+          opacity: 0.4;
+        }
+        30% {
+          transform: translateY(-8px);
+          opacity: 1;
+        }
+      }
     `}</style>
   </div>
 );
+
+TypingIndicator.displayName = 'TypingIndicator';
 
 // Add a helper to safely extract AI response properties
 type AIResponse = {
@@ -486,6 +506,8 @@ export default function OnboardBuyerPage() {
 
   const [formData, setFormData] = useState<Record<string, any>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isConfirming, setIsConfirming] = useState(false);
+  const [confirmedSteps, setConfirmedSteps] = useState<Set<number>>(new Set());
   const [currentFocusedInputName, setCurrentFocusedInputName] = useState<string | null>(null);
   const [chatSteps, setChatSteps] = useState<ChatStep[]>([{
     id: 1,
@@ -506,6 +528,9 @@ export default function OnboardBuyerPage() {
   const [isTyping, setIsTyping] = useState(false);
   // Update state to track reformulation
   const [reformulateField, setReformulateField] = useState<string | null>(null);
+  const [isReformulating, setIsReformulating] = useState(false);
+  // Track which sanitized step buttons have been clicked to disable them
+  const [clickedSanitizedButtons, setClickedSanitizedButtons] = useState<Set<string>>(new Set());
 
   // Helper to get next required field not in formData
   function getNextRequiredField(formData: Record<string, any>) {
@@ -605,7 +630,7 @@ export default function OnboardBuyerPage() {
   }
 
   // AI-powered validation function using Gemini
-  async function simpleAICheck(field: string, value: any, type: string): Promise<{ sufficient: boolean, clarificationPrompt?: string, sanitized?: string | any }> {
+  async function simpleAICheck(field: string, value: any, type: string, ai: any): Promise<{ sufficient: boolean, clarificationPrompt?: string, sanitized?: string | any }> {
     if (!value) {
       return { 
         sufficient: false, 
@@ -781,17 +806,16 @@ Make the conversation feel natural and build on what they've already told you.`;
 
 
   // Update handleInputSubmit to use AI validation
-  async function handleInputSubmit(stepId: number, inputName: string) {
-    if (!formData[inputName]) return;
+  async function handleInputSubmit(stepId: number, inputName: string, inputValue?: string) {
+    const valueToUse = inputValue || formData[inputName];
+    if (!valueToUse) return;
     
     // Find the current step to get its type
     const currentStep = chatSteps.find(s => s.id === stepId);
     const inputType = currentStep?.inputConfig?.type || 'text';
     
-    // Mark the current step as complete to disable the input
-    setChatSteps((prev) => prev.map((step) =>
-      step.id === stepId ? { ...step, isComplete: true } : step
-    ));
+    // Check if this is a reformulation input (if reformulateField is set and matches inputName)
+    const isReformulation = reformulateField === inputName;
     
     // Add typing indicator for AI processing
     setChatSteps((prev) => [
@@ -805,47 +829,113 @@ Make the conversation feel natural and build on what they've already told you.`;
     
     try {
       // Use AI validation
-      const aiResult = await simpleAICheck(inputName, formData[inputName], inputType);
+      const aiResult = await simpleAICheck(inputName, valueToUse, inputType, ai);
       
+      // Remove typing indicator and mark current step as complete
       setChatSteps((prev) => {
-        // Remove typing indicator
         const filtered = prev.filter(s => s.type !== 'typing');
+        return filtered.map((step) =>
+          step.id === stepId ? { ...step, isComplete: true } : step
+        );
+      });
+      
+      if (!aiResult.sufficient) {
+        // Add clarification message only - keep the original input visible
+        setChatSteps((prev) => [
+          ...prev,
+          { 
+            id: Date.now() + 2, 
+            type: 'bot', 
+            content: aiResult.clarificationPrompt,
+            isNew: true
+          }
+        ]);
+        return;
+      }
+      
+      // If this is a reformulation, update the form data and proceed to next field
+      // instead of showing sanitized confirmation again
+      if (isReformulation) {
+        // Update form data with the new value
+        setFormData(prev => ({ ...prev, [inputName]: aiResult.sanitized }));
         
-        if (!aiResult.sufficient) {
-          // Add clarification and repeat input
-          return [
-            ...filtered,
-            { 
-              id: Date.now() + 2, 
-              type: 'bot', 
-              content: aiResult.clarificationPrompt,
-              isNew: true
+        // Reset reformulating state and clear reformulateField
+        setIsReformulating(false);
+        setReformulateField(null);
+        
+        // Find next required field
+        const updatedFormData = { ...formData, [inputName]: aiResult.sanitized };
+        const nextField = getNextRequiredField(updatedFormData);
+        
+        if (nextField) {
+          // Generate context-aware prompt for next field
+          const gigDescription = updatedFormData.gigDescription || '';
+          const contextAwarePrompt = await generateContextAwarePrompt(nextField.name, gigDescription, ai);
+          
+          const newInputConfig = {
+            type: nextField.type as FormInputType,
+            name: nextField.name,
+            placeholder: nextField.placeholder || nextField.defaultPrompt,
+            ...(nextField.rows && { rows: nextField.rows }),
+          };
+          
+          // Determine the step type based on the field
+          let stepType: "input" | "calendar" | "location" = "input";
+          if (nextField.name === "gigDate") {
+            stepType = "calendar";
+          } else if (nextField.name === "gigLocation") {
+            stepType = "location";
+          }
+          
+          setChatSteps((prev) => [
+            ...prev,
+            {
+              id: Date.now() + 3,
+              type: "bot",
+              content: contextAwarePrompt,
+              isNew: true,
             },
-            { 
-              id: Date.now() + 3, 
-              type: 'input', 
-              inputConfig: currentStep?.inputConfig, 
+            {
+              id: Date.now() + 4,
+              type: stepType,
+              inputConfig: newInputConfig,
               isComplete: false,
-              isNew: true
+              isNew: true,
             },
-          ];
+          ]);
+        } else {
+          // All fields collected, show summary
+          setChatSteps((prev) => [
+            ...prev,
+            {
+              id: Date.now() + 5,
+              type: "bot",
+              content: `Thank you! Here is a summary of your gig:\n${JSON.stringify(updatedFormData, null, 2)}`,
+              isNew: true,
+            },
+          ]);
         }
-        
-        // Show sanitized confirmation step
-        return [
-          ...filtered,
+      } else {
+        // Show sanitized confirmation step for regular inputs (not reformulations)
+        setChatSteps((prev) => [
+          ...prev,
           { 
             id: Date.now() + 3, 
             type: 'sanitized', 
             fieldName: inputName, 
             sanitizedValue: aiResult.sanitized, 
-            originalValue: formData[inputName],
+            originalValue: valueToUse,
             isNew: true
           }
-        ];
-      });
+        ]);
+      }
     } catch (error) {
       console.error('AI validation error:', error);
+      // Reset reformulation state on error
+      if (isReformulation) {
+        setIsReformulating(false);
+        setReformulateField(null);
+      }
       // Fallback to basic validation
       setChatSteps((prev) => {
         const filtered = prev.filter(s => s.type !== 'typing');
@@ -856,17 +946,103 @@ Make the conversation feel natural and build on what they've already told you.`;
             type: 'bot', 
             content: 'I\'m having trouble processing that. Please try again with a clear description of your gig needs.',
             isNew: true
-          },
-          { 
-            id: Date.now() + 3, 
-            type: 'input', 
-            inputConfig: currentStep?.inputConfig, 
-            isComplete: false,
-            isNew: true
-          },
+          }
         ];
       });
     }
+  }
+
+  // Simple function to handle calendar and location confirmations without AI validation
+  async function handlePickerConfirm(stepId: number, inputName: string) {
+    const value = formData[inputName];
+    if (!value) return;
+    
+    // Prevent multiple clicks
+    if (isConfirming) return;
+    setIsConfirming(true);
+    
+    // Mark the current step as complete
+    setChatSteps((prev) => prev.map((step) =>
+      step.id === stepId ? { ...step, isComplete: true } : step
+    ));
+    
+    // Add typing indicator
+    setChatSteps((prev) => [
+      ...prev,
+      {
+        id: Date.now() + 1,
+        type: "typing",
+        isNew: true,
+      },
+    ]);
+    
+    // Process the confirmation (same logic as handleSanitizedConfirm)
+    const updatedFormData = { ...formData, [inputName]: value };
+    setFormData(updatedFormData);
+    
+    // Find the next required field
+    const nextField = getNextRequiredField(updatedFormData);
+    
+    setTimeout(async () => {
+      // Remove typing indicator first
+      setChatSteps((prev) => prev.filter(s => s.type !== 'typing'));
+      
+      if (nextField) {
+        // Generate context-aware prompt
+        const contextAwarePrompt = await generateContextAwarePrompt(nextField.name, updatedFormData.gigDescription || '', ai);
+        
+        // Determine the step type based on the field
+        let stepType: "input" | "calendar" | "location" = "input";
+        if (nextField.name === "gigDate") {
+          stepType = "calendar";
+        } else if (nextField.name === "gigLocation") {
+          stepType = "location";
+        }
+        
+        const newInputConfig = {
+          type: nextField.type as FormInputType,
+          name: nextField.name,
+          placeholder: nextField.placeholder || nextField.defaultPrompt,
+          ...(nextField.rows && { rows: nextField.rows }),
+        };
+        
+        setChatSteps((prev) => [
+          ...prev,
+          {
+            id: Date.now() + 2,
+            type: "bot",
+            content: contextAwarePrompt,
+            isNew: true,
+          },
+          {
+            id: Date.now() + 3,
+            type: stepType,
+            inputConfig: newInputConfig,
+            isComplete: false,
+            isNew: true,
+          },
+        ]);
+      } else {
+        // All fields collected, show summary
+        setChatSteps((prev) => [
+          ...prev,
+          {
+            id: Date.now() + 2,
+            type: "bot",
+            content: `Thank you! Here is a summary of your gig:\n${JSON.stringify(updatedFormData, null, 2)}`,
+            isNew: true,
+          },
+        ]);
+      }
+    }, 700);
+    
+    // Mark this step as confirmed permanently
+    setConfirmedSteps(prev => new Set([...prev, stepId]));
+    
+    // Reset confirming state after a delay to ensure all operations are complete
+    setTimeout(() => {
+      setIsConfirming(false);
+    }, 1000);
   }
 
   // After the last input, show a summary message (optionally call AI for summary)
@@ -887,6 +1063,13 @@ Make the conversation feel natural and build on what they've already told you.`;
   // Update sanitized confirmation effect to use AI's next question or summary
   useEffect(() => {
     if (reformulateField) {
+      // Clear the form data for the reformulated field
+      setFormData(prev => {
+        const newFormData = { ...prev };
+        delete newFormData[reformulateField];
+        return newFormData;
+      });
+      
       // Find the required field config and map to StepInputConfig (exclude defaultPrompt)
       const fieldConfig = requiredFields.find(f => f.name === reformulateField);
       let inputConfig: StepInputConfig | undefined;
@@ -904,15 +1087,28 @@ Make the conversation feel natural and build on what they've already told you.`;
       }
       
       if (inputConfig) {
-        // Add typing indicator first
-        setChatSteps((prev) => [
-          ...prev,
-          {
-            id: Date.now() + 2,
-            type: "typing",
-            isNew: true,
-          },
-        ]);
+        // Keep previous entries but mark sanitized step as complete and add new reformulation
+        setChatSteps(prev => {
+          // Mark the sanitized step as complete so it doesn't show buttons anymore
+          const updatedSteps = prev.map(step => 
+            step.type === "sanitized" && step.fieldName === reformulateField 
+              ? { ...step, isComplete: true }
+              : step
+          );
+          
+          // Add typing indicator
+          return [
+            ...updatedSteps,
+            {
+              id: Date.now() + 2,
+              type: "typing",
+              isNew: true,
+            },
+          ];
+        });
+        
+        // Generate a reformulation question asking for reformulated message
+        const reformulationPrompt = `Could you provide your reformulated message?`;
         
         setTimeout(() => {
           setChatSteps((prev) => {
@@ -923,7 +1119,7 @@ Make the conversation feel natural and build on what they've already told you.`;
               {
                 id: Date.now() + 3,
                 type: "bot",
-                content: `Please provide a more specific answer for "${reformulateField}".`,
+                content: reformulationPrompt,
                 isNew: true,
               },
               {
@@ -931,16 +1127,26 @@ Make the conversation feel natural and build on what they've already told you.`;
                 type: "input",
                 inputConfig: inputConfig,
                 isComplete: false,
+                isNew: true,
               },
             ];
           });
         }, 700);
+      } else {
+        console.error('Field config not found for:', reformulateField);
+        setIsReformulating(false);
       }
-      setReformulateField(null);
     }
-  }, [reformulateField]);
+  }, [reformulateField, ai]);
 
   async function handleSanitizedConfirm(fieldName: string, sanitized: string | any) {
+    // Mark this button as clicked to disable it
+    setClickedSanitizedButtons(prev => new Set([...prev, `${fieldName}-confirm`]));
+    
+    // Reset reformulation state when confirming any sanitized step
+    setIsReformulating(false);
+    setReformulateField(null);
+    
     // Update formData first
     const updatedFormData = { ...formData, [fieldName]: sanitized };
     setFormData(updatedFormData);
@@ -969,9 +1175,9 @@ Make the conversation feel natural and build on what they've already told you.`;
       ]);
       
       // Generate AI prompt
-      const contextAwarePrompt = await generateContextAwarePrompt(nextField.name, gigDescription, ai);
-      
-      setTimeout(() => {
+      setTimeout(async () => {
+        const contextAwarePrompt = await generateContextAwarePrompt(nextField.name, gigDescription, ai);
+        
         setChatSteps((prev) => {
           // Remove typing indicator and add bot message and input
           const filtered = prev.filter(s => s.type !== 'typing');
@@ -981,6 +1187,14 @@ Make the conversation feel natural and build on what they've already told you.`;
             placeholder: nextField.placeholder || nextField.defaultPrompt,
             ...(nextField.rows && { rows: nextField.rows }),
           };
+          
+          // Determine the step type based on the field
+          let stepType: "input" | "calendar" | "location" = "input";
+          if (nextField.name === "gigDate") {
+            stepType = "calendar";
+          } else if (nextField.name === "gigLocation") {
+            stepType = "location";
+          }
           
           return [
             ...filtered,
@@ -992,7 +1206,7 @@ Make the conversation feel natural and build on what they've already told you.`;
             },
             {
               id: Date.now() + 4,
-              type: "input",
+              type: stepType,
               inputConfig: newInputConfig,
               isComplete: false,
               isNew: true,
@@ -1031,10 +1245,34 @@ Make the conversation feel natural and build on what they've already told you.`;
   }
 
   function handleSanitizedReformulate(fieldName: string) {
+    if (isReformulating) return; // Prevent multiple clicks
+    
+    // Mark this button as clicked to disable it
+    setClickedSanitizedButtons(prev => new Set([...prev, `${fieldName}-reformulate`]));
+    
+    setIsReformulating(true);
     setReformulateField(fieldName);
   }
 
   const handleInputChange = (name: string, value: any) => {
+    // Special handling for date fields to ensure only date part is stored
+    if (name === 'gigDate' && value) {
+      let processedValue = value;
+      
+      // If it's an ISO string with time, extract just the date part
+      if (typeof value === 'string' && value.includes('T')) {
+        processedValue = value.split('T')[0];
+      }
+      
+      // If it's a Date object, convert to date string
+      if (value instanceof Date) {
+        processedValue = value.toISOString().split('T')[0];
+      }
+      
+      setFormData((prev) => ({ ...prev, [name]: processedValue }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
     // Special handling for date fields to ensure only date part is stored
     if (name === 'gigDate' && value) {
       let processedValue = value;
@@ -1113,19 +1351,21 @@ Make the conversation feel natural and build on what they've already told you.`;
   // Initialize chat with AI greeting
   useEffect(() => {
     if (chatSteps.length === 0) {
+      const firstField = requiredFields[0];
       setChatSteps([
         {
           id: 1,
           type: "bot",
-          content: FIRST_QUESTION,
+          content: firstField.defaultPrompt,
         },
         {
           id: 2,
           type: "input",
           inputConfig: {
-            type: "text" as FormInputType,
-            name: "gigDescription",
-            placeholder: "Tell me about your gig...",
+            type: firstField.type as FormInputType,
+            name: firstField.name,
+            placeholder: firstField.placeholder,
+            ...(firstField.rows && { rows: firstField.rows }),
           },
           isComplete: false,
         },
@@ -1144,9 +1384,53 @@ Make the conversation feel natural and build on what they've already told you.`;
         onScroll={() => {}}
         onHomeClick={() => router.push(`/user/${user?.uid || "this_user"}/buyer`)}
         className={pageStyles.container}
+        role="BUYER"
+        showChatInput={true}
+        onSendMessage={async (message) => {
+          console.log('ChatInput received:', message);
+          
+          // Find current input step (any type that needs user input)
+          const currentInputStep = chatSteps.find(step => 
+            (step.type === "input" || step.type === "calendar" || step.type === "location") && !step.isComplete
+          );
+          
+          if (currentInputStep && currentInputStep.inputConfig) {
+            const fieldName = currentInputStep.inputConfig.name;
+            
+            // Always add user message to chat for all input types
+            const userStep: ChatStep = {
+              id: Date.now(),
+              type: "user",
+              content: message,
+              isNew: true
+            };
+            
+            setChatSteps(prev => [...prev, userStep]);
+            
+            // Update form data
+            handleInputChange(fieldName, message);
+            
+            // Pass the message value directly to handleInputSubmit
+            await handleInputSubmit(currentInputStep.id, fieldName, message);
+          }
+        }}
       >
         {chatSteps.map((step, idx) => {
-          const key = `step-${step.id}-${step.type}-${step.inputConfig?.name || Math.random()}`;
+          const key = `step-${step.id}-${step.type}-${step.inputConfig?.name || idx}`;
+          
+          // User message
+          if (step.type === "user") {
+            return (
+              <MessageBubble
+                key={key}
+                text={step.content}
+                senderType="user"
+                role="BUYER"
+                showAvatar={false}
+              />
+            );
+          }
+          
           if (step.type === "bot" && typeof step.content === "string" && step.content.startsWith("Thank you! Here is a summary of your gig:")) {
             // Try to extract and parse the JSON
             const match = step.content.match(/Thank you! Here is a summary of your gig:\n([\s\S]*)/);
@@ -1160,95 +1444,102 @@ Make the conversation feel natural and build on what they've already told you.`;
             }
             if (summaryData) {
               return (
-                <div key={key} style={{ background: '#222', color: '#fff', borderRadius: 8, padding: 16, margin: '16px 0', boxShadow: '0 2px 8px #0002' }}>
-                  <h3 style={{ marginTop: 0 }}>Gig Summary</h3>
-                  <ul style={{ listStyle: 'none', padding: 0 }}>
-                    {Object.entries(summaryData).map(([field, value]) => {
-                      if (field === 'gigLocation' && typeof value === 'string' && value.length > 40) {
-                        return (
-                          <li key={field} style={{ marginBottom: 8 }}>
-                            <strong style={{ textTransform: 'capitalize' }}>{field.replace(/([A-Z])/g, ' $1')}: </strong>
-                            <span
-                              style={{
-                                cursor: 'pointer',
-                                wordBreak: 'break-all',
-                                display: 'inline-block',
-                                maxWidth: expandedSummaryFields[field] ? '100%' : 220,
-                                whiteSpace: expandedSummaryFields[field] ? 'normal' : 'nowrap',
-                                overflow: 'hidden',
-                                textOverflow: expandedSummaryFields[field] ? 'clip' : 'ellipsis',
-                                verticalAlign: 'bottom',
-                              }}
-                              title={expandedSummaryFields[field] ? 'Click to collapse' : 'Click to expand'}
-                              onClick={() =>
-                                setExpandedSummaryFields(prev => ({
-                                  ...prev,
-                                  [field]: !prev[field]
-                                }))
-                              }
-                            >
-                              {expandedSummaryFields[field] ? value : value.slice(0, 37) + '...'}
-                            </span>
-                          </li>
-                        );
-                      }
-                      return (
-                        <li key={field} style={{ marginBottom: 8 }}>
-                          <strong style={{ textTransform: 'capitalize' }}>{field.replace(/([A-Z])/g, ' $1')}: </strong>
-                          <span>
-                            {value && typeof value === 'object' && 'lat' in value && 'lng' in value
-                              ? `Lat: ${value.lat}, Lng: ${value.lng}`
-                              : field === 'gigDate'
-                                ? formatDateForDisplay(value)
-                                : field === 'gigTime'
-                                  ? formatTimeForDisplay(value)
-                                  : typeof value === 'object'
-                                    ? JSON.stringify(value)
-                                    : String(value)}
-                          </span>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                  <button
-                    style={{ 
-                      marginTop: 16, 
-                      background: "#0f766e", 
-                      color: "#fff", 
-                      border: "none", 
-                      borderRadius: 8, 
-                      padding: "8px 16px", 
-                      fontWeight: 600,
-                      transition: 'all 0.3s ease',
-                      transform: 'scale(1)',
-                      animation: 'pulse 2s infinite'
-                    }}
-                    onClick={() => router.push(`/user/${user?.uid || "this_user"}/buyer/dashboard`)}
-                    onMouseOver={(e) => {
-                      e.currentTarget.style.transform = 'scale(1.05)';
-                      e.currentTarget.style.background = '#0d5a52';
-                    }}
-                    onMouseOut={(e) => {
-                      e.currentTarget.style.transform = 'scale(1)';
-                      e.currentTarget.style.background = '#0f766e';
-                    }}
-                  >
-                    <style>{`
-                      @keyframes pulse {
-                        0% {
-                          box-shadow: 0 0 0 0 rgba(15, 118, 110, 0.7);
-                        }
-                        70% {
-                          box-shadow: 0 0 0 10px rgba(15, 118, 110, 0);
-                        }
-                        100% {
-                          box-shadow: 0 0 0 0 rgba(15, 118, 110, 0);
-                        }
-                      }
-                    `}</style>
-                    Confirm & Go to Dashboard
-                  </button>
-                </div>
+                <MessageBubble
+                  key={key}
+                  text={
+                    <div style={{ background: '#222', color: '#fff', borderRadius: 8, padding: 16, margin: '16px 0', boxShadow: '0 2px 8px #0002' }}>
+                      <h3 style={{ marginTop: 0 }}>Gig Summary</h3>
+                      <ul style={{ listStyle: 'none', padding: 0 }}>
+                        {Object.entries(summaryData).map(([field, value]) => {
+                          if (field === 'gigLocation' && typeof value === 'string' && value.length > 40) {
+                            return (
+                              <li key={field} style={{ marginBottom: 8 }}>
+                                <strong style={{ textTransform: 'capitalize' }}>{field.replace(/([A-Z])/g, ' $1')}: </strong>
+                                <span
+                                  style={{
+                                    cursor: 'pointer',
+                                    wordBreak: 'break-all',
+                                    display: 'inline-block',
+                                    maxWidth: expandedSummaryFields[field] ? '100%' : 220,
+                                    whiteSpace: expandedSummaryFields[field] ? 'normal' : 'nowrap',
+                                    overflow: 'hidden',
+                                    textOverflow: expandedSummaryFields[field] ? 'clip' : 'ellipsis',
+                                    verticalAlign: 'bottom',
+                                  }}
+                                  title={expandedSummaryFields[field] ? 'Click to collapse' : 'Click to expand'}
+                                  onClick={() =>
+                                    setExpandedSummaryFields(prev => ({
+                                      ...prev,
+                                      [field]: !prev[field]
+                                    }))
+                                  }
+                                >
+                                  {expandedSummaryFields[field] ? value : value.slice(0, 37) + '...'}
+                                </span>
+                              </li>
+                            );
+                          }
+                          return (
+                            <li key={field} style={{ marginBottom: 8 }}>
+                              <strong style={{ textTransform: 'capitalize' }}>{field.replace(/([A-Z])/g, ' $1')}: </strong>
+                              <span>
+                                {value && typeof value === 'object' && 'lat' in value && 'lng' in value
+                                  ? `Lat: ${value.lat}, Lng: ${value.lng}`
+                                  : field === 'gigDate'
+                                    ? formatDateForDisplay(value)
+                                    : field === 'gigTime'
+                                      ? formatTimeForDisplay(value)
+                                      : typeof value === 'object'
+                                        ? JSON.stringify(value)
+                                        : String(value)}
+                              </span>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                      <button
+                        style={{ 
+                          marginTop: 16, 
+                          background: "var(--secondary-color)", 
+                          color: "#fff", 
+                          border: "none", 
+                          borderRadius: 8, 
+                          padding: "8px 16px", 
+                          fontWeight: 600,
+                          transition: 'all 0.3s ease',
+                          transform: 'scale(1)',
+                          animation: 'pulse 2s infinite'
+                        }}
+                        onClick={() => router.push(`/user/${user?.uid || "this_user"}/buyer/dashboard`)}
+                        onMouseOver={(e) => {
+                          e.currentTarget.style.transform = 'scale(1.05)';
+                          e.currentTarget.style.background = 'var(--secondary-darker-color)';
+                        }}
+                        onMouseOut={(e) => {
+                          e.currentTarget.style.transform = 'scale(1)';
+                          e.currentTarget.style.background = 'var(--secondary-color)';
+                        }}
+                      >
+                        <style>{`
+                          @keyframes pulse {
+                            0% {
+                              box-shadow: 0 0 0 0 rgba(126, 238, 249, 0.7);
+                            }
+                            70% {
+                              box-shadow: 0 0 0 10px rgba(126, 238, 249, 0);
+                            }
+                            100% {
+                              box-shadow: 0 0 0 0 rgba(126, 238, 249, 0);
+                            }
+                          }
+                        `}</style>
+                        Confirm & Go to Dashboard
+                      </button>
+                    </div>
+                  }
+                  senderType="bot"
+                  role="BUYER"
+                />
               );
             }
             // Fallback to raw message if parsing fails
@@ -1257,6 +1548,7 @@ Make the conversation feel natural and build on what they've already told you.`;
                 key={key}
                 text={step.content as string}
                 senderType="bot"
+                role="BUYER"
               />
             );
           }
@@ -1266,199 +1558,83 @@ Make the conversation feel natural and build on what they've already told you.`;
                 key={key}
                 text={step.content as string}
                 senderType="bot"
+                role="BUYER"
               />
             );
           }
-          if (step.type === "user") {
+          if (step.type === "user" as any) {
             return (
               <MessageBubble
                 key={key}
                 text={typeof step.content === 'object' ? JSON.stringify(step.content) : String(step.content)}
                 senderType="user"
                 showAvatar={false}
+                role="BUYER"
               />
             );
           }
-          if (step.type === "input" && !step.isComplete) {
-            const inputConf = step.inputConfig!;
-            const isActive = isActiveInputStep(step, idx);
-            const isProcessing = chatSteps.some(s => s.type === 'typing');
-            
-            // Custom UI for gigLocation
-            if (inputConf.name === "gigLocation") {
-              return (
-                <div key={key} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  <LocationPickerBubble
-                    value={formData.gigLocation}
-                    onChange={val => handleInputChange('gigLocation', val)}
-                    showConfirm={!!formData.gigLocation && isActive}
-                    onConfirm={() => handleInputSubmit(step.id, 'gigLocation')}
-                  />
-                </div>
-              );
-            }
-            // Custom UI for gigDate (calendar picker)
-            if (inputConf.name === "gigDate") {
-              return (
-                <div key={key} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  <CalendarPickerBubble
-                    value={formData.gigDate ? new Date(formData.gigDate) : null}
-                    onChange={date => handleInputChange('gigDate', date ? date.toISOString() : "")}
-                  />
-                  {isActive && formData.gigDate && (
-                    <button
-                      style={{ 
-                        margin: '8px 0', 
-                        background: '#0f766e', 
-                        color: '#fff', 
-                        border: 'none', 
-                        borderRadius: 8, 
-                        padding: '6px 16px', 
-                        fontWeight: 600,
-                        transition: 'all 0.3s ease',
-                        transform: 'scale(1)'
-                      }}
-                      onClick={() => handleInputSubmit(step.id, 'gigDate')}
-                      onMouseOver={(e) => {
-                        e.currentTarget.style.transform = 'scale(1.05)';
-                        e.currentTarget.style.background = '#0d5a52';
-                      }}
-                      onMouseOut={(e) => {
-                        e.currentTarget.style.transform = 'scale(1)';
-                        e.currentTarget.style.background = '#0f766e';
-                      }}
-                    >
-                      Confirm
-                    </button>
-                  )}
-                </div>
-              );
-            }
-            // Only allow supported types for InputBubble
-            const allowedTypes = ["number", "text", "email", "password", "date", "tel"];
-            const safeType = allowedTypes.includes(inputConf.type) ? inputConf.type : "text";
-            
-            // Handle textarea inputs
-            if (inputConf.type === "textarea") {
-              return (
-                <div key={key} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  <TextAreaBubble
-                    id={inputConf.name}
-                    name={inputConf.name}
-                    value={formData[inputConf.name] || ""}
-                    disabled={isSubmitting || isProcessing}
-                    placeholder={inputConf.placeholder}
-                    rows={inputConf.rows || 3}
-                    onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-                      handleInputChange(inputConf.name, e.target.value)
-                    }
-                    onFocus={() => setCurrentFocusedInputName(inputConf.name)}
-                    onBlur={() => {}}
-                    onKeyPress={(e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-                      if (e.key === "Enter" && e.ctrlKey && !isProcessing) {
-                        e.preventDefault();
-                        handleInputSubmit(step.id, inputConf.name);
-                      }
-                    }}
-                    ref={undefined}
-                  />
-                  {isActive && formData[inputConf.name] && !isProcessing && (
-                    <button
-                      style={{ margin: '8px 0', background: '#0f766e', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 16px', fontWeight: 600 }}
-                      onClick={() => handleInputSubmit(step.id, inputConf.name)}
-                    >
-                      Confirm
-                    </button>
-                  )}
-                </div>
-              );
-            }
-            
-            return (
-              <div key={key} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <InputBubble
-                  id={inputConf.name}
-                  name={inputConf.name}
-                  value={(() => {
-                    const val = formData[inputConf.name];
-                    if (val && typeof val === 'object' && 'lat' in val && 'lng' in val) {
-                      return `Lat: ${val.lat.toFixed(6)}, Lng: ${val.lng.toFixed(6)}`;
-                    } else if (typeof val === 'object') {
-                      return JSON.stringify(val);
-                    } else {
-                      return val || "";
-                    }
-                  })()}
-                  disabled={isSubmitting || isProcessing}
-                  type={safeType as "number" | "text" | "email" | "password" | "date" | "tel"}
-                  placeholder={inputConf.placeholder}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                    handleInputChange(inputConf.name, e.target.value);
-                  }}
-                  onFocus={() => setCurrentFocusedInputName(inputConf.name)}
-                  onBlur={() => {}}
-                  onKeyPress={(e: React.KeyboardEvent<HTMLInputElement>) => {
-                    if (e.key === "Enter" && !isProcessing) {
-                      e.preventDefault();
-                      handleInputSubmit(step.id, inputConf.name);
-                    }
-                  }}
-                  ref={(el: HTMLInputElement | null) => {
-                    if (el && currentFocusedInputName === inputConf.name) el.focus();
-                  }}
-                />
-                {isActive && formData[inputConf.name] && !isProcessing && (
-                  <button
-                    style={{ margin: '8px 0', background: '#0f766e', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 16px', fontWeight: 600 }}
-                    onClick={() => handleInputSubmit(step.id, inputConf.name)}
-                  >
-                    Confirm
-                  </button>
-                )}
-              </div>
-            );
-          }
-          // Show completed inputs as read-only text bubbles
-          if (step.type === "input" && step.isComplete) {
-            const inputConf = step.inputConfig!;
-            const value = formData[inputConf.name];
-            
-            if (!value) return null;
-            
-            // Format the value properly to handle objects
-            const displayValue = (() => {
-              if (value && typeof value === 'object' && 'lat' in value && 'lng' in value) {
-                return `Lat: ${value.lat}, Lng: ${value.lng}`;
-              } else if (typeof value === 'object') {
-                return JSON.stringify(value);
-              } else {
-                return String(value);
-              }
-            })();
-            
-            return (
-              <div key={key} style={{ 
-                background: '#2a2a2a', 
-                color: '#e5e5e5', 
-                borderRadius: 8, 
-                padding: 12, 
-                margin: '8px 0',
-                border: '1px solid #404040',
-                fontSize: '14px',
-                lineHeight: '1.4'
-              }}>
-                <div style={{ color: '#0f766e', fontWeight: 600, marginBottom: 4, fontSize: '12px' }}>
-                  {inputConf.label}
-                </div>
-                <div>{displayValue}</div>
-              </div>
-            );
-          }
-          // Typing animation
           if (step.type === "typing") {
-            return <MessageBubble key={key} text={<TypingIndicator />} senderType="bot" />;
+            return (
+              <div key={key}>
+                {/* AI Avatar - Separated */}
+                <div key={`${key}-avatar`} style={{ 
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  gap: '0.5rem',
+                  marginBottom: '0.5rem'
+                }}>
+                  <div style={{ flexShrink: 0, marginTop: '0.25rem' }}>
+                    <div style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      background: 'linear-gradient(135deg, var(--secondary-color), var(--secondary-darker-color))',
+                      boxShadow: '0 2px 8px rgba(126, 238, 249, 0.3)'
+                    }}>
+                      <div style={{
+                        width: '28px',
+                        height: '28px',
+                        borderRadius: '50%',
+                        background: '#000000',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        border: '1px solid rgba(255, 255, 255, 0.2)'
+                      }}>
+                        <Image 
+                          src="/images/ableai.png" 
+                          alt="Able AI" 
+                          width={24} 
+                          height={24} 
+                          style={{
+                            borderRadius: '50%',
+                            objectFit: 'cover'
+                          }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Typing Indicator - Separated */}
+                <div key={`${key}-typing`}>
+                  <TypingIndicator />
+                </div>
+              </div>
+            );
           }
-          // Handle the new sanitized step type
+          if (step.type === "input") {
+            // For incomplete inputs, don't show anything - let the user use the chat input
+            // For completed inputs, don't show anything since user messages are handled separately
+            return null;
+          }
+
+
+          
+          // Handle sanitized step
           if (step.type === "sanitized" && step.fieldName) {
             // Format the sanitized value properly
             const displayValue = (() => {
@@ -1502,31 +1678,336 @@ Make the conversation feel natural and build on what they've already told you.`;
               return String(sanitizedValue || '');
             })();
             
+            // Check if buttons have been clicked for this field
+            const confirmClicked = clickedSanitizedButtons.has(`${step.fieldName}-confirm`);
+            const reformulateClicked = clickedSanitizedButtons.has(`${step.fieldName}-reformulate`);
+            const isReformulatingThisField = isReformulating && reformulateField === step.fieldName;
+            
+            // Determine if step is completed (either confirmed or reformulated)
+            const isCompleted = step.isComplete || confirmClicked || reformulateClicked;
+            
             return (
-              <div key={key} style={{ background: '#1a1a1a', borderRadius: 12, padding: 16, margin: '16px 0', boxShadow: '0 4px 12px rgba(15, 118, 110, 0.2)', border: '1px solid #0f766e' }}>
-                <div style={{ marginBottom: 8, color: '#0f766e', fontWeight: 600, fontSize: '14px' }}>This is what you wanted?</div>
-                <div style={{ marginBottom: 16, fontStyle: 'italic', color: '#e5e5e5', fontSize: '15px', lineHeight: '1.4' }}>{displayValue}</div>
-                <div style={{ display: 'flex', gap: 12 }}>
-                  <button
-                    style={{ background: '#0f766e', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', fontWeight: 600, fontSize: '14px', cursor: 'pointer', transition: 'background-color 0.2s' }}
-                    onClick={() => handleSanitizedConfirm(step.fieldName!, step.sanitizedValue!)}
-                    onMouseOver={(e) => e.currentTarget.style.background = '#0d5a52'}
-                    onMouseOut={(e) => e.currentTarget.style.background = '#0f766e'}
-                  >
-                    Confirm
-                  </button>
-                  <button
-                    style={{ background: 'transparent', color: '#0f766e', border: '1px solid #0f766e', borderRadius: 8, padding: '8px 16px', fontWeight: 600, fontSize: '14px', cursor: 'pointer', transition: 'all 0.2s' }}
-                    onClick={() => handleSanitizedReformulate(step.fieldName!)}
-                    onMouseOver={(e) => { e.currentTarget.style.background = '#0f766e'; e.currentTarget.style.color = '#fff'; }}
-                    onMouseOut={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = '#0f766e'; }}
-                  >
-                    Reformulate
-                  </button>
+              <MessageBubble
+                key={key}
+                text={
+                  <div>
+                    <div style={{ marginBottom: 8, color: 'var(--secondary-color)', fontWeight: 600, fontSize: '14px' }}>This is what you wanted?</div>
+                    <div style={{ marginBottom: 16, fontStyle: 'italic', color: '#e5e5e5', fontSize: '15px', lineHeight: '1.4' }}>{displayValue}</div>
+                    <div style={{ display: 'flex', gap: 12 }}>
+                      <button
+                        style={{ 
+                          background: isCompleted ? '#555' : 'var(--secondary-color)', 
+                          color: '#fff', 
+                          border: 'none', 
+                          borderRadius: 8, 
+                          padding: '8px 16px', 
+                          fontWeight: 600, 
+                          fontSize: '14px', 
+                          cursor: isCompleted ? 'not-allowed' : 'pointer', 
+                          transition: 'background-color 0.2s',
+                          opacity: isCompleted ? 0.7 : 1
+                        }}
+                        onClick={() => !isCompleted && handleSanitizedConfirm(step.fieldName!, step.sanitizedValue!)}
+                        disabled={isCompleted}
+                        onMouseOver={(e) => {
+                          if (!isCompleted) {
+                            e.currentTarget.style.background = 'var(--secondary-darker-color)';
+                          }
+                        }}
+                        onMouseOut={(e) => {
+                          if (!isCompleted) {
+                            e.currentTarget.style.background = 'var(--secondary-color)';
+                          }
+                        }}
+                      >
+                        {confirmClicked ? 'Confirmed' : 'Confirm'}
+                      </button>
+                      <button
+                        style={{ 
+                          background: isCompleted ? '#555' : 'transparent', 
+                          color: isCompleted ? '#999' : 'var(--secondary-color)', 
+                          border: '1px solid var(--secondary-color)', 
+                          borderRadius: 8, 
+                          padding: '8px 16px', 
+                          fontWeight: 600, 
+                          fontSize: '14px', 
+                          cursor: isCompleted ? 'not-allowed' : 'pointer', 
+                          transition: 'all 0.2s',
+                          opacity: isCompleted ? 0.7 : 1
+                        }}
+                        onClick={() => !isCompleted && handleSanitizedReformulate(step.fieldName!)}
+                        disabled={isCompleted}
+                        onMouseOver={(e) => { 
+                          if (!isCompleted) {
+                            e.currentTarget.style.background = 'var(--secondary-color)'; 
+                            e.currentTarget.style.color = '#fff'; 
+                          }
+                        }}
+                        onMouseOut={(e) => { 
+                          if (!isCompleted) {
+                            e.currentTarget.style.background = 'transparent'; 
+                            e.currentTarget.style.color = 'var(--secondary-color)'; 
+                          }
+                        }}
+                      >
+                        {reformulateClicked ? 'Reformulated' : (isReformulatingThisField ? 'Reformulating...' : 'Reformulate')}
+                      </button>
+                    </div>
+                  </div>
+                }
+                senderType="bot"
+                role="BUYER"
+                showAvatar={true}
+              />
+            );
+          }
+          
+          // Handle calendar picker step
+          if (step.type === "calendar") {
+            return (
+              <div key={key} style={{ 
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '0.5rem',
+                marginBottom: '0.5rem'
+              }}>
+                {/* AI Avatar - Separated */}
+                <div key={`${key}-avatar`} style={{ 
+                  flexShrink: 0, 
+                  marginTop: '0.25rem' 
+                }}>
+                  <div style={{
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: 'linear-gradient(135deg, var(--secondary-color), var(--secondary-darker-color))',
+                    boxShadow: '0 2px 8px rgba(126, 238, 249, 0.3)'
+                  }}>
+                    <div style={{
+                      width: '28px',
+                      height: '28px',
+                      borderRadius: '50%',
+                      background: '#000000',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      border: '1px solid rgba(255, 255, 255, 0.2)'
+                    }}>
+                      <Image 
+                        src="/images/ableai.png" 
+                        alt="Able AI" 
+                        width={24} 
+                        height={24} 
+                        style={{
+                          borderRadius: '50%',
+                          objectFit: 'cover'
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Calendar Picker - Separated */}
+                <div key={`${key}-calendar`} style={{ flex: 1 }}>
+                  <CalendarPickerBubble
+                    name={step.inputConfig?.name}
+                    value={formData[step.inputConfig?.name || ''] ? new Date(formData[step.inputConfig?.name || '']) : null}
+                    onChange={(date) => {
+                      if (step.inputConfig?.name) {
+                        handleInputChange(step.inputConfig.name, date);
+                      }
+                    }}
+                    placeholderText={step.inputConfig?.placeholder || "Select a date"}
+                  />
+                  
+                  {/* Confirm button when date is selected */}
+                  {formData[step.inputConfig?.name || ''] && !confirmedSteps.has(step.id) && (
+                    <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'flex-end' }}>
+                      <button
+                        style={{
+                          background: isConfirming ? '#555' : 'var(--secondary-color)',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: '8px',
+                          padding: '8px 16px',
+                          fontWeight: 600,
+                          fontSize: '14px',
+                          cursor: isConfirming ? 'not-allowed' : 'pointer',
+                          transition: 'background-color 0.2s',
+                          opacity: isConfirming ? 0.7 : 1
+                        }}
+                        onClick={() => {
+                          if (step.inputConfig?.name && !isConfirming) {
+                            handlePickerConfirm(step.id, step.inputConfig.name);
+                          }
+                        }}
+                        onMouseOver={(e) => {
+                          if (!isConfirming) {
+                            e.currentTarget.style.background = 'var(--secondary-darker-color)';
+                          }
+                        }}
+                        onMouseOut={(e) => {
+                          if (!isConfirming) {
+                            e.currentTarget.style.background = 'var(--secondary-color)';
+                          }
+                        }}
+                        disabled={isConfirming}
+                      >
+                        {isConfirming ? 'Confirming...' : 'Confirm Date'}
+                      </button>
+                    </div>
+                  )}
+                  
+                  {/* Show confirmed status when step has been confirmed */}
+                  {confirmedSteps.has(step.id) && (
+                    <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'flex-end' }}>
+                      <div style={{
+                        background: '#28a745',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '8px',
+                        padding: '8px 16px',
+                        fontWeight: 600,
+                        fontSize: '14px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                      }}>
+                        <span>✓</span>
+                        Date Confirmed
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             );
           }
+          
+          // Handle location picker step
+          if (step.type === "location") {
+            return (
+              <div key={key} style={{ 
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '0.5rem',
+                marginBottom: '0.5rem'
+              }}>
+                {/* AI Avatar - Separated */}
+                <div key={`${key}-avatar`} style={{ 
+                  flexShrink: 0, 
+                  marginTop: '0.25rem' 
+                }}>
+                  <div style={{
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: 'linear-gradient(135deg, var(--secondary-color), var(--secondary-darker-color))',
+                    boxShadow: '0 2px 8px rgba(126, 238, 249, 0.3)'
+                  }}>
+                    <div style={{
+                      width: '28px',
+                      height: '28px',
+                      borderRadius: '50%',
+                      background: '#000000',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      border: '1px solid rgba(255, 255, 255, 0.2)'
+                    }}>
+                      <Image 
+                        src="/images/ableai.png" 
+                        alt="Able AI" 
+                        width={24} 
+                        height={24} 
+                        style={{
+                          borderRadius: '50%',
+                          objectFit: 'cover'
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Location Picker - Separated */}
+                <div key={`${key}-location`} style={{ flex: 1 }}>
+                  <LocationPickerBubble
+                    value={formData[step.inputConfig?.name || '']}
+                    onChange={(value) => {
+                      if (step.inputConfig?.name) {
+                        handleInputChange(step.inputConfig.name, value);
+                      }
+                    }}
+                  />
+                  
+                  {/* Confirm button when location is selected */}
+                  {formData[step.inputConfig?.name || ''] && !confirmedSteps.has(step.id) && (
+                    <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'flex-end' }}>
+                      <button
+                        style={{
+                          background: isConfirming ? '#555' : 'var(--secondary-color)',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: '8px',
+                          padding: '8px 16px',
+                          fontWeight: 600,
+                          fontSize: '14px',
+                          cursor: isConfirming ? 'not-allowed' : 'pointer',
+                          transition: 'background-color 0.2s',
+                          opacity: isConfirming ? 0.7 : 1
+                        }}
+                        onClick={() => {
+                          if (step.inputConfig?.name && !isConfirming) {
+                            handlePickerConfirm(step.id, step.inputConfig.name);
+                          }
+                        }}
+                        onMouseOver={(e) => {
+                          if (!isConfirming) {
+                            e.currentTarget.style.background = 'var(--secondary-darker-color)';
+                          }
+                        }}
+                        onMouseOut={(e) => {
+                          if (!isConfirming) {
+                            e.currentTarget.style.background = 'var(--secondary-color)';
+                          }
+                        }}
+                        disabled={isConfirming}
+                      >
+                        {isConfirming ? 'Confirming...' : 'Confirm Location'}
+                      </button>
+                    </div>
+                  )}
+                  
+                  {/* Show confirmed status when step has been confirmed */}
+                  {confirmedSteps.has(step.id) && (
+                    <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'flex-end' }}>
+                      <div style={{
+                        background: '#28a745',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '8px',
+                        padding: '8px 16px',
+                        fontWeight: 600,
+                        fontSize: '14px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px'
+                      }}>
+                        <span>✓</span>
+                        Location Confirmed
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          }
+          
           return null;
         })}
         <div ref={endOfChatRef} />
@@ -1535,6 +2016,7 @@ Make the conversation feel natural and build on what they've already told you.`;
             key="submitting-msg"
             text="Processing..."
             senderType="bot"
+            role="BUYER"
           />
         )}
       </ChatBotLayout>

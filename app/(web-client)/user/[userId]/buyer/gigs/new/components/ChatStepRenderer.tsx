@@ -51,6 +51,7 @@ export function ChatStepRenderer({
         key={key}
         text={step.content as string}
         senderType="bot"
+        role="BUYER"
       />
     );
   }
@@ -62,6 +63,7 @@ export function ChatStepRenderer({
         text={typeof step.content === 'object' ? JSON.stringify(step.content) : String(step.content)}
         senderType="user"
         showAvatar={false}
+        role="BUYER"
       />
     );
   }
@@ -149,29 +151,36 @@ export function ChatStepRenderer({
   }
 
   if (isTyping && idx === idx) {
-    return <MessageBubble key={key + '-typing'} text={<LoadingIndicator size="small" message="Thinking..." />} senderType="bot" />;
+    return <MessageBubble key={key + '-typing'} text={<LoadingIndicator size="small" message="Thinking..." />} senderType="bot" role="BUYER" />;
   }
 
   if (step.type === "sanitized" && step.fieldName) {
     return (
-      <div key={key} style={{ background: '#f5f5f5', borderRadius: 8, padding: 16, margin: '16px 0', boxShadow: '0 2px 8px #0001' }}>
-        <div style={{ marginBottom: 8, color: '#0f766e', fontWeight: 600 }}>This is what you wanted?</div>
-        <div style={{ marginBottom: 12, fontStyle: 'italic' }}>{step.sanitizedValue}</div>
-        <div style={{ display: 'flex', gap: 12 }}>
-          <button
-            style={{ background: '#0f766e', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 16px', fontWeight: 600 }}
-            onClick={() => onSanitizedConfirm(step.fieldName!, step.sanitizedValue!)}
-          >
-            Confirm
-          </button>
-          <button
-            style={{ background: '#fff', color: '#0f766e', border: '1px solid #0f766e', borderRadius: 8, padding: '6px 16px', fontWeight: 600 }}
-            onClick={() => onSanitizedReformulate(step.fieldName!)}
-          >
-            Reformulate
-          </button>
-        </div>
-      </div>
+      <MessageBubble
+        key={key}
+        text={
+          <div style={{ background: '#f5f5f5', borderRadius: 8, padding: 16, margin: '16px 0', boxShadow: '0 2px 8px #0001' }}>
+            <div style={{ marginBottom: 8, color: '#0f766e', fontWeight: 600 }}>This is what you wanted?</div>
+            <div style={{ marginBottom: 12, fontStyle: 'italic' }}>{step.sanitizedValue}</div>
+            <div style={{ display: 'flex', gap: 12 }}>
+              <button
+                style={{ background: '#0f766e', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 16px', fontWeight: 600 }}
+                onClick={() => onSanitizedConfirm(step.fieldName!, step.sanitizedValue!)}
+              >
+                Confirm
+              </button>
+              <button
+                style={{ background: '#fff', color: '#0f766e', border: '1px solid #0f766e', borderRadius: 8, padding: '6px 16px', fontWeight: 600 }}
+                onClick={() => onSanitizedReformulate(step.fieldName!)}
+              >
+                Reformulate
+              </button>
+            </div>
+          </div>
+        }
+        senderType="bot"
+        role="BUYER"
+      />
     );
   }
 
