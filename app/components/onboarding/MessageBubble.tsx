@@ -7,7 +7,7 @@ interface MessageBubbleProps {
   senderType?: 'bot' | 'user';
   avatarSrc?: string;
   showAvatar?: boolean;
-  isNew?: boolean;
+  isNew?: boolean; // Track if this message is new for animation
   role?: 'BUYER' | 'GIG_WORKER';
 }
 

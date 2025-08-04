@@ -16,6 +16,23 @@
   }
 }
 
+
+/* Chat container fade-in animation */
+.container {
+  animation: fadeIn 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .finalSubmitButton {
   background-color: var(--primary-color);
   color: white;
@@ -26,6 +43,8 @@
   cursor: pointer;
   align-self: center;
   margin-top: 1.5rem;
+  transition: all 0.3s ease;
+  animation: pulse 2s infinite;
   transition: all 0.3s ease;
   animation: pulse 2s infinite;
 }
@@ -59,6 +78,7 @@
   align-items: center;
   justify-content: center;
   min-height: 100vh;
+  background-color: #161616;
   background-color: #161616;
   color: white;
   font-size: 1.2rem;

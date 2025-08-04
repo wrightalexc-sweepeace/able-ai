@@ -8,6 +8,8 @@ import ChatBotLayout from "@/app/components/onboarding/ChatBotLayout";
 import MessageBubble from "@/app/components/onboarding/MessageBubble";
 import InputBubble from "@/app/components/onboarding/InputBubble";
 import TextAreaBubble from "@/app/components/onboarding/TextAreaBubble";
+import InputBubble from "@/app/components/onboarding/InputBubble";
+import TextAreaBubble from "@/app/components/onboarding/TextAreaBubble";
 import CalendarPickerBubble from "@/app/components/onboarding/CalendarPickerBubble";
 import VideoRecorderBubble from "@/app/components/onboarding/VideoRecorderBubble";
 import LocationPickerBubble from '@/app/components/onboarding/LocationPickerBubble';
@@ -79,6 +81,11 @@ TypingIndicator.displayName = 'TypingIndicator';
 
 import pageStyles from "./OnboardWorkerPage.module.css";
 import { useAuth } from "@/context/AuthContext";
+import { useFirebase } from '@/context/FirebaseContext';
+import { geminiAIAgent } from '@/lib/firebase/ai';
+import { Schema } from '@firebase/ai';
+import { FormInputType } from "@/app/types/form";
+
 import { useFirebase } from '@/context/FirebaseContext';
 import { geminiAIAgent } from '@/lib/firebase/ai';
 import { Schema } from '@firebase/ai';
@@ -348,6 +355,8 @@ Be creative and natural in your responses. Don't repeat the same phrases or stru
 
 export default function OnboardWorkerPage() {
   const { user, loading: loadingAuth } = useAuth();
+  const { ai } = useFirebase();
+  const router = useRouter();
   const { ai } = useFirebase();
   const router = useRouter();
   const chatContainerRef = useRef<HTMLDivElement>(null);
@@ -1643,7 +1652,9 @@ Make the conversation feel natural and build on what they've already told you.`;
         return null;
       })}
       
+      
       <div ref={endOfChatRef} />
     </ChatBotLayout>
   );
+} 
 } 

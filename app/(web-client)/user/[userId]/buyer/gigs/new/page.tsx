@@ -15,6 +15,7 @@ import Loader from "@/app/components/shared/Loader";
 import pageStyles from "./page.module.css";
 import { useAuth } from "@/context/AuthContext";
 import { StepInputConfig, FormInputType } from "@/app/types/form";
+import { StepInputConfig, FormInputType } from "@/app/types/form";
 import { geminiAIAgent } from '@/lib/firebase/ai';
 import { useFirebase } from '@/context/FirebaseContext';
 import { Schema } from '@firebase/ai';
@@ -265,6 +266,7 @@ const gigSummarySchema = Schema.object({
     gigLocation: Schema.string(),
     gigDate: Schema.string(),
     gigTime: Schema.string(),
+    gigTime: Schema.string(),
     discountCode: Schema.string(),
     selectedWorker: Schema.string(),
   },
@@ -304,6 +306,10 @@ type ChatStep = {
   originalValue?: string | any; // Allow objects for coordinates
   fieldName?: string;
   isNew?: boolean; // Track if this step is new for animation purposes
+  sanitizedValue?: string | any; // Allow objects for coordinates
+  originalValue?: string | any; // Allow objects for coordinates
+  fieldName?: string;
+  isNew?: boolean; // Track if this step is new for animation purposes
 };
 
 // Define the onboarding steps statically, following the original order and messages
@@ -311,6 +317,7 @@ const staticOnboardingSteps: ChatStep[] = [
   {
     id: 1,
     type: "bot",
+    content: "Hi! I'm Able, your friendly AI assistant! 🎉 I'm here to help you create the perfect gig listing. Tell me what kind of work you need help with - whether it's bartending for a wedding, web development for your business, or anything else! What's your gig all about?",
     content: "Hi! I'm Able, your friendly AI assistant! 🎉 I'm here to help you create the perfect gig listing. Tell me what kind of work you need help with - whether it's bartending for a wedding, web development for your business, or anything else! What's your gig all about?",
   },
   {
@@ -431,6 +438,26 @@ const TypingIndicator: React.FC = () => (
       }}>●</span>
     </div>
     <style>{`
+      @keyframes slideIn {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      @keyframes typingBounce {
+        0%, 60%, 100% {
+          transform: translateY(0);
+          opacity: 0.4;
+        }
+        30% {
+          transform: translateY(-8px);
+          opacity: 1;
+        }
+      }
       @keyframes slideIn {
         from {
           opacity: 0;
@@ -1174,6 +1201,24 @@ Make the conversation feel natural and build on what they've already told you.`;
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
+    // Special handling for date fields to ensure only date part is stored
+    if (name === 'gigDate' && value) {
+      let processedValue = value;
+      
+      // If it's an ISO string with time, extract just the date part
+      if (typeof value === 'string' && value.includes('T')) {
+        processedValue = value.split('T')[0];
+      }
+      
+      // If it's a Date object, convert to date string
+      if (value instanceof Date) {
+        processedValue = value.toISOString().split('T')[0];
+      }
+      
+      setFormData((prev) => ({ ...prev, [name]: processedValue }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleBookWorker = (name: string, price: number) => {
@@ -1222,6 +1267,12 @@ Make the conversation feel natural and build on what they've already told you.`;
   useEffect(() => {
     if (endOfChatRef.current) {
       setTimeout(() => {
+        endOfChatRef.current?.scrollIntoView({ 
+          behavior: 'smooth',
+          block: 'end',
+          inline: 'nearest'
+        });
+      }, 100); // Small delay to ensure animations have started
         endOfChatRef.current?.scrollIntoView({ 
           behavior: 'smooth',
           block: 'end',
