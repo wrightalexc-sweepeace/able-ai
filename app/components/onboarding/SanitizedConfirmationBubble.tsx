@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 
 interface SanitizedConfirmationBubbleProps {
   fieldName: string;
@@ -19,7 +20,7 @@ const SanitizedConfirmationBubble: React.FC<SanitizedConfirmationBubbleProps> = 
   onReformulate,
   showReformulate = false,
   isProcessing: externalIsProcessing = false,
-  role = 'BUYER' // Default to buyer for safety
+  role = 'BUYER'
 }) => {
   const [internalIsProcessing, setInternalIsProcessing] = React.useState(false);
   const isProcessing = externalIsProcessing || internalIsProcessing;
@@ -42,180 +43,223 @@ const SanitizedConfirmationBubble: React.FC<SanitizedConfirmationBubbleProps> = 
     setInternalIsProcessing(true);
     onReformulate?.(fieldName);
   };
+
+  const formatSanitizedValue = (value: any): string => {
+    // Handle coordinate objects
+    if (value && typeof value === 'object' && 'lat' in value && 'lng' in value) {
+      const lat = value.lat;
+      const lng = value.lng;
+      const latStr = typeof lat === 'number' ? lat.toFixed(6) : String(lat);
+      const lngStr = typeof lng === 'number' ? lng.toFixed(6) : String(lng);
+      return `Lat: ${latStr}, Lng: ${lngStr}`;
+    } 
+    
+    // Handle string that might contain coordinates
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        if (parsed && typeof parsed === 'object' && 'lat' in parsed && 'lng' in parsed) {
+          const lat = parsed.lat;
+          const lng = parsed.lng;
+          const latStr = typeof lat === 'number' ? lat.toFixed(6) : String(lat);
+          const lngStr = typeof lng === 'number' ? lng.toFixed(6) : String(lng);
+          return `Lat: ${latStr}, Lng: ${lngStr}`;
+        }
+      } catch (e) {
+        // Not JSON, return as string
+      }
+      return value;
+    }
+    
+    // Handle other objects
+    if (typeof value === 'object') {
+      return JSON.stringify(value);
+    }
+    
+    // Handle other types
+    return String(value || '');
+  };
+
   return (
-    <div style={{ 
-      background: '#1a1a1a', 
-      borderRadius: 12, 
-      padding: 16, 
-      margin: '16px 0', 
-      boxShadow: `0 4px 20px ${primaryDarkerColorRgba}0.3), 0 0 0 1px ${primaryDarkerColorRgba}0.1)`, 
-      border: `2px solid ${primaryDarkerColor}`,
-      animation: 'slideInScalePrimary 0.6s ease-out',
-      opacity: 0,
-      animationFillMode: 'forwards',
-      transform: 'scale(0.95)',
-      transformOrigin: 'center',
-      position: 'relative'
-    }}>
-      <style>{`
-        @keyframes slideInScalePrimary {
-          0% {
-            opacity: 0;
-            transform: scale(0.95) translateY(20px);
-            box-shadow: 0 4px 20px ${primaryDarkerColorRgba}0.1), 0 0 0 1px ${primaryDarkerColorRgba}0.05);
-          }
-          50% {
-            opacity: 0.8;
-            transform: scale(1.02) translateY(-2px);
-            box-shadow: 0 8px 30px ${primaryDarkerColorRgba}0.4), 0 0 0 2px ${primaryDarkerColorRgba}0.2);
-          }
-          100% {
-            opacity: 1;
-            transform: scale(1) translateY(0);
-            box-shadow: 0 4px 20px ${primaryDarkerColorRgba}0.3), 0 0 0 1px ${primaryDarkerColorRgba}0.1);
-          }
-        }
-        
-        @keyframes primaryPulse {
-          0%, 100% {
-            box-shadow: 0 4px 20px ${primaryDarkerColorRgba}0.3), 0 0 0 1px ${primaryDarkerColorRgba}0.1);
-          }
-          50% {
-            box-shadow: 0 6px 25px ${primaryDarkerColorRgba}0.5), 0 0 0 2px ${primaryDarkerColorRgba}0.2);
-          }
-        }
-      `}</style>
+    <div>
+      {/* AI Avatar - Separated */}
       <div style={{ 
-        marginBottom: 8, 
-        color: '#ffffff', 
-        fontWeight: 600, 
-        fontSize: '14px'
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: '0.5rem',
+        marginBottom: '0.5rem'
       }}>
-        This is what you wanted?
+        <div style={{ flexShrink: 0, marginTop: '0.25rem' }}>
+          <div style={{
+            width: '32px',
+            height: '32px',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: `linear-gradient(135deg, ${primaryColor}, ${primaryDarkerColor})`,
+            boxShadow: `0 2px 8px ${primaryColorRgba}0.3)`
+          }}>
+            <div style={{
+              width: '28px',
+              height: '28px',
+              borderRadius: '50%',
+              background: '#000000',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              border: '1px solid rgba(255, 255, 255, 0.2)'
+            }}>
+              <Image 
+                src="/images/ableai.png" 
+                alt="Able AI" 
+                width={24} 
+                height={24} 
+                style={{
+                  borderRadius: '50%',
+                  objectFit: 'cover'
+                }}
+              />
+            </div>
+          </div>
+        </div>
       </div>
-             <div style={{ 
-         marginBottom: 16, 
-         fontStyle: 'italic',
-         color: '#e5e5e5', 
-         fontSize: '15px', 
-         lineHeight: '1.4' 
-       }}>
-         {(() => {
-           if (typeof sanitizedValue === 'object' && sanitizedValue !== null) {
-             // Handle coordinate objects
-             if ('lat' in sanitizedValue && 'lng' in sanitizedValue) {
-               return `Lat: ${(sanitizedValue as { lat: number; lng: number }).lat.toFixed(6)}, Lng: ${(sanitizedValue as { lat: number; lng: number }).lng.toFixed(6)}`;
-             }
-             return JSON.stringify(sanitizedValue);
-           }
-           
-           const valueStr = String(sanitizedValue || '');
-           
-           // Check if this is a video URL
-           if (typeof sanitizedValue === 'string' && sanitizedValue.startsWith('http') && 
-               (sanitizedValue.includes('.webm') || sanitizedValue.includes('.mp4') || sanitizedValue.includes('.mov'))) {
-             return (
-               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                 <span style={{ color: '#ffffff', fontWeight: 600 }}>Video uploaded ✓</span>
-                 <video 
-                   controls 
-                   style={{ 
-                     maxWidth: '100%', 
-                     maxHeight: '200px', 
-                     borderRadius: '8px',
-                     border: `2px solid ${primaryDarkerColor}`,
-                     boxShadow: `0 2px 10px ${primaryDarkerColorRgba}0.2)`
-                   }}
-                   preload="metadata"
-                 >
-                   <source src={sanitizedValue} type="video/webm" />
-                   <source src={sanitizedValue} type="video/mp4" />
-                   Your browser does not support the video tag.
-                 </video>
-               </div>
-             );
-           }
-           
-           return valueStr;
-         })()}
-       </div>
-      <div style={{ display: 'flex', gap: 12 }}>
-        <button
-          style={{ 
-            background: isProcessing ? '#555' : primaryColor, 
-            color: '#000', 
-            border: 'none', 
-            borderRadius: 8, 
-            padding: '8px 16px', 
-            fontWeight: 600, 
-            fontSize: '14px', 
-            cursor: isProcessing ? 'not-allowed' : 'pointer', 
-            transition: 'all 0.3s ease',
-            transform: 'scale(1)',
-            opacity: isProcessing ? 0.6 : 1,
-            boxShadow: isProcessing ? 'none' : `0 2px 8px ${primaryColorRgba}0.4)`,
-            textShadow: '0 0 5px rgba(0, 0, 0, 0.3)'
-          }}
-          onClick={handleConfirm}
-          disabled={isProcessing}
-          onMouseOver={(e) => {
-            if (!isProcessing) {
-              e.currentTarget.style.background = primaryDarkerColor;
-              e.currentTarget.style.transform = 'scale(1.05)';
-              e.currentTarget.style.boxShadow = `0 4px 12px ${primaryColorRgba}0.6)`;
+
+      {/* Content - Separated */}
+      <div style={{ 
+        background: '#1a1a1a', 
+        borderRadius: 12, 
+        padding: 16, 
+        margin: '16px 0', 
+        boxShadow: `0 4px 20px ${primaryDarkerColorRgba}0.3), 0 0 0 1px ${primaryDarkerColorRgba}0.1)`, 
+        border: `2px solid ${primaryColor}`,
+        animation: 'slideInScalePrimary 0.6s ease-out',
+        opacity: 0,
+        animationFillMode: 'forwards',
+        transform: 'scale(0.95)',
+        transformOrigin: 'center',
+        position: 'relative'
+      }}>
+        <style>{`
+          @keyframes slideInPrimary {
+            from {
+              opacity: 0;
+              transform: translateY(10px);
+              filter: drop-shadow(0 0 0 ${primaryColorRgba}0));
             }
-          }}
-          onMouseOut={(e) => {
-            if (!isProcessing) {
-              e.currentTarget.style.background = primaryColor;
-              e.currentTarget.style.transform = 'scale(1)';
-              e.currentTarget.style.boxShadow = `0 2px 8px ${primaryColorRgba}0.4)`;
+            to {
+              opacity: 1;
+              transform: translateY(0);
+              filter: drop-shadow(0 0 8px ${primaryColorRgba}0.3));
             }
-          }}
-        >
-          {isProcessing ? 'Processing...' : 'Confirm'}
-        </button>
-        {showReformulate && onReformulate && (
+          }
+          
+          @keyframes slideInScalePrimary {
+            0% {
+              opacity: 0;
+              transform: scale(0.95) translateY(20px);
+              box-shadow: 0 4px 20px ${primaryDarkerColorRgba}0.1), 0 0 0 1px ${primaryDarkerColorRgba}0.05);
+            }
+            50% {
+              opacity: 0.8;
+              transform: scale(1.02) translateY(-2px);
+              box-shadow: 0 8px 30px ${primaryDarkerColorRgba}0.4), 0 0 0 2px ${primaryDarkerColorRgba}0.2);
+            }
+            100% {
+              opacity: 1;
+              transform: scale(1) translateY(0);
+              box-shadow: 0 4px 20px ${primaryDarkerColorRgba}0.3), 0 0 0 1px ${primaryDarkerColorRgba}0.1);
+            }
+          }
+          
+          @keyframes primaryPulse {
+            0%, 100% {
+              box-shadow: 0 4px 20px ${primaryDarkerColorRgba}0.3), 0 0 0 1px ${primaryDarkerColorRgba}0.1);
+            }
+            50% {
+              box-shadow: 0 6px 25px ${primaryDarkerColorRgba}0.5), 0 0 0 2px ${primaryDarkerColorRgba}0.2);
+            }
+          }
+        `}</style>
+        <div style={{ 
+          marginBottom: 8, 
+          color: '#ffffff', 
+          fontWeight: 600, 
+          fontSize: '14px'
+        }}>
+          This is what you wanted?
+        </div>
+        <div style={{ 
+          marginBottom: 16, 
+          fontStyle: 'italic',
+          color: '#e5e5e5', 
+          fontSize: '15px', 
+          lineHeight: 1.4
+        }}>
+          {formatSanitizedValue(sanitizedValue)}
+        </div>
+        <div style={{ display: 'flex', gap: 12 }}>
           <button
             style={{ 
-              background: isProcessing ? '#555' : 'transparent', 
-              color: isProcessing ? '#999' : primaryColor, 
-              border: `2px solid ${primaryColor}`, 
+              background: primaryColor, 
+              color: '#fff', 
+              border: 'none', 
               borderRadius: 8, 
               padding: '8px 16px', 
               fontWeight: 600, 
               fontSize: '14px', 
               cursor: isProcessing ? 'not-allowed' : 'pointer', 
-              transition: 'all 0.3s ease',
-              transform: 'scale(1)',
-              opacity: isProcessing ? 0.6 : 1,
-              boxShadow: isProcessing ? 'none' : `0 2px 8px ${primaryColorRgba}0.3)`,
-              textShadow: isProcessing ? 'none' : `0 0 5px ${primaryColorRgba}0.4)`
+              transition: 'background-color 0.2s',
+              opacity: isProcessing ? 0.6 : 1
             }}
-            onClick={handleReformulate}
+            onClick={handleConfirm}
             disabled={isProcessing}
-            onMouseOver={(e) => { 
+            onMouseOver={(e) => {
               if (!isProcessing) {
-                e.currentTarget.style.background = primaryColor; 
-                e.currentTarget.style.color = '#000'; 
-                e.currentTarget.style.transform = 'scale(1.05)';
-                e.currentTarget.style.boxShadow = `0 4px 12px ${primaryColorRgba}0.5)`;
-                e.currentTarget.style.textShadow = '0 0 5px rgba(0, 0, 0, 0.3)';
+                e.currentTarget.style.background = primaryDarkerColor;
               }
             }}
-            onMouseOut={(e) => { 
+            onMouseOut={(e) => {
               if (!isProcessing) {
-                e.currentTarget.style.background = 'transparent'; 
-                e.currentTarget.style.color = primaryColor; 
-                e.currentTarget.style.transform = 'scale(1)';
-                e.currentTarget.style.boxShadow = `0 2px 8px ${primaryColorRgba}0.3)`;
-                e.currentTarget.style.textShadow = `0 0 5px ${primaryColorRgba}0.4)`;
+                e.currentTarget.style.background = primaryColor;
               }
             }}
           >
-            {isProcessing ? 'Processing...' : 'Reformulate'}
+            {isProcessing ? 'Processing...' : 'Confirm'}
           </button>
-        )}
+          {onReformulate && (
+            <button
+              style={{ 
+                background: 'transparent', 
+                color: primaryColor, 
+                border: `1px solid ${primaryColor}`, 
+                borderRadius: 8, 
+                padding: '8px 16px', 
+                fontWeight: 600, 
+                fontSize: '14px', 
+                cursor: isProcessing ? 'not-allowed' : 'pointer', 
+                transition: 'all 0.2s',
+                opacity: isProcessing ? 0.6 : 1
+              }}
+              onClick={handleReformulate}
+              disabled={isProcessing}
+              onMouseOver={(e) => { 
+                if (!isProcessing) {
+                  e.currentTarget.style.background = primaryColor; 
+                  e.currentTarget.style.color = '#fff'; 
+                }
+              }}
+              onMouseOut={(e) => { 
+                if (!isProcessing) {
+                  e.currentTarget.style.background = 'transparent'; 
+                  e.currentTarget.style.color = primaryColor; 
+                }
+              }}
+            >
+              Reformulate
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

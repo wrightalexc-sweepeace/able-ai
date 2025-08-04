@@ -26,7 +26,7 @@ export default async function RootLayout({
       <body>
         <ErrorBoundary>
           <ClientProviders>
-            <Debuggur />
+            {/* <Debuggur /> */}
             {children}
           </ClientProviders>
         </ErrorBoundary>

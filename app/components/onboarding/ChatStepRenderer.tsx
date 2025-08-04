@@ -135,6 +135,7 @@ export default function ChatStepRenderer({
         key={key}
         text={step.content as string}
         senderType="bot"
+        role="GIG_WORKER"
       />
     );
   }
@@ -147,6 +148,7 @@ export default function ChatStepRenderer({
         text={typeof step.content === 'object' ? JSON.stringify(step.content) : String(step.content)}
         senderType="user"
         showAvatar={false}
+        role="GIG_WORKER"
       />
     );
   }
@@ -275,7 +277,7 @@ export default function ChatStepRenderer({
 
   // Typing animation
   if (isTyping && idx === 0) {
-    return <MessageBubble key={key + '-typing'} text={<TypingIndicator />} senderType="bot" />;
+    return <MessageBubble key={key + '-typing'} text={<TypingIndicator />} senderType="bot" role="GIG_WORKER" />;
   }
 
   // Sanitized step
@@ -285,43 +287,57 @@ export default function ChatStepRenderer({
 
     if (isLocationCoords) {
       return (
-        <div key={key} style={{ background: '#f5f5f5', borderRadius: 8, padding: 16, margin: '16px 0' }}>
-          <div style={{ marginBottom: 8 }}>{step.sanitizedValue}</div>
-          {!isStepComplete && (
-            <button
-              style={{ background: '#0f766e', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 16px' }}
-              onClick={() => handleSanitizedConfirm(step.fieldName!, step.originalValue!)}
-            >
-              Confirm Location
-            </button>
-          )}
-        </div>
+        <MessageBubble
+          key={key}
+          text={
+            <div style={{ background: '#f5f5f5', borderRadius: 8, padding: 16, margin: '16px 0' }}>
+              <div style={{ marginBottom: 8 }}>{step.sanitizedValue}</div>
+              {!isStepComplete && (
+                <button
+                  style={{ background: '#0f766e', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 16px' }}
+                  onClick={() => handleSanitizedConfirm(step.fieldName!, step.originalValue!)}
+                >
+                  Confirm Location
+                </button>
+              )}
+            </div>
+          }
+          senderType="bot"
+          role="GIG_WORKER"
+        />
       );
     }
 
     return (
-      <div key={key} style={{ background: '#f5f5f5', borderRadius: 8, padding: 16, margin: '16px 0', boxShadow: '0 2px 8px #0001' }}>
-        <div style={{ marginBottom: 8, color: '#0f766e', fontWeight: 600 }}>This is what you wanted?</div>
-        <div style={{ marginBottom: 12, fontStyle: 'italic' }}>{step.sanitizedValue}</div>
-        {!isStepComplete && (
-          <div style={{ display: 'flex', gap: 12 }}>
-            <button
-              style={{ background: '#0f766e', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 16px', fontWeight: 600 }}
-              onClick={() => handleSanitizedConfirm(step.fieldName!, step.sanitizedValue!)}
-              disabled={isStepComplete}
-            >
-              Confirm
-            </button>
-            <button
-              style={{ background: '#fff', color: '#0f766e', border: '1px solid #0f766e', borderRadius: 8, padding: '6px 16px', fontWeight: 600 }}
-              onClick={() => handleSanitizedReformulate(step.fieldName!)}
-              disabled={isStepComplete}
-            >
-              Reformulate
-            </button>
+      <MessageBubble
+        key={key}
+        text={
+          <div style={{ background: '#f5f5f5', borderRadius: 8, padding: 16, margin: '16px 0', boxShadow: '0 2px 8px #0001' }}>
+            <div style={{ marginBottom: 8, color: '#0f766e', fontWeight: 600 }}>This is what you wanted?</div>
+            <div style={{ marginBottom: 12, fontStyle: 'italic' }}>{step.sanitizedValue}</div>
+            {!isStepComplete && (
+              <div style={{ display: 'flex', gap: 12 }}>
+                <button
+                  style={{ background: '#0f766e', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 16px', fontWeight: 600 }}
+                  onClick={() => handleSanitizedConfirm(step.fieldName!, step.sanitizedValue!)}
+                  disabled={isStepComplete}
+                >
+                  Confirm
+                </button>
+                <button
+                  style={{ background: '#fff', color: '#0f766e', border: '1px solid #0f766e', borderRadius: 8, padding: '6px 16px', fontWeight: 600 }}
+                  onClick={() => handleSanitizedReformulate(step.fieldName!)}
+                  disabled={isStepComplete}
+                >
+                  Reformulate
+                </button>
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        }
+        senderType="bot"
+        role="GIG_WORKER"
+      />
     );
   }
 
