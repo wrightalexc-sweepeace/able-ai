@@ -8,8 +8,6 @@ import ChatBotLayout from "@/app/components/onboarding/ChatBotLayout";
 import MessageBubble from "@/app/components/onboarding/MessageBubble";
 import InputBubble from "@/app/components/onboarding/InputBubble";
 import TextAreaBubble from "@/app/components/onboarding/TextAreaBubble";
-import InputBubble from "@/app/components/onboarding/InputBubble";
-import TextAreaBubble from "@/app/components/onboarding/TextAreaBubble";
 import CalendarPickerBubble from "@/app/components/onboarding/CalendarPickerBubble";
 import VideoRecorderBubble from "@/app/components/onboarding/VideoRecorderBubble";
 import LocationPickerBubble from '@/app/components/onboarding/LocationPickerBubble';
@@ -81,11 +79,6 @@ TypingIndicator.displayName = 'TypingIndicator';
 
 import pageStyles from "./OnboardWorkerPage.module.css";
 import { useAuth } from "@/context/AuthContext";
-import { useFirebase } from '@/context/FirebaseContext';
-import { geminiAIAgent } from '@/lib/firebase/ai';
-import { Schema } from '@firebase/ai';
-import { FormInputType } from "@/app/types/form";
-
 import { useFirebase } from '@/context/FirebaseContext';
 import { geminiAIAgent } from '@/lib/firebase/ai';
 import { Schema } from '@firebase/ai';
@@ -357,8 +350,6 @@ export default function OnboardWorkerPage() {
   const { user, loading: loadingAuth } = useAuth();
   const { ai } = useFirebase();
   const router = useRouter();
-  const { ai } = useFirebase();
-  const router = useRouter();
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const endOfChatRef = useRef<HTMLDivElement>(null);
   
@@ -387,6 +378,7 @@ export default function OnboardWorkerPage() {
   const [error, setError] = useState<string | null>(null);
   const [isConfirming, setIsConfirming] = useState(false);
   const [confirmedSteps, setConfirmedSteps] = useState<Set<number>>(new Set());
+  const [clickedSanitizedButtons, setClickedSanitizedButtons] = useState<Set<string>>(new Set());
 
   // Helper to get next required field not in formData - matching gig creation
   const getNextRequiredField = useCallback((formData: FormData) => {
@@ -589,6 +581,9 @@ Make the conversation feel natural and build on what they've already told you.`;
       const currentStep = chatSteps.find(s => s.id === stepId);
       const inputType = currentStep?.inputConfig?.type || 'text';
       
+      // Check if this is a reformulation
+      const isReformulation = reformulateField === inputName;
+      
       // Mark the current step as complete to disable the input
       setChatSteps((prev) => prev.map((step) =>
         step.id === stepId ? { ...step, isComplete: true } : step
@@ -606,71 +601,129 @@ Make the conversation feel natural and build on what they've already told you.`;
 
       const aiResult = await simpleAICheck(inputName, valueToUse, inputType);
 
-      setTimeout(() => {
-        setChatSteps((prev) => {
-          // Remove typing indicator
-          const filtered = prev.filter(s => s.type !== 'typing');
-          
-          if (!aiResult.sufficient) {
-            // Add clarification message and repeat input
-            return [
-              ...filtered,
-              {
-                id: Date.now() + 2,
-                type: "bot",
-                content: aiResult.clarificationPrompt!,
-                isNew: true,
-              },
-              {
-                id: Date.now() + 3,
-                type: "input",
-                inputConfig: currentStep?.inputConfig,
-                isComplete: false,
-                isNew: true,
-              },
-            ];
-          } else {
-            // Show sanitized confirmation
-            return [
-              ...filtered,
-              {
-                id: Date.now() + 2,
-                type: "sanitized",
-                fieldName: inputName,
-                sanitizedValue: aiResult.sanitized!,
-                originalValue: valueToUse,
-                isNew: true,
-              },
-            ];
+      // Remove typing indicator and mark current step as complete
+      setChatSteps((prev) => {
+        const filtered = prev.filter(s => s.type !== 'typing');
+        
+        return filtered.map((step) =>
+          step.id === stepId ? { ...step, isComplete: true } : step
+        );
+      });
+      
+      if (!aiResult.sufficient) {
+        // Add clarification message only - keep the original input visible
+        setChatSteps((prev) => [
+          ...prev,
+          { 
+            id: Date.now() + 2, 
+            type: 'bot', 
+            content: aiResult.clarificationPrompt!,
+            isNew: true
           }
-        });
-      }, 700);
+        ]);
+        return;
+      }
+      
+      // If this is a reformulation, update the form data and proceed to next field
+      // instead of showing sanitized confirmation again
+      if (isReformulation) {
+        // Update form data with the new value
+        setFormData(prev => ({ ...prev, [inputName]: aiResult.sanitized }));
+        
+        // Reset reformulating state and clear reformulateField
+        setIsReformulating(false);
+        setReformulateField(null);
+        
+        // Find next required field
+        const updatedFormData = { ...formData, [inputName]: aiResult.sanitized };
+        const nextField = getNextRequiredField(updatedFormData);
+        
+        if (nextField) {
+          // Generate context-aware prompt for next field
+          const aboutInfo = updatedFormData.about || '';
+          const contextAwarePrompt = await generateContextAwarePrompt(nextField.name, aboutInfo, ai);
+          
+          const newInputConfig = {
+            type: nextField.type as FormInputType,
+            name: nextField.name,
+            placeholder: nextField.placeholder,
+            ...(nextField.rows && { rows: nextField.rows }),
+          };
+          
+          // Determine the step type based on the field
+          let stepType: "input" | "calendar" | "location" | "video" = "input";
+          if (nextField.name === "availability") {
+            stepType = "calendar";
+          } else if (nextField.name === "location") {
+            stepType = "location";
+          } else if (nextField.name === "videoIntro") {
+            stepType = "video";
+          }
+          
+          setChatSteps((prev) => [
+            ...prev,
+            {
+              id: Date.now() + 3,
+              type: "bot",
+              content: contextAwarePrompt,
+              isNew: true,
+            },
+            {
+              id: Date.now() + 4,
+              type: stepType,
+              inputConfig: newInputConfig,
+              isComplete: false,
+              isNew: true,
+            },
+          ]);
+        } else {
+          // All fields collected, show summary
+          setChatSteps((prev) => [
+            ...prev,
+            {
+              id: Date.now() + 5,
+              type: "bot",
+              content: `Perfect! Here's a summary of your worker profile:\n${JSON.stringify(updatedFormData, null, 2)}`,
+              isNew: true,
+            },
+          ]);
+        }
+      } else {
+        // Show sanitized confirmation step for regular inputs (not reformulations)
+        setChatSteps((prev) => [
+          ...prev,
+          { 
+            id: Date.now() + 3, 
+            type: "sanitized",
+            fieldName: inputName,
+            sanitizedValue: aiResult.sanitized!,
+            originalValue: valueToUse,
+            isNew: true,
+          },
+        ]);
+      }
     } catch (error) {
       console.error("Error processing input:", error);
       setError('Failed to process input. Please try again.');
       
-      // Fallback: proceed without AI validation
-      setTimeout(() => {
-        setChatSteps((prev) => {
-          const filtered = prev.filter(s => s.type !== 'typing');
-          return [
-            ...filtered,
-            {
-              id: Date.now() + 2,
-              type: "user",
-              content: String(valueToUse),
-              isNew: true,
-            },
-          ];
-        });
-      }, 700);
-      await handleSanitizedConfirm(inputName, valueToUse);
+      // Reset reformulating state if this was a reformulation
+      if (reformulateField === inputName) {
+        setIsReformulating(false);
+        setReformulateField(null);
+      }
     }
-  }, [formData, chatSteps, simpleAICheck]);
+  }, [formData, chatSteps, simpleAICheck, reformulateField, getNextRequiredField, ai]);
 
   // Handle sanitized confirmation with better error handling
   const handleSanitizedConfirm = useCallback(async (fieldName: string, sanitized: string | unknown) => {
     try {
+      // Reset reformulating state
+      setIsReformulating(false);
+      setReformulateField(null);
+      
+      // Track clicked button
+      setClickedSanitizedButtons(prev => new Set([...prev, `${fieldName}-confirm`]));
+      
       // Update formData first
       const updatedFormData = { ...formData, [fieldName]: sanitized };
       setFormData(updatedFormData);
@@ -698,9 +751,9 @@ Make the conversation feel natural and build on what they've already told you.`;
         ]);
         
         // Generate AI prompt
-        const contextAwarePrompt = await generateContextAwarePrompt(nextField.name, aboutInfo, ai);
-        
-        setTimeout(() => {
+        setTimeout(async () => {
+          const contextAwarePrompt = await generateContextAwarePrompt(nextField.name, aboutInfo, ai);
+          
           setChatSteps((prev) => {
             // Remove typing indicator and add bot message and input
             const filtered = prev.filter(s => s.type !== 'typing');
@@ -766,6 +819,7 @@ Make the conversation feel natural and build on what they've already told you.`;
   const handleSanitizedReformulate = (fieldName: string) => {
     if (isReformulating) return; // Prevent multiple clicks
     setReformulateField(fieldName);
+    setClickedSanitizedButtons(prev => new Set([...prev, `${fieldName}-reformulate`]));
   };
 
   const handlePickerConfirm = useCallback(async (stepId: number, inputName: string) => {
@@ -1000,7 +1054,6 @@ Make the conversation feel natural and build on what they've already told you.`;
           
           if (!fieldConfig) {
             console.error('Field config not found for:', reformulateField);
-            setIsReformulating(false);
             return filtered;
           }
 
@@ -1028,13 +1081,9 @@ Make the conversation feel natural and build on what they've already told you.`;
             },
           ];
         });
-        // Reset reformulating state after completion
-        setIsReformulating(false);
       }, 700);
-
-      setReformulateField(null);
     }
-  }, [reformulateField, formData, ai]);
+  }, [reformulateField]);
 
   if (loadingAuth) {
     return (
@@ -1162,6 +1211,12 @@ Make the conversation feel natural and build on what they've already told you.`;
             return String(sanitizedValue || '');
           })();
           
+          // Check button states
+          const confirmClicked = clickedSanitizedButtons.has(`${step.fieldName}-confirm`);
+          const reformulateClicked = clickedSanitizedButtons.has(`${step.fieldName}-reformulate`);
+          const isReformulatingThisField = reformulateField === step.fieldName;
+          const isCompleted = step.isComplete || confirmClicked || reformulateClicked;
+          
           return (
             <MessageBubble
               key={key}
@@ -1175,42 +1230,62 @@ Make the conversation feel natural and build on what they've already told you.`;
                   )}
                   <div style={{ display: 'flex', gap: 12 }}>
                     <button
-                      style={{ background: 'var(--primary-color)', color: '#fff', border: 'none', borderRadius: 8, padding: '8px 16px', fontWeight: 600, fontSize: '14px', cursor: 'pointer', transition: 'background-color 0.2s' }}
-                      onClick={() => handleSanitizedConfirm(step.fieldName!, step.sanitizedValue!)}
-                      onMouseOver={(e) => e.currentTarget.style.background = 'var(--primary-darker-color)'}
-                      onMouseOut={(e) => e.currentTarget.style.background = 'var(--primary-color)'}
+                      style={{ 
+                        background: isCompleted ? '#555' : 'var(--primary-color)', 
+                        color: '#fff', 
+                        border: 'none', 
+                        borderRadius: 8, 
+                        padding: '8px 16px', 
+                        fontWeight: 600, 
+                        fontSize: '14px', 
+                        cursor: isCompleted ? 'not-allowed' : 'pointer', 
+                        transition: 'background-color 0.2s',
+                        opacity: isCompleted ? 0.7 : 1
+                      }}
+                      onClick={isCompleted ? undefined : () => handleSanitizedConfirm(step.fieldName!, step.sanitizedValue!)}
+                      disabled={isCompleted}
+                      onMouseOver={(e) => {
+                        if (!isCompleted) {
+                          e.currentTarget.style.background = 'var(--primary-darker-color)';
+                        }
+                      }}
+                      onMouseOut={(e) => {
+                        if (!isCompleted) {
+                          e.currentTarget.style.background = isCompleted ? '#555' : 'var(--primary-color)';
+                        }
+                      }}
                     >
-                      Confirm
+                      {confirmClicked ? 'Confirmed' : 'Confirm'}
                     </button>
                     <button
                       style={{ 
-                        background: isReformulating ? '#555' : 'transparent', 
-                        color: isReformulating ? '#999' : 'var(--primary-color)', 
+                        background: isCompleted ? '#555' : 'transparent', 
+                        color: isCompleted ? '#999' : 'var(--primary-color)', 
                         border: '1px solid var(--primary-color)', 
                         borderRadius: 8, 
                         padding: '8px 16px', 
                         fontWeight: 600, 
                         fontSize: '14px', 
-                        cursor: isReformulating ? 'not-allowed' : 'pointer', 
+                        cursor: isCompleted ? 'not-allowed' : 'pointer', 
                         transition: 'all 0.2s',
-                        opacity: isReformulating ? 0.7 : 1
+                        opacity: isCompleted ? 0.7 : 1
                       }}
-                      onClick={() => handleSanitizedReformulate(step.fieldName!)}
-                      disabled={isReformulating}
+                      onClick={isCompleted ? undefined : () => handleSanitizedReformulate(step.fieldName!)}
+                      disabled={isCompleted}
                       onMouseOver={(e) => { 
-                        if (!isReformulating) {
+                        if (!isCompleted) {
                           e.currentTarget.style.background = 'var(--primary-color)'; 
                           e.currentTarget.style.color = '#fff'; 
                         }
                       }}
                       onMouseOut={(e) => { 
-                        if (!isReformulating) {
+                        if (!isCompleted) {
                           e.currentTarget.style.background = 'transparent'; 
                           e.currentTarget.style.color = 'var(--primary-color)'; 
                         }
                       }}
                     >
-                      {isReformulating ? 'Reformulating...' : 'Reformulate'}
+                      {reformulateClicked ? 'Reformulated' : (isReformulatingThisField ? 'Reformulating...' : 'Reformulate')}
                     </button>
                   </div>
                 </div>
@@ -1656,5 +1731,4 @@ Make the conversation feel natural and build on what they've already told you.`;
       <div ref={endOfChatRef} />
     </ChatBotLayout>
   );
-} 
 } 
