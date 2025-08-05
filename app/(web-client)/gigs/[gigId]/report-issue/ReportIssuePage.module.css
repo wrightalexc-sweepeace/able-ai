@@ -4,6 +4,8 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  max-width: 450px;
+  margin: auto;
 }
 .screenHeader {
   background-color: #1F1F1F;
