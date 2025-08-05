@@ -4,13 +4,14 @@ import styles from './GigDetails.module.css';
 import { useRouter } from 'next/navigation';
 import GigActionButton from '../shared/GigActionButton';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import type GigDetails from '@/app/types/GigDetailsTypes';
 import Image from 'next/image';
 import { useAuth } from '@/context/AuthContext';
 import { getLastRoleUsed } from '@/lib/last-role-used';
 import { updateGigOfferStatus } from '@/actions/gigs/update-gig-offer-status';
 import { holdGigFunds } from '@/app/actions/stripe/create-hold-gig-Funds';
+import { toast } from 'sonner';
 
 
 const formatGigDate = (isoDate: string) => new Date(isoDate).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
@@ -71,6 +72,7 @@ const GigDetailsComponent = ({ userId, role, gig, setGig }: GigDetailsProps) => 
 	const [isActionLoading, setIsActionLoading] = useState(false);
 	const { user } = useAuth();
 	const lastRoleUsed = getLastRoleUsed() as string;
+	const [isWaitingHoldPayment, setIsWaitingHoldPayment] = useState(false);
 
 	const gigDuration = calculateDuration(gig.startTime, gig.endTime);
 
@@ -126,14 +128,19 @@ const GigDetailsComponent = ({ userId, role, gig, setGig }: GigDetailsProps) => 
 				}
 
 				if (gig.statusInternal === 'PENDING_WORKER_ACCEPTANCE' && lastRoleUsed === 'BUYER') {
-					await holdGigFunds({
-						gigId: '0c21281b-520b-4cc6-92f3-3c976a67a2b5',
-						// gigId: gig.id,
+					setIsWaitingHoldPayment(true);
+
+					const resp = await holdGigFunds({
+						gigId: gig.id,
 						firebaseUid: userId,
-						serviceAmountInCents: gig.estimatedEarnings,
+						serviceAmountInCents: gig.estimatedEarnings * 100,
 						currency: 'usd'
 					});
+
+					if (resp.error) throw new Error('Error trying to hold payment');
+
 					setGig({ ...gig, status: 'PENDING', statusInternal: 'PAYMENT_HELD_PENDING_ACCEPTANCE' });
+					toast.success('successful payment hold');
 				}
 			}
 			else if (action === 'start' && gig) {
@@ -164,10 +171,13 @@ const GigDetailsComponent = ({ userId, role, gig, setGig }: GigDetailsProps) => 
 		} catch (err: unknown) {
 			if (err instanceof Error) {
 				console.error(err.message || `Failed to ${action} gig.`);
+				if (action === 'accept' && gig.statusInternal === 'PENDING_WORKER_ACCEPTANCE' && lastRoleUsed === 'BUYER')
+					toast.error('Error in payment hold');
 			} else {
 				console.error(`Unknown error performing action ${action} on gig:`, err);
 			}
 		} finally {
+			setIsWaitingHoldPayment(false);
 			setIsActionLoading(false);
 		}
 	};
@@ -273,9 +283,9 @@ const GigDetailsComponent = ({ userId, role, gig, setGig }: GigDetailsProps) => 
 			{/* Primary Actions Section - Adapted to new structure */}
 			<section className={styles.actionSection}>
 				<GigActionButton
-					label={getButtonLabel('accept')}
+					label={!isWaitingHoldPayment ? getButtonLabel('accept') : 'processing...'}
 					handleGigAction={() => handleGigAction('accept')}
-					isActive={gig.status === 'PENDING'}
+					isActive={!isWaitingHoldPayment && gig.status === 'PENDING'}
 					isDisabled={gig.status !== 'PENDING'}
 				/>
 
