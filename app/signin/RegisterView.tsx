@@ -57,7 +57,7 @@ const RegisterView: React.FC<RegisterViewProps> = ({ onToggleRegister, onError }
         const lengthIsCorrect = password.trim().length >= 10;
         if (!lengthIsCorrect) return { isValid: false, error: 'Password must be at least 10 characters long.'}
         const isCommonPass = await isPasswordCommon(password.trim());
-        if (!isCommonPass) return { isValid: false, error: 'Password is too common. Please choose a more secure password.'}
+        if (isCommonPass) return { isValid: false, error: 'Password is too common. Please choose a more secure password.'}
         return { isValid: true, error: null}
     }
 
