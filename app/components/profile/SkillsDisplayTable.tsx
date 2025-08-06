@@ -1,20 +1,14 @@
 import React from 'react';
 import PillBadge from '../shared/PillBadge';
 import styles from './SkillsDisplayTable.module.css';
-
-interface SkillItem {
-  name: string;
-  ableGigs?: number | string;
-  experience?: string;
-  eph?: number | string;
-}
+import { Skill } from '@/app/types/workerProfileTypes';
 
 interface SkillsDisplayTableProps {
-  skills: SkillItem[];
+  skills: Skill[];
   title?: string;
   isSelfView?: boolean;
   handleAddSkill?: () => void;
-  handleSkillDetails: (name: string) => void; // Optional handler for skill details 
+  handleSkillDetails: (id: string) => void; // Optional handler for skill details 
 }
 
 const SkillsDisplayTable: React.FC<SkillsDisplayTableProps> = ({
@@ -24,11 +18,10 @@ const SkillsDisplayTable: React.FC<SkillsDisplayTableProps> = ({
   handleSkillDetails,
 }) => {
   const hasAbleGigs = skills.length > 0 && skills[0].ableGigs !== undefined;
-  const hasExperience = skills.length > 0 && skills[0].experience !== undefined;
-  const hasEph = skills.length > 0 && skills[0].eph !== undefined;
+  const hasExperience = skills.length > 0 && skills[0].experienceMonths !== undefined;
+  const hasEph = skills.length > 0 && skills[0].agreedRate !== undefined;
 
   
-
   return (
     <div className={styles.skillsCard}>
       <table className={styles.skillsTable}>
@@ -44,11 +37,11 @@ const SkillsDisplayTable: React.FC<SkillsDisplayTableProps> = ({
           {skills.map((skill, index) => (
               <tr key={index}>
                 <td>
-                  <PillBadge className={styles.skill} text={skill.name} variant="dark" handleSkillDetails={handleSkillDetails}/>
+                  <PillBadge className={styles.skill} id={skill.id} text={skill.name} variant="dark" handleSkillDetails={handleSkillDetails}/>
                 </td>
                 {hasAbleGigs && <td>{skill.ableGigs}</td>}
-                {hasExperience && <td>{skill.experience}</td>}
-                {hasEph && <td>£{skill.eph}</td>}
+                {hasExperience && <td>{skill.experienceMonths / 12}</td>}
+                {hasEph && <td>£{skill.agreedRate}</td>}
               </tr>
           ))}
           <tr>
