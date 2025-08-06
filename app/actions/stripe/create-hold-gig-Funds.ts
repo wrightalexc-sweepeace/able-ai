@@ -39,7 +39,7 @@ async function holdGigAmount(params: HoldGigAmountParams) {
     customer: buyerStripeCustomerId,
     payment_method: customerPaymentMethodId,
     on_behalf_of: destinationAccountId,
-    application_fee_amount: serviceAmountInCents * 0.065,
+    application_fee_amount: Math.round(serviceAmountInCents * 0.065),
     payment_method_options: {
       card: {
         capture_method: 'manual',
@@ -80,7 +80,7 @@ async function holdGigAmount(params: HoldGigAmountParams) {
       status: 'PENDING',
     });
 
-  return paymentIntent;
+  return paymentIntent.object;
 }
 
 export async function holdGigFunds(params: HoldGigFundsParams) {
@@ -105,6 +105,7 @@ export async function holdGigFunds(params: HoldGigFundsParams) {
 
     const { receiverAccountId, gig } = await getPaymentAccountDetailsForGig(gigId);
 
+    console.log({receiverAccountId, gig,buyerStripeCustomerId })
     const paymentIntent = await holdGigAmount({
       buyerStripeCustomerId,
       destinationAccountId: receiverAccountId as string,

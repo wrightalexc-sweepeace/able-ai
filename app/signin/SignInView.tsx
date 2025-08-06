@@ -43,9 +43,9 @@ const SignInView: React.FC<SignInViewProps> = ({ onToggleRegister, onError }) =>
         onError(
           <>
             {response.error || "Email or password is incorrect."}
-            <a href="/reset-password" className={styles.errorLink}>
+            {/* <a href="/reset-password" className={styles.errorLink}>
               Reset password?
-            </a>
+            </a> */}
           </>
         );
       } else {
@@ -62,10 +62,11 @@ const SignInView: React.FC<SignInViewProps> = ({ onToggleRegister, onError }) =>
       }
       onError(
         <>
-          {err instanceof Error ? err.message : "An unexpected error occurred."}
-          <a href="/reset-password" className={styles.errorLink}>
+          {/* {err instanceof Error ? err.message : "An unexpected error occurred."} */}
+          {/* <a href="/reset-password" className={styles.errorLink}>
             Reset password?
-          </a>
+          </a> */}
+          Invalid email or password. Please try again.
         </>
       );
     } finally {

@@ -1,3 +1,4 @@
+/* eslint-disable max-lines-per-function */
 "use client";
 
 import React, { useState, useRef, useEffect, useCallback } from "react";
@@ -20,6 +21,7 @@ type ChatMessage = {
   content: string;
   timestamp: Date;
   isNew?: boolean;
+  avatar?: string; // Optional avatar for the sender
 };
 
 type ChatParticipant = {
@@ -39,13 +41,15 @@ export default function WorkerChatPage() {
   const [participants] = useState<ChatParticipant[]>([
     {
       id: "alex-123",
-      name: "Alex",
-      role: "WORKER"
+      name: "Benji",
+      role: "WORKER",
+      avatar: "/images/benji.jpeg", // Placeholder image
     },
     {
       id: "maria-456", 
       name: "Maria",
-      role: "BUYER"
+      role: "BUYER",
+      avatar: "/images/jessica.jpeg", // Placeholder image
     }
   ]);
 
@@ -54,9 +58,10 @@ export default function WorkerChatPage() {
     {
       id: "1",
       senderId: "maria-456",
+      avatar: "/images/jessica.jpeg", // Placeholder image
       senderName: "Maria",
       senderRole: "BUYER",
-      content: "Hi Alex! I saw your profile and I'm interested in hiring you for a photography gig this weekend. Are you available?",
+      content: "Hi Benji, I saw your profile and I'm interested in hiring you for a photography gig this weekend. Are you available?",
       timestamp: new Date(Date.now() - 600000), // 10 minutes ago
     },
     {
@@ -161,36 +166,9 @@ export default function WorkerChatPage() {
           className={pageStyles.backButton}
           aria-label="Go back"
         >
-          <ArrowLeft size={20} />
+          <ArrowLeft className={pageStyles.backIcon} />
         </button>
-        <div className={pageStyles.headerContent}>
-          <div className={pageStyles.participantInfo}>
-            <div className={pageStyles.avatar}>
-              {otherParticipant.avatar ? (
-                <Image 
-                  src={otherParticipant.avatar} 
-                  alt={otherParticipant.name}
-                  width={40}
-                  height={40}
-                  className={pageStyles.avatarImage}
-                />
-              ) : (
-                <div className={pageStyles.avatarPlaceholder}>
-                  {otherParticipant.name.charAt(0)}
-                </div>
-              )}
-            </div>
-            <div className={pageStyles.participantDetails}>
-              <h2 className={pageStyles.participantName}>{otherParticipant.name}</h2>
-              <div className={pageStyles.participantRoleContainer}>
-                {getRoleIcon(otherParticipant.role)}
-                <p className={pageStyles.participantRole}>
-                  {otherParticipant.role === "BUYER" ? "Buyer" : "Worker"}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
+        <h2 className={pageStyles.participantNames}>Chat between {currentUser.name} and {otherParticipant.name}</h2>
       </header>
 
       {/* Chat Messages */}
@@ -207,14 +185,23 @@ export default function WorkerChatPage() {
                 isCurrentUser ? pageStyles.messageUser : pageStyles.messageOther
               }`}
             >
-              {/* Only show avatar for messages from other people */}
-              {!isCurrentUser && (
-                <div className={pageStyles.avatar}>
-                  <div className={pageStyles.avatarPlaceholder}>
-                    {participant?.name.charAt(0).toUpperCase() || "U"}
+              <div className={`${pageStyles.avatar} ${isCurrentUser ? pageStyles.currentUserAvatar : ''}`}>
+                {/* Display participant avatar or placeholder to the right for the current user */}
+                <div className={pageStyles.avatarPlaceholder}>
+                  {participant?.avatar ? (
+                    <Image
+                        src={participant.avatar} 
+                        alt={`${participant.name}'s avatar`} 
+                        width={40} 
+                        height={40} 
+                        className={pageStyles.avatarImage}
+                      />
+                    ) : (
+                      participant?.name.charAt(0).toUpperCase()
+                    )}
                   </div>
                 </div>
-              )}
+            
               
               <div className={pageStyles.messageContent}>
                 <div className={`${pageStyles.messageBubble} ${
@@ -260,13 +247,7 @@ export default function WorkerChatPage() {
       {/* Chat Input */}
       <div className={pageStyles.chatInput}>
         <div className={pageStyles.inputWrapper}>
-          <div className={pageStyles.avatar}>
-            <div className={pageStyles.avatarPlaceholder}>
-              {currentUser.name.charAt(0).toUpperCase()}
-            </div>
-          </div>
-          <input
-            type="text"
+          <textarea
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
             onKeyPress={(e) => {
