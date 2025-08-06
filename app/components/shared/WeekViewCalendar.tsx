@@ -1,0 +1,238 @@
+import React from 'react';
+import moment from 'moment';
+import styles from './WeekViewCalendar.module.css';
+
+interface Event {
+  id: string;
+  title: string;
+  start: Date;
+  end: Date;
+  resource?: any;
+}
+
+interface WeekViewCalendarProps {
+  events: Event[];
+  currentDate: Date;
+  onEventClick?: (event: Event) => void;
+  onDateClick?: (date: Date) => void;
+}
+
+const WeekViewCalendar: React.FC<WeekViewCalendarProps> = ({
+  events,
+  currentDate,
+  onEventClick,
+  onDateClick
+}) => {
+  // Get the start of the week (Monday)
+  const startOfWeek = moment(currentDate).startOf('week');
+  
+  // Generate array of 7 days
+  const weekDays = Array.from({ length: 7 }, (_, i) => 
+    moment(startOfWeek).add(i, 'days').toDate()
+  );
+
+  // Generate array of 24 hours
+  const hours = Array.from({ length: 24 }, (_, i) => i);
+
+  // Get events for the current week
+  const weekEvents = events.filter(event => {
+    const eventStart = moment(event.start);
+    const eventEnd = moment(event.end);
+    const weekStart = moment(startOfWeek);
+    const weekEnd = moment(startOfWeek).endOf('week');
+    
+    return eventStart.isBefore(weekEnd) && eventEnd.isAfter(weekStart);
+  });
+
+  const handleDateClick = (date: Date) => {
+    if (onDateClick) {
+      onDateClick(date);
+    }
+  };
+
+  const handleEventClick = (event: Event) => {
+    if (onEventClick) {
+      onEventClick(event);
+    }
+  };
+
+  const getEventsForTimeSlot = (day: Date, hour: number) => {
+    return weekEvents.filter(event => {
+      const eventStart = moment(event.start);
+      const eventEnd = moment(event.end);
+      const slotStart = moment(day).hour(hour).minute(0);
+      const slotEnd = moment(day).hour(hour).minute(59);
+      
+      return eventStart.isBefore(slotEnd) && eventEnd.isAfter(slotStart);
+    });
+  };
+
+  const getEventDisplayInfo = (event: Event, day: Date, hour: number) => {
+    const eventStart = moment(event.start);
+    const eventEnd = moment(event.end);
+    const slotStart = moment(day).hour(hour).minute(0);
+    const slotEnd = moment(day).hour(hour).minute(59);
+    
+    // Check if this event overlaps with this time slot at all
+    const hasOverlap = eventStart.isBefore(slotEnd) && eventEnd.isAfter(slotStart);
+    
+    if (!hasOverlap) {
+      return { shouldShow: false, isStart: false, isEnd: false, isContinue: false };
+    }
+    
+    // Check if this event starts in this time slot
+    const isEventStart = eventStart.isSameOrAfter(slotStart) && eventStart.isBefore(slotEnd);
+    
+    // Check if this event ends in this time slot
+    const isEventEnd = eventEnd.isAfter(slotStart) && eventEnd.isSameOrBefore(slotEnd);
+    
+    // Check if this event continues through this time slot (starts before and ends after)
+    const isEventContinue = eventStart.isBefore(slotStart) && eventEnd.isAfter(slotEnd);
+    
+    // Calculate the top position for events that start within this hour
+    let topPosition = 0;
+    if (isEventStart) {
+      const minutesFromStart = eventStart.diff(slotStart, 'minutes');
+      topPosition = (minutesFromStart / 60) * 100; // Convert to percentage
+    }
+    
+    // Calculate the height for events that end within this hour
+    let height = 100;
+    if (isEventEnd) {
+      const minutesFromStart = eventEnd.diff(slotStart, 'minutes');
+      height = (minutesFromStart / 60) * 100; // Convert to percentage
+    }
+    
+    return {
+      shouldShow: true,
+      isStart: isEventStart,
+      isEnd: isEventEnd,
+      isContinue: isEventContinue,
+      topPosition,
+      height
+    };
+  };
+
+  const getEventSpanInfo = (event: Event, day: Date) => {
+    const eventStart = moment(event.start);
+    const eventEnd = moment(event.end);
+    const dayStart = moment(day).startOf('day');
+    
+    // Calculate which hours this event spans
+    const startHour = eventStart.hour();
+    const endHour = eventEnd.hour();
+    
+    // Calculate the start position within the first hour
+    const startMinutes = eventStart.minutes();
+    const startPosition = (startMinutes / 60) * 100;
+    
+    // Calculate the end position within the last hour
+    const endMinutes = eventEnd.minutes();
+    const endPosition = (endMinutes / 60) * 100;
+    
+    return {
+      startHour,
+      endHour,
+      startPosition,
+      endPosition,
+      totalHours: endHour - startHour + 1
+    };
+  };
+
+  return (
+    <div className={styles.weekViewContainer}>
+      {/* Header with day names */}
+      <div className={styles.header}>
+        <div className={styles.timeColumn}></div>
+                 {weekDays.map((day) => (
+           <div 
+             key={`day-${moment(day).format('YYYY-MM-DD')}`} 
+             className={styles.dayHeader}
+             onClick={() => handleDateClick(day)}
+           >
+            <div className={styles.dayName}>
+              {moment(day).format('ddd')}
+            </div>
+            <div className={styles.dayNumber}>
+              {moment(day).format('D')}
+            </div>
+          </div>
+        ))}
+      </div>
+
+             {/* Time grid */}
+       <div className={styles.timeGrid}>
+         {hours.map(hour => (
+           <div key={hour} className={styles.timeRow}>
+             <div className={styles.timeLabel}>
+               {moment().startOf('day').add(hour, 'hours').format('HH:mm')}
+             </div>
+             {weekDays.map((day) => (
+               <div 
+                 key={`slot-${moment(day).format('YYYY-MM-DD')}-${hour}`} 
+                 className={styles.timeSlot}
+                 onClick={() => handleDateClick(day)}
+               >
+                 {/* Render events that start in this hour */}
+                 {weekEvents
+                   .filter(event => {
+                     const eventStart = moment(event.start);
+                     const eventDay = moment(event.start).startOf('day');
+                     const currentDay = moment(day).startOf('day');
+                     return eventDay.isSame(currentDay) && eventStart.hour() === hour;
+                   })
+                   .map((event, eventIndex) => {
+                     const spanInfo = getEventSpanInfo(event, day);
+                     const totalHeight = spanInfo.totalHours * 60; // 60px per hour
+                     const startOffset = spanInfo.startPosition * 0.6; // 0.6px per percentage
+                     const endOffset = (100 - spanInfo.endPosition) * 0.6;
+                     
+                     return (
+                                               <div
+                          key={`event-${event.id || eventIndex}-${moment(event.start).format('YYYY-MM-DD-HH-mm')}`}
+                          className={styles.eventBlock}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEventClick(event);
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#4a4a4a';
+                            e.currentTarget.style.transform = 'scale(1.02)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = '#3a3a3a';
+                            e.currentTarget.style.transform = 'scale(1)';
+                          }}
+                                                     style={{
+                             backgroundColor: '#3a3a3a',
+                             border: '1px solid #525252',
+                             height: `${totalHeight - startOffset - endOffset}px`,
+                             margin: '0',
+                             borderRadius: '4px',
+                             position: 'absolute',
+                             top: `${startOffset}px`,
+                             left: '2px',
+                             right: '2px',
+                             zIndex: 1,
+                             cursor: 'pointer',
+                             transition: 'all 0.2s ease',
+                             boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                             userSelect: 'none',
+                             WebkitUserSelect: 'none',
+                             MozUserSelect: 'none',
+                             msUserSelect: 'none',
+                             outline: 'none'
+                           }}
+                        />
+                     );
+                   })}
+               </div>
+             ))}
+           </div>
+         ))}
+       </div>
+    </div>
+  );
+};
+
+export default WeekViewCalendar; 

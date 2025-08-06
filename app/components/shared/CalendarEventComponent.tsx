@@ -2,7 +2,8 @@
 
 import React from "react";
 import styles from "./CalendarEventComponent.module.css";
-import { Check } from "lucide-react";
+import { Check, Clock, User, Eye } from "lucide-react";
+import { View } from 'react-big-calendar';
 
 // Optionally import an icon library for checkmark, etc.
 
@@ -32,12 +33,21 @@ export interface CalendarEvent {
 interface CalendarEventComponentProps {
   event: CalendarEvent;
   userRole: string;
+  view?: View;
 }
 
-const CalendarEventComponent: React.FC<CalendarEventComponentProps> = ({ event, userRole }) => {
+const CalendarEventComponent: React.FC<CalendarEventComponentProps> = ({ 
+  event, 
+  userRole, 
+  view = 'day' 
+}) => {
   // Format time (e.g., 9:00 AM - 11:00 AM)
   const formatTime = (start: Date, end: Date) => {
-    const opts: Intl.DateTimeFormatOptions = { hour: "numeric", minute: "2-digit" };
+    const opts: Intl.DateTimeFormatOptions = { 
+      hour: "numeric", 
+      minute: "2-digit",
+      hour12: true 
+    };
     return `${start.toLocaleTimeString([], opts)} - ${end.toLocaleTimeString([], opts)}`;
   };
 
@@ -67,49 +77,90 @@ const CalendarEventComponent: React.FC<CalendarEventComponentProps> = ({ event, 
     statusText = "Unavailable";
   }
 
-  // Action buttons logic (example: Accept, Pending)
-  const renderActionButtons = () => {
-    if (event.status === "OFFER") {
-      return (
-        <div className={styles.actionButtons}>
-          <button className={`${styles.actionButton} ${userRole === "worker" ? styles.workerBtn : ""}`}>Accept</button>
-        </div>
-      );
-    }
-    if (event.status === "PENDING") {
-      return (
-        <div className={styles.actionButtons}>
-          <button className={`${styles.actionButton} ${styles.pending}`} disabled>
-            Pending
-          </button>
-        </div>
-      );
-    }
-    return null;
-  };
-
-  // Names logic (show buyer/worker name as appropriate)
-  // let names = null;
-  // if (event.buyerName && event.status === "ACCEPTED" && event.isBuyerAccepted) {
-  //   names = <span className={styles.eventNames}>Accepted by {event.buyerName}</span>;
-  // } else if (event.workerName && event.status === "ACCEPTED" && !event.isBuyerAccepted) {
-  //   names = <span className={styles.eventNames}>Accepted by {event.workerName}</span>;
-  // }
-
   // Checkmark icon for accepted/completed
   const checkIcon = (event.status === "ACCEPTED" || event.status === "COMPLETED") ? (
-    <Check color="#ffffff" size={46} />
+    <div className={styles.checkIcon}>
+      <Check color="#ffffff" size={16} />
+    </div>
   ) : null;
 
+  // For month view, show minimal content
+  if (view === 'month') {
+    return (
+      <div className={styles.eventContainer}>
+        <div className={styles.eventHeader}>
+          <div className={styles.eventTitle}>
+            {event.title}
+          </div>
+          {checkIcon}
+        </div>
+      </div>
+    );
+  }
+
+  // For week view, show compact content
+  if (view === 'week') {
+    return (
+      <div className={styles.eventContainer}>
+        <div className={styles.eventHeader}>
+          <div className={styles.eventTitle}>
+            {event.title}
+          </div>
+          {checkIcon}
+        </div>
+        
+        <div className={styles.eventDetails}>
+          <div className={styles.eventTime}>
+            <Clock size={12} className={styles.timeIcon} />
+            {formatTime(new Date(event.start), new Date(event.end))}
+          </div>
+          
+          <div className={styles.statusSection}>
+            <span className={statusClass}>{statusText}</span>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // For day view, show full content with View Gig button
   return (
     <div className={styles.eventContainer}>
+      <div className={styles.eventHeader}>
+        <div className={styles.eventTitle}>
+          {event.title}
+        </div>
+        {checkIcon}
+      </div>
+      
       <div className={styles.eventDetails}>
-        <div className={styles.eventTitle}>{event.title}: <span className={statusClass}>{statusText}</span></div>
-        <div className={styles.eventTime}>{formatTime(new Date(event.start), new Date(event.end))}</div>  
-        {/* {names} */}
-        {renderActionButtons()}
-      </div>  
-      {checkIcon}
+        <div className={styles.eventTime}>
+          <Clock size={12} className={styles.timeIcon} />
+          {formatTime(new Date(event.start), new Date(event.end))}
+        </div>
+        
+        <div className={styles.statusSection}>
+          <span className={statusClass}>{statusText}</span>
+        </div>
+
+        {(event.buyerName || event.workerName) && (
+          <div className={styles.participantInfo}>
+            <User size={12} className={styles.userIcon} />
+            {event.buyerName && <span className={styles.participantName}>{event.buyerName}</span>}
+            {event.workerName && <span className={styles.participantName}>{event.workerName}</span>}
+          </div>
+        )}
+      </div>
+      
+      {/* View Gig button for accepted gigs and offers */}
+      {(event.status === 'ACCEPTED' || event.status === 'OFFER') && (
+        <div className={styles.actionButtons}>
+          <button className={`${styles.actionButton} ${styles.viewGigBtn}`}>
+            <Eye size={12} className={styles.viewIcon} />
+            View Gig
+          </button>
+        </div>
+      )}
     </div>
   );
 };

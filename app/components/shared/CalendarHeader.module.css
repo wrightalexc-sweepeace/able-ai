@@ -7,6 +7,8 @@
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  width: 100%;
+  overflow: hidden;
 }
 
 .topBar {
@@ -30,6 +32,10 @@
   justify-content: space-between;
   gap: 0.5rem;
   padding: 0.15rem;
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  flex-wrap: wrap;
 }
 
 .viewButton {
@@ -41,7 +47,28 @@
   font-size: 0.8rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+  white-space: nowrap;
+  min-width: fit-content;
+  flex: 1;
+}
+
+.viewButton::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.viewButton:hover::before {
+  left: 100%;
 }
 
 .activeView {
@@ -49,6 +76,20 @@
   color: #e0e0e0;
   font-weight: 700;
   box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  animation: activeViewPulse 0.6s ease-out;
+  transform: scale(1.05);
+}
+
+@keyframes activeViewPulse {
+  0% {
+    transform: scale(0.95);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1.05);
+  }
 }
 
 .dateRow {
@@ -57,6 +98,19 @@
   justify-content: center;
   gap: 1.2rem;
   margin-top: 0.2rem;
+  animation: dateRowSlideIn 0.8s ease-out;
+  width: 100%;
+}
+
+@keyframes dateRowSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .dateDisplay {
@@ -65,6 +119,23 @@
   color: #fff;
   letter-spacing: 0.01em;
   font-family: inherit;
+  transition: all 0.3s ease;
+  animation: dateDisplayGlow 2s ease-in-out infinite;
+  text-align: center;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@keyframes dateDisplayGlow {
+  0%, 100% {
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.1);
+  }
+  50% {
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+  }
 }
 
 .navButton {
@@ -75,12 +146,36 @@
   cursor: pointer;
   padding: 0.2rem 0.7rem;
   border-radius: 0.7rem;
-  transition: background 0.15s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.navButton::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #232323;
+  border-radius: 0.7rem;
+  transform: scale(0);
+  transition: transform 0.3s ease;
+}
+
+.navButton:hover::before {
+  transform: scale(1);
 }
 
 .navButton:hover {
-  background: #232323;
   color: #fff;
+  transform: translateY(-1px);
+}
+
+.navButton:active {
+  transform: translateY(0);
 }
 
 .filterRow {
@@ -89,6 +184,20 @@
   gap: 0.7rem;
   margin-top: 0.2rem;
   margin-bottom: 0.2rem;
+  flex-wrap: wrap;
+  animation: filterRowSlideUp 1s ease-out;
+  width: 100%;
+}
+
+@keyframes filterRowSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .filterPill {
@@ -101,17 +210,197 @@
   font-size: 0.8rem;
   font-weight: 500;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  white-space: nowrap;
+  text-align: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.filterPill::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.6s ease;
+}
+
+.filterPill:hover::before {
+  left: 100%;
 }
 
 .activePillWorker {
   background: var(--primary-color);
   color: #000000;
   font-weight: 700;
-} 
+  animation: activePillWorkerPulse 0.8s ease-out;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes activePillWorkerPulse {
+  0% {
+    transform: scale(0.9);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  }
+  100% {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+}
 
 .activePillBuyer {
   background: var(--secondary-color);
   color: #000000;
   font-weight: 700;
+  animation: activePillBuyerPulse 0.8s ease-out;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes activePillBuyerPulse {
+  0% {
+    transform: scale(0.9);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  }
+  100% {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* View transition animations */
+.viewSwitcher {
+  animation: viewSwitcherSlideIn 0.6s ease-out;
+}
+
+@keyframes viewSwitcherSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Filter transition animations */
+.filterRow {
+  animation: filterRowSlideUp 1s ease-out;
+}
+
+/* Responsive design for small screens */
+@media (max-width: 768px) {
+  .headerContainer {
+    padding: 1rem 0.75rem 0.5rem 0.75rem;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .viewSwitcher {
+    gap: 0.25rem;
+    width: 100%;
+  }
+
+  .viewButton {
+    padding: 0.375rem 0.8rem;
+    font-size: 0.75rem;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .dateRow {
+    gap: 1rem;
+    width: 100%;
+  }
+
+  .dateDisplay {
+    font-size: 1.125rem;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .navButton {
+    font-size: 1.2rem;
+    padding: 0.15rem 0.5rem;
+    flex-shrink: 0;
+  }
+
+  .filterRow {
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .filterPill {
+    padding: 0.375rem 0.8rem;
+    width: 90px;
+    font-size: 0.75rem;
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 480px) {
+  .headerContainer {
+    padding: 0.75rem 0.5rem 0.5rem 0.5rem;
+    gap: 0.375rem;
+    width: 100%;
+  }
+
+  .viewSwitcher {
+    gap: 0.2rem;
+    width: 100%;
+  }
+
+  .viewButton {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.7rem;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .dateRow {
+    gap: 0.75rem;
+    width: 100%;
+  }
+
+  .dateDisplay {
+    font-size: 1rem;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .navButton {
+    font-size: 1.1rem;
+    padding: 0.1rem 0.4rem;
+    flex-shrink: 0;
+  }
+
+  .filterRow {
+    gap: 0.375rem;
+    width: 100%;
+  }
+
+  .filterPill {
+    padding: 0.3rem 0.6rem;
+    width: 80px;
+    font-size: 0.7rem;
+    flex: 1;
+    min-width: 0;
+  }
 } 

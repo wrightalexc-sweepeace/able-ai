@@ -23,5 +23,7 @@ export interface CalendarEvent {
   workerName?: string;
   isMyGig?: boolean;
   isBuyerAccepted?: boolean;
+  location?: string;
+  description?: string;
 }
 

@@ -528,6 +528,30 @@ export default function Home() {
                 In Progress
               </span>
             </div>
+            {/* Add Buyer Calendar page entry */}
+            <div className={styles.pageItem}>
+              <Link
+                href={user ? `/user/${user.uid}/buyer/calendar` : "/user/test-user-id/buyer/calendar"}
+                className={styles.pageName}
+              >
+                /user/[userId]/buyer/calendar
+              </Link>
+              <span className={styles.badge} data-status="in-progress">
+                In Progress
+              </span>
+            </div>
+            {/* Add Worker Calendar page entry */}
+            <div className={styles.pageItem}>
+              <Link
+                href={user ? `/user/${user.uid}/worker/calendar` : "/user/test-user-id/worker/calendar"}
+                className={styles.pageName}
+              >
+                /user/[userId]/worker/calendar
+              </Link>
+              <span className={styles.badge} data-status="in-progress">
+                In Progress
+              </span>
+            </div>
           </div>
         </section>
 
