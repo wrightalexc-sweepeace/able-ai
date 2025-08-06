@@ -1,83 +1,60 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
-
-import { 
-    Trophy, Star,Martini,
-} from 'lucide-react';
 import styles from './SkillSpecificPage.module.css';
 import SkillSplashScreen from '@/app/components/profile/SkillSplashScreen';
 import CloseButton from '@/app/components/profile/CloseButton';
 import HireButton from '@/app/components/profile/HireButton';
+import { getSkillDetailsWorker } from '@/actions/user/gig-worker-profile';
+import { Star as DefaultBadgeIcon } from "lucide-react";
+import { SkillProfile } from '@/app/(web-client)/user/[userId]/worker/profile/skills/[skillId]/schemas/skillProfile';
 
-// --- INTERFACES (Copied from plan) ---
 
-const skillProfile = {
-  name: "Benji",
-  title: "Bartender",
-  hashtags: "#Licensedbarmanager #customerservice #timemanagement #mixology",
-  customerReviewsText: "Professional, charming and lively",
-  ableGigs: 15,
-  experienceYears: 8,
-  Eph: 15,
-  statistics: {
-    reviews: 13,
-    paymentsCollected: '£4899',
-    tipsReceived: '£767'
-  },
-  supportingImages: [
-    "/images/bar-action.svg",
-    "/images/bar-action.svg",
-  ],
-  badges: [
-    { id: "a1", icon: Trophy, textLines: ["Mixology Master"] },
-    { id: "a2", icon: Star, textLines: ["Customer Favourite"] },
-    { id: "a3", icon: Martini, textLines: ["Creative Cocktails"] }
-   
-  ],
-  qualifications: [
-    "Bachelor’s Degree in Graphic Design",
-    "Licensed bar manager",
-    "Cocktail preparation diploma"
-  ],
-  buyerReviews: [
-    {
-      name: "Alex Johnson",
-      date: "2023-10-15",
-      text: "Amazing skills and great personality. The cocktails were fantastic!"
-    },
-    {
-      name: "Maria Gomez",
-      date: "2023-09-20",
-      text: "Very professional and friendly. Made our event a success!"
-    },
-    {
-      name: "Chris Lee",
-      date: "2023-08-05",
-      text: "Highly recommended! The drinks were as delightful as the service."
-    }
-  ],
-  recommendation: {
-    name: "Dave Smith",
-    date: "2023-10-15",
-    text: "Brilliant bartender, great to work with!"
-  }
-};
 
 // --- COMPONENT ---
 export default function PublicSkillProfilePage() {
   const params = useParams();
-  const workerIdToView = params.workerId as string;
+  const skillId = params?.skillId as string;
+  const [profile, setProfile] = useState<SkillProfile | null>(null);
+
+  useEffect(() => {
+    const fetchSkillData = async () => {
+      if (!skillId) return;
+      try {
+        const { success, data } = await getSkillDetailsWorker(skillId);
+        if (success && data) {
+          // Fallback icon if not present
+          const updatedBadges = (data.badges ?? []).map((badge: any) => ({
+            ...badge,
+            icon: badge.icon || DefaultBadgeIcon,
+          }));
+
+          const transformedQualifications = data?.qualifications?.map((q) => ({
+            title: q.title,
+            date: q.yearAchieved?.toString() ?? "",
+            description: q.description ?? "",
+          }));
+
+          setProfile({
+            ...data,
+            badges: updatedBadges,
+            qualifications: transformedQualifications,
+          });
+        }
+      } catch (error) {
+        console.error("Error fetching skill profile:", error);
+      }
+    };
+
+    fetchSkillData();
+  }, [skillId]);
 
   return (
     <div className={styles.skillPageContainer}>
-    
-    
       <CloseButton />
-      <SkillSplashScreen profile={skillProfile} />
-      <HireButton workerId={workerIdToView} workerName={skillProfile.name} />
-
+      <SkillSplashScreen profile={profile} />
+      <HireButton workerId={skillId} workerName={profile?.name} />
     </div> 
   );
 } 
