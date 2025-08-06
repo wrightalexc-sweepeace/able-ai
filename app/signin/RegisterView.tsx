@@ -53,6 +53,15 @@ const RegisterView: React.FC<RegisterViewProps> = ({ onToggleRegister, onError }
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
+    const validatePassword = async (password: string) => {
+        const lengthIsCorrect = password.trim().length >= 10;
+        if (!lengthIsCorrect) return { isValid: false, error: 'Password must be at least 10 characters long.'}
+        const isCommonPass = await isPasswordCommon(password.trim());
+        if (!isCommonPass) return { isValid: false, error: 'Password is too common. Please choose a more secure password.'}
+        return { isValid: true, error: null}
+    }
+
+
     const handleSubmit = async (event: FormEvent) => {
         event.preventDefault();
         onError(null); // Clear previous errors
@@ -67,19 +76,18 @@ const RegisterView: React.FC<RegisterViewProps> = ({ onToggleRegister, onError }
             setLoading(false);
             return;
         }
-
-        const validatePassword = await isPasswordCommon(password.trim());
-
-        if (validatePassword) {
-            onError("Password is too common. Please choose a more secure password.");
+        // Validate password
+        const { isValid, error } = await validatePassword(password);
+        if (!isValid) {
+            onError(error);
             setLoading(false);
             return;
         }
-
         const result = await registerUserAction({email: email.trim(), password: password.trim(), name: name.trim(), phone: phone.trim()});
         setLoading(false);
 
         if (!result.ok) {
+            console.log("Registration error:", result.error);
             onError(result.error);
             setLoading(false);
             return;
