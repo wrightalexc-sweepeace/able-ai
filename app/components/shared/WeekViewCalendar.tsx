@@ -1,5 +1,6 @@
 import React from 'react';
 import moment from 'moment';
+import { Eye } from 'lucide-react';
 import styles from './WeekViewCalendar.module.css';
 
 interface Event {
@@ -8,6 +9,7 @@ interface Event {
   start: Date;
   end: Date;
   resource?: any;
+  status?: string;
 }
 
 interface WeekViewCalendarProps {
@@ -15,13 +17,15 @@ interface WeekViewCalendarProps {
   currentDate: Date;
   onEventClick?: (event: Event) => void;
   onDateClick?: (date: Date) => void;
+  userRole?: string;
 }
 
 const WeekViewCalendar: React.FC<WeekViewCalendarProps> = ({
   events,
   currentDate,
   onEventClick,
-  onDateClick
+  onDateClick,
+  userRole = 'buyer'
 }) => {
   // Get the start of the week (Monday)
   const startOfWeek = moment(currentDate).startOf('week');
@@ -31,8 +35,8 @@ const WeekViewCalendar: React.FC<WeekViewCalendarProps> = ({
     moment(startOfWeek).add(i, 'days').toDate()
   );
 
-  // Generate array of 24 hours
-  const hours = Array.from({ length: 24 }, (_, i) => i);
+  // Generate array of hours from 6 AM to 11 PM (18 hours total)
+  const hours = Array.from({ length: 18 }, (_, i) => i + 6);
 
   // Get events for the current week
   const weekEvents = events.filter(event => {
@@ -188,42 +192,69 @@ const WeekViewCalendar: React.FC<WeekViewCalendarProps> = ({
                      const endOffset = (100 - spanInfo.endPosition) * 0.6;
                      
                      return (
-                                               <div
-                          key={`event-${event.id || eventIndex}-${moment(event.start).format('YYYY-MM-DD-HH-mm')}`}
-                          className={styles.eventBlock}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleEventClick(event);
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.backgroundColor = '#4a4a4a';
-                            e.currentTarget.style.transform = 'scale(1.02)';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.backgroundColor = '#3a3a3a';
-                            e.currentTarget.style.transform = 'scale(1)';
-                          }}
-                                                     style={{
-                             backgroundColor: '#3a3a3a',
-                             border: '1px solid #525252',
-                             height: `${totalHeight - startOffset - endOffset}px`,
-                             margin: '0',
-                             borderRadius: '4px',
-                             position: 'absolute',
-                             top: `${startOffset}px`,
-                             left: '2px',
-                             right: '2px',
-                             zIndex: 1,
-                             cursor: 'pointer',
-                             transition: 'all 0.2s ease',
-                             boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
-                             userSelect: 'none',
-                             WebkitUserSelect: 'none',
-                             MozUserSelect: 'none',
-                             msUserSelect: 'none',
-                             outline: 'none'
-                           }}
-                        />
+                       <div
+                         key={`event-${event.id || eventIndex}-${moment(event.start).format('YYYY-MM-DD-HH-mm')}`}
+                         className={styles.eventBlock}
+                         onClick={(e) => {
+                           e.stopPropagation();
+                           handleEventClick(event);
+                         }}
+                         onMouseEnter={(e) => {
+                           const baseColor = event.status === 'ACCEPTED' 
+                             ? (userRole === 'worker' ? 'var(--primary-color)' : 'var(--success-color)')
+                             : '#525252';
+                           e.currentTarget.style.backgroundColor = baseColor === '#525252' ? '#4a4a4a' : 
+                             (baseColor === 'var(--primary-color)' ? '#2563eb' : '#059669');
+                           e.currentTarget.style.transform = 'scale(1.02)';
+                           // Make text and icon more visible on hover
+                           const icon = e.currentTarget.querySelector('svg');
+                           const text = e.currentTarget.querySelector('span');
+                           if (icon) icon.style.color = '#fff';
+                           if (text) text.style.color = '#fff';
+                         }}
+                         onMouseLeave={(e) => {
+                           const baseColor = event.status === 'ACCEPTED' 
+                             ? (userRole === 'worker' ? 'var(--primary-color)' : 'var(--success-color)')
+                             : '#525252';
+                           e.currentTarget.style.backgroundColor = baseColor;
+                           e.currentTarget.style.transform = 'scale(1)';
+                           // Reset text and icon color
+                           const icon = e.currentTarget.querySelector('svg');
+                           const text = e.currentTarget.querySelector('span');
+                           if (icon) icon.style.color = '#888';
+                           if (text) text.style.color = '#888';
+                         }}
+                         style={{
+                           backgroundColor: event.status === 'ACCEPTED' 
+                             ? (userRole === 'worker' ? 'var(--primary-color)' : 'var(--success-color)')
+                             : '#525252',
+                           height: `${Math.max(totalHeight - startOffset - endOffset, 20)}px`,
+                           margin: '0',
+                           borderRadius: '4px',
+                           position: 'absolute',
+                           top: `${startOffset}px`,
+                           left: '0px',
+                           right: '0px',
+                           zIndex: 1,
+                           cursor: 'pointer',
+                           transition: 'all 0.2s ease',
+                           boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                           userSelect: 'none',
+                           WebkitUserSelect: 'none',
+                           MozUserSelect: 'none',
+                           msUserSelect: 'none',
+                           outline: 'none',
+                           display: 'flex',
+                           alignItems: 'center',
+                           justifyContent: 'center',
+                           gap: '5px',
+                           padding: '2px 6px',
+                           flexDirection: 'column'
+                         }}
+                       >
+                         <span style={{ fontSize: '2.5vw', color: '#fff', fontWeight: '600', whiteSpace: 'nowrap' }}>Open gig</span>
+                         <Eye size={25} color="#888" />
+                       </div>
                      );
                    })}
                </div>

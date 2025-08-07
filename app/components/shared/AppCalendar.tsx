@@ -3,10 +3,12 @@
 import React, { useState } from 'react';
 import { Calendar as BigCalendar, Formats, momentLocalizer, View } from 'react-big-calendar';
 import moment from 'moment';
+import { Eye } from 'lucide-react';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import styles from './AppCalendar.module.css';
 import { CalendarEvent } from './CalendarEventComponent';
 import WeekViewCalendar from './WeekViewCalendar';
+import DayViewCalendar from './DayViewCalendar';
 
 const localizer = momentLocalizer(moment);
 
@@ -25,6 +27,7 @@ type AppCalendarProps<TEvent> = {
   height?: string;
   hideToolbar?: boolean;
   formats?: Formats | undefined;
+  userRole?: string;
 };
 
 const AppCalendar = <TEvent extends object>({
@@ -44,9 +47,9 @@ const AppCalendar = <TEvent extends object>({
   formats = {
     eventTimeRangeFormat: () => ''
   },
+  userRole,
 }: AppCalendarProps<TEvent>) => {
 
-  const role = localStorage.getItem('lastRoleUsed');
   const [showDayViewModal, setShowDayViewModal] = useState(false);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
@@ -65,6 +68,10 @@ const AppCalendar = <TEvent extends object>({
       overflow: 'hidden',
       textOverflow: 'ellipsis',
       whiteSpace: 'nowrap',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: '4px',
     };
 
     return { style: baseStyle };
@@ -90,6 +97,54 @@ const AppCalendar = <TEvent extends object>({
     );
   };
 
+  // Custom event component for month view with view icon
+  const EventComponent = (props: any) => {
+    // Check if we're in month view by looking at the current view prop
+    const isMonthView = view === 'month';
+    
+    // Get event background color based on status and user role (for day/agenda view)
+    const getEventBackgroundColor = (event: any) => {
+      if (event.status !== 'ACCEPTED') {
+        return '#525252'; // Grey for non-accepted events
+      }
+      
+      // For accepted events, color depends on user role
+      return userRole === 'worker' ? 'var(--primary-color)' : 'var(--success-color)';
+    };
+    
+    // Add data attributes to the parent rbc-event element (for month view)
+    React.useEffect(() => {
+      const eventElement = document.querySelector(`[data-event-id="${props.event.id}"]`) || 
+                          document.querySelector('.rbc-event');
+      if (eventElement) {
+        eventElement.setAttribute('data-status', props.event.status || '');
+        eventElement.setAttribute('data-role', userRole || '');
+      }
+    }, [props.event.status, userRole, props.event.id]);
+    
+    if (isMonthView) {
+      // Month view: vertical layout with text on top, icon below
+      return (
+        <div className={styles.eventComponent}>
+          <span style={{ fontSize: '2.5vw', color: '#fff', fontWeight: '500', whiteSpace: 'nowrap' }}>Open gig</span>
+          <br />
+          <Eye size={25} color="#888" />
+        </div>
+      );
+    } else {
+      // Day/Agenda view: horizontal layout with icon and text side by side
+      return (
+        <div 
+          className={styles.eventComponentHorizontal} 
+          style={{ backgroundColor: getEventBackgroundColor(props.event) }}
+        >
+          <Eye size={8} color="#888" />
+          <span style={{ fontSize: '1.5vw', color: '#fff', fontWeight: '500', whiteSpace: 'nowrap' }}>Open gig</span>
+        </div>
+      );
+    }
+  };
+
   // Handle navigation to day view
   const handleNavigateToDayView = () => {
     if (selectedDate && onNavigate && onView) {
@@ -111,6 +166,7 @@ const AppCalendar = <TEvent extends object>({
     ...components,
     ...(hideToolbar ? { toolbar: () => null } : {}),
     dateCellWrapper: DateCell,
+    event: EventComponent,
   };
 
   // Wrap onSelectEvent to match the expected signature
@@ -146,6 +202,30 @@ const AppCalendar = <TEvent extends object>({
               onNavigate(clickedDate);
             }
           }}
+          userRole={userRole || 'buyer'}
+        />
+      </div>
+    );
+  }
+
+  // If it's day view, use our custom component
+  if (view === 'day') {
+    return (
+      <div className={styles.calendarWrapper} style={{ height }}>
+        <DayViewCalendar
+          events={filteredEvents as any[]}
+          currentDate={date}
+          onEventClick={(event) => {
+            if (handleSelectEvent) {
+              handleSelectEvent(event as any);
+            }
+          }}
+          onDateClick={(clickedDate) => {
+            if (onNavigate) {
+              onNavigate(clickedDate);
+            }
+          }}
+          userRole={userRole || 'buyer'}
         />
       </div>
     );

@@ -153,6 +153,7 @@ const WorkerCalendarPage = () => {
           onView={setView}
           onNavigate={setDate}
           onSelectEvent={handleEventClick}
+          userRole="worker"
           components={{
             event: (props: any) => (
               <CalendarEventComponent {...props} userRole="worker" view={view} />

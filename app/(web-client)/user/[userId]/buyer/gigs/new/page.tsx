@@ -1510,7 +1510,7 @@ Make the conversation feel natural and build on what they've already told you.`;
                           transform: 'scale(1)',
                           animation: 'pulse 2s infinite'
                         }}
-                        onClick={() => router.push(`/user/${user?.uid || "this_user"}/buyer/dashboard`)}
+                        onClick={() => router.push(`/user/${user?.uid || "this_user"}/buyer`)}
                         onMouseOver={(e) => {
                           e.currentTarget.style.transform = 'scale(1.05)';
                           e.currentTarget.style.background = 'var(--secondary-darker-color)';

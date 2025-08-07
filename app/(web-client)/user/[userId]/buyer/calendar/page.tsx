@@ -158,6 +158,7 @@ const BuyerCalendarPage = () => {
           onView={setView}
           onNavigate={setDate}
           onSelectEvent={handleEventClick}
+          userRole="buyer"
           components={{
             event: (({ event }: { event: CalendarEvent; title: string }) => (
               <CalendarEventComponent event={event} userRole="buyer" view={view} />

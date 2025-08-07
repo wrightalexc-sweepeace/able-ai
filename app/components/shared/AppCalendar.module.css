@@ -172,6 +172,9 @@
   height: 100%;
 }
 
+.calendarWrapper :global(.rbc-month-view) {
+  height: 600px !important;
+}
 
 
 @keyframes viewFadeIn {
@@ -252,6 +255,7 @@
   transition: background-color 0.3s ease;
   min-height: 80px;
   position: relative;
+  height: 120px !important;
 }
 
 .calendarWrapper :global(.rbc-day-bg:hover) {
@@ -267,6 +271,7 @@
   border-bottom: 1px solid #2b2b2b;
   min-height: 100px;
   transition: all 0.3s ease;
+  height: 120px !important;
 }
 
 .calendarWrapper :global(.rbc-month-row:hover) {
@@ -413,6 +418,10 @@
   font-size: 0.75rem;
   line-height: 1.2;
   border-radius: 4px;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 100% !important;
 }
 
 
@@ -429,6 +438,54 @@
 
 .clickableDateCell:hover {
   background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Event Component with View Icon */
+.eventComponent {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 120px;
+  padding-bottom: 100%;
+  font-size: 15px !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background-color: #3a3a3a;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Horizontal layout for day/agenda views */
+.eventComponentHorizontal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 2px 4px;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background-color: #3a3a3a;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  flex-direction: row;
+  gap: 4px;
+}
+
+.eventComponent:hover,
+.eventComponentHorizontal:hover {
+  background-color: #4a4a4a;
+  transform: scale(1.02);
 }
 
 /* Modal Overlay */
@@ -813,8 +870,8 @@
   }
 
   .calendarWrapper :global(.rbc-event-content) {
-    font-size: 12px;
-    line-height: 14px;
+    font-size: 15px !important;
+    line-height: 13px;
   }
 
   .calendarWrapper :global(.rbc-event-label) {
@@ -872,4 +929,28 @@
   .calendarWrapper :global(.rbc-time-slot) {
     min-height: 40px;
   }
+} 
+
+/* Override react-big-calendar event colors with our conditional colors */
+.calendarWrapper :global(.rbc-event) {
+  background-color: #525252 !important; /* Default grey for non-accepted */
+  border: 1px solid #525252 !important;
+}
+
+/* For accepted events in worker view */
+.calendarWrapper :global(.rbc-event[data-status="ACCEPTED"][data-role="worker"]) {
+  background-color: var(--primary-color) !important;
+  border-color: var(--primary-color) !important;
+}
+
+/* For accepted events in buyer view */
+.calendarWrapper :global(.rbc-event[data-status="ACCEPTED"][data-role="buyer"]) {
+  background-color: var(--success-color) !important;
+  border-color: var(--success-color) !important;
+}
+
+/* For non-accepted events (explicit) */
+.calendarWrapper :global(.rbc-event[data-status]:not([data-status="ACCEPTED"])) {
+  background-color: #525252 !important;
+  border-color: #525252 !important;
 } 
