@@ -6,6 +6,7 @@ import AppCalendar from '@/app/components/shared/AppCalendar';
 import CalendarHeader from '@/app/components/shared/CalendarHeader';
 import CalendarEventComponent from '@/app/components/shared/CalendarEventComponent';
 import EventDetailModal from '@/app/components/shared/EventDetailModal';
+import EventDetailModal from '@/app/components/shared/EventDetailModal';
 import { View } from 'react-big-calendar';
 import { useAuth } from '@/context/AuthContext';
 import { CalendarEvent } from '@/app/types/CalendarEventTypes';
@@ -54,6 +55,10 @@ const WorkerCalendarPage = () => {
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isFilterTransitioning, setIsFilterTransitioning] = useState(false);
+  const [allEvents, setAllEvents] = useState<CalendarEvent[]>([]);
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isFilterTransitioning, setIsFilterTransitioning] = useState(false);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -68,11 +73,13 @@ const WorkerCalendarPage = () => {
 
       const parsed = data.map((event: any) => ({ ...event, start: new Date(event.start), end: new Date(event.end) }));
       setAllEvents(parsed);
+      setAllEvents(parsed);
       setEvents(filterEvents(parsed, activeFilter));
     };
 
     fetchEvents();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   }, []);
 
   useEffect(() => {
@@ -80,6 +87,17 @@ const WorkerCalendarPage = () => {
     if (window.innerWidth < 768) {
       setView('day');
     }
+  }, []);
+
+  const handleEventClick = (event: CalendarEvent) => {
+    setSelectedEvent(event);
+    setIsModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setSelectedEvent(null);
+  };
   }, []);
 
   const handleEventClick = (event: CalendarEvent) => {
@@ -117,7 +135,21 @@ const WorkerCalendarPage = () => {
   };
 
   // When filter changes, update events with smooth transition
+  // When filter changes, update events with smooth transition
   const handleFilterChange = (filter: string) => {
+    setIsFilterTransitioning(true);
+    
+    // Add a small delay to show the transition
+    setTimeout(() => {
+      setActiveFilter(filter);
+      setEvents(filterEvents(allEvents, filter));
+      setIsFilterTransitioning(false);
+    }, 150);
+  };
+
+  // Handle view changes with smooth transition
+  const handleViewChange = (newView: View) => {
+    setView(newView);
     setIsFilterTransitioning(true);
     
     // Add a small delay to show the transition
@@ -140,11 +172,13 @@ const WorkerCalendarPage = () => {
         view={view}
         role="worker"
         onViewChange={handleViewChange}
+        onViewChange={handleViewChange}
         onNavigate={handleNavigate}
         filters={FILTERS}
         activeFilter={activeFilter}
         onFilterChange={handleFilterChange}
       />
+      <main className={`${styles.mainContent} ${isFilterTransitioning ? styles.filterTransitioning : ''}`}>
       <main className={`${styles.mainContent} ${isFilterTransitioning ? styles.filterTransitioning : ''}`}>
         <AppCalendar
           date={date}
@@ -157,6 +191,7 @@ const WorkerCalendarPage = () => {
           components={{
             event: (props: any) => (
               <CalendarEventComponent {...props} userRole="worker" view={view} />
+              <CalendarEventComponent {...props} userRole="worker" view={view} />
             )
           }}
           hideToolbar={true}
@@ -167,6 +202,13 @@ const WorkerCalendarPage = () => {
           <Image src="/images/home.svg" alt="Home" width={24} height={24} />
         </button>
       </footer>
+
+      <EventDetailModal
+        event={selectedEvent}
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+        userRole="worker"
+      />
 
       <EventDetailModal
         event={selectedEvent}

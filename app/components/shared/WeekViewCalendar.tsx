@@ -1,6 +1,9 @@
 import React from 'react';
 import moment from 'moment';
+<<<<<<< HEAD
 import { Eye } from 'lucide-react';
+=======
+>>>>>>> c478dbb1cd88dc8db29f59aa44af1db2be1fec6b
 import styles from './WeekViewCalendar.module.css';
 
 interface Event {
@@ -9,7 +12,10 @@ interface Event {
   start: Date;
   end: Date;
   resource?: any;
+<<<<<<< HEAD
   status?: string;
+=======
+>>>>>>> c478dbb1cd88dc8db29f59aa44af1db2be1fec6b
 }
 
 interface WeekViewCalendarProps {
@@ -17,15 +23,22 @@ interface WeekViewCalendarProps {
   currentDate: Date;
   onEventClick?: (event: Event) => void;
   onDateClick?: (date: Date) => void;
+<<<<<<< HEAD
   userRole?: string;
+=======
+>>>>>>> c478dbb1cd88dc8db29f59aa44af1db2be1fec6b
 }
 
 const WeekViewCalendar: React.FC<WeekViewCalendarProps> = ({
   events,
   currentDate,
   onEventClick,
+<<<<<<< HEAD
   onDateClick,
   userRole = 'buyer'
+=======
+  onDateClick
+>>>>>>> c478dbb1cd88dc8db29f59aa44af1db2be1fec6b
 }) => {
   // Get the start of the week (Monday)
   const startOfWeek = moment(currentDate).startOf('week');
@@ -35,8 +48,13 @@ const WeekViewCalendar: React.FC<WeekViewCalendarProps> = ({
     moment(startOfWeek).add(i, 'days').toDate()
   );
 
+<<<<<<< HEAD
   // Generate array of hours from 6 AM to 11 PM (18 hours total)
   const hours = Array.from({ length: 18 }, (_, i) => i + 6);
+=======
+  // Generate array of 24 hours
+  const hours = Array.from({ length: 24 }, (_, i) => i);
+>>>>>>> c478dbb1cd88dc8db29f59aa44af1db2be1fec6b
 
   // Get events for the current week
   const weekEvents = events.filter(event => {
@@ -192,6 +210,7 @@ const WeekViewCalendar: React.FC<WeekViewCalendarProps> = ({
                      const endOffset = (100 - spanInfo.endPosition) * 0.6;
                      
                      return (
+<<<<<<< HEAD
                        <div
                          key={`event-${event.id || eventIndex}-${moment(event.start).format('YYYY-MM-DD-HH-mm')}`}
                          className={styles.eventBlock}
@@ -255,6 +274,44 @@ const WeekViewCalendar: React.FC<WeekViewCalendarProps> = ({
                          <span style={{ fontSize: '2.5vw', color: '#fff', fontWeight: '600', whiteSpace: 'nowrap' }}>Open gig</span>
                          <Eye size={25} color="#888" />
                        </div>
+=======
+                                               <div
+                          key={`event-${event.id || eventIndex}-${moment(event.start).format('YYYY-MM-DD-HH-mm')}`}
+                          className={styles.eventBlock}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEventClick(event);
+                          }}
+                          onMouseEnter={(e) => {
+                            e.currentTarget.style.backgroundColor = '#4a4a4a';
+                            e.currentTarget.style.transform = 'scale(1.02)';
+                          }}
+                          onMouseLeave={(e) => {
+                            e.currentTarget.style.backgroundColor = '#3a3a3a';
+                            e.currentTarget.style.transform = 'scale(1)';
+                          }}
+                                                     style={{
+                             backgroundColor: '#3a3a3a',
+                             border: '1px solid #525252',
+                             height: `${totalHeight - startOffset - endOffset}px`,
+                             margin: '0',
+                             borderRadius: '4px',
+                             position: 'absolute',
+                             top: `${startOffset}px`,
+                             left: '2px',
+                             right: '2px',
+                             zIndex: 1,
+                             cursor: 'pointer',
+                             transition: 'all 0.2s ease',
+                             boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
+                             userSelect: 'none',
+                             WebkitUserSelect: 'none',
+                             MozUserSelect: 'none',
+                             msUserSelect: 'none',
+                             outline: 'none'
+                           }}
+                        />
+>>>>>>> c478dbb1cd88dc8db29f59aa44af1db2be1fec6b
                      );
                    })}
                </div>
