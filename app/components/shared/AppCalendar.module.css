@@ -23,9 +23,6 @@
     opacity: 1;
     transform: translateY(0);
   }
-  animation: calendarFadeIn 0.6s ease-out;
-  overflow: visible;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
 @keyframes calendarFadeIn {
@@ -47,42 +44,16 @@
   color: #e0e0e0;
   width: 100%;
   height: 100%;
-  color: #e0e0e0;
-  width: 100%;
-  height: 100%;
 }
 
 /* Toolbar Styling */
-/* Toolbar Styling */
 .calendarWrapper :global(.rbc-toolbar) {
-  margin-bottom: 1.5rem;
-  border-bottom: 1px solid #3a3a3a;
   margin-bottom: 1.5rem;
   border-bottom: 1px solid #3a3a3a;
   padding-bottom: 1rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  animation: toolbarSlideDown 0.8s ease-out;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-@keyframes toolbarSlideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.calendarWrapper :global(.rbc-btn-group) {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.25rem;
   animation: toolbarSlideDown 0.8s ease-out;
   flex-wrap: wrap;
   gap: 0.5rem;
@@ -112,31 +83,10 @@
   padding: 0.5rem 1rem;
   border-radius: 0.5rem;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   font-weight: 500;
   position: relative;
   overflow: hidden;
   white-space: nowrap;
-  min-width: fit-content;
-}
-
-.calendarWrapper :global(.rbc-btn-group button::before) {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-  transition: left 0.5s ease;
-}
-
-.calendarWrapper :global(.rbc-btn-group button:hover::before) {
-  left: 100%;
-  position: relative;
-  overflow: hidden;
-  white-space: nowrap;
-  min-width: fit-content;
 }
 
 .calendarWrapper :global(.rbc-btn-group button::before) {
@@ -160,28 +110,12 @@
   border-color: #5a5a5a;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .calendarWrapper :global(.rbc-btn-group button.rbc-active) {
   background-color: #ffffff;
   color: #1f1f1f;
   border-color: #ffffff;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  animation: activeButtonPulse 0.6s ease-out;
-}
-
-@keyframes activeButtonPulse {
-  0% {
-    transform: scale(0.95);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-  100% {
-    transform: scale(1);
-  }
   box-shadow: 0 2px 8px rgba(0,0,0,0.15);
   animation: activeButtonPulse 0.6s ease-out;
 }
@@ -217,10 +151,6 @@
     opacity: 1;
     transform: scale(1);
   }
-  animation: labelFadeIn 1s ease-out;
-  text-align: center;
-  flex: 1;
-  min-width: 0;
 }
 
 @keyframes labelFadeIn {
@@ -234,7 +164,6 @@
   }
 }
 
-/* Header Styling */
 /* Header Styling */
 .calendarWrapper :global(.rbc-header) {
   padding: 0.75rem 0;
@@ -264,7 +193,6 @@
   background-color: rgba(255, 255, 255, 0.05);
 }
 
-/* View Containers */
 /* View Containers */
 .calendarWrapper :global(.rbc-month-view),
 .calendarWrapper :global(.rbc-time-view),
@@ -371,7 +299,6 @@
 }
 
 /* Month Row Styling */
-/* Month Row Styling */
 .calendarWrapper :global(.rbc-month-row) {
   border-bottom: 1px solid #2b2b2b;
   min-height: 100px;
@@ -391,7 +318,6 @@
   background-color: #1a1a1a;
 }
 
-/* Today Highlighting */
 /* Today Highlighting */
 .calendarWrapper :global(.rbc-today) {
   background-color: #222225;
@@ -416,7 +342,6 @@
   50% {
     opacity: 1;
   }
-  position: relative;
 }
 
 .calendarWrapper :global(.rbc-today::after) {
@@ -440,91 +365,9 @@
 }
 
 /* Event Styling - Comprehensive */
-/* Event Styling - Comprehensive */
 .calendarWrapper :global(.rbc-event) {
   box-shadow: 0 2px 4px rgba(0,0,0,0.4);
   font-weight: 500;
-  background-color: #3a3a3a;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  overflow: hidden;
-  margin: 0;
-  z-index: 1;
-  border: 1px solid #525252;
-}
-
-@keyframes eventAppear {
-  from {
-    opacity: 0;
-    transform: scale(0.8) translateY(5px);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-/* Filter transition animations for events */
-.calendarWrapper :global(.rbc-event) {
-  animation: eventFilterTransition 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-@keyframes eventFilterTransition {
-  0% {
-    opacity: 0;
-    transform: scale(0.8) translateY(5px);
-  }
-  100% {
-    opacity: 1;
-    transform: scale(1) translateY(0);
-  }
-}
-
-/* Staggered animation for multiple events */
-.calendarWrapper :global(.rbc-event:nth-child(1)) { animation-delay: 0.1s; }
-.calendarWrapper :global(.rbc-event:nth-child(2)) { animation-delay: 0.15s; }
-.calendarWrapper :global(.rbc-event:nth-child(3)) { animation-delay: 0.2s; }
-.calendarWrapper :global(.rbc-event:nth-child(4)) { animation-delay: 0.25s; }
-.calendarWrapper :global(.rbc-event:nth-child(5)) { animation-delay: 0.3s; }
-
-.calendarWrapper :global(.rbc-event::before) {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-  transition: left 0.6s ease;
-}
-
-.calendarWrapper :global(.rbc-event:hover::before) {
-  left: 100%;
-}
-
-.calendarWrapper :global(.rbc-event:hover) {
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 6px 20px rgba(0,0,0,0.5);
-  z-index: 10;
-}
-
-.calendarWrapper :global(.rbc-event:focus), 
-.calendarWrapper :global(.rbc-event.rbc-selected) {
-  outline: 2px solid var(--primary-color);
-  outline-offset: 1px;
-  animation: eventSelect 0.3s ease-out;
-}
-
-@keyframes eventSelect {
-  0% {
-    outline-width: 0px;
-  }
-  100% {
-    outline-width: 2px;
-  }
-}
-
   background-color: #3a3a3a;
   border-radius: 4px;
   cursor: pointer;
@@ -611,10 +454,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 0.75rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 
@@ -666,7 +505,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  background-color: #3a3a3a;
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -932,34 +770,11 @@
   }
 }
 
-  animation: agendaSlideIn 0.8s ease-out;
-}
-
-@keyframes agendaSlideIn {
-  from {
-    opacity: 0;
-    transform: translateX(-20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
 .calendarWrapper :global(.rbc-agenda-date-cell),
 .calendarWrapper :global(.rbc-agenda-time-cell),
 .calendarWrapper :global(.rbc-agenda-event-cell) {
   padding: 0.75rem;
   border-bottom: 1px solid #2b2b2b;
-  transition: background-color 0.3s ease;
-}
-
-.calendarWrapper :global(.rbc-agenda-date-cell:hover),
-.calendarWrapper :global(.rbc-agenda-time-cell:hover),
-.calendarWrapper :global(.rbc-agenda-event-cell:hover) {
-  background-color: rgba(255, 255, 255, 0.05);
-}
-
   transition: background-color 0.3s ease;
 }
 
@@ -1023,37 +838,12 @@
   }
 }
 
-  animation: legendSlideUp 1s ease-out;
-}
-
-@keyframes legendSlideUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 .legendItem {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   font-size: 0.8rem;
   color: #b0b0b0;
-  transition: all 0.3s ease;
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-}
-
-.legendItem:hover {
-  background-color: rgba(255, 255, 255, 0.05);
-  color: #ffffff;
-  transform: translateX(2px);
-}
-
   transition: all 0.3s ease;
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
@@ -1072,17 +862,8 @@
   border-radius: 4px;
   border: 1px solid rgba(255,255,255,0.1);
   transition: all 0.3s ease;
-  transition: all 0.3s ease;
 }
 
-.legendItem:hover .legendColor {
-  transform: scale(1.2);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-/* Legend Colors */
-.legendAccepted { background-color: var(--primary-color); }
-.legendOffer { background-color: #525252; }
 .legendItem:hover .legendColor {
   transform: scale(1.2);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);

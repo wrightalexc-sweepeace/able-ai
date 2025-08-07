@@ -44,7 +44,13 @@ const mapEventStatus = (status: string): EventStatusEnumType => {
 
 export async function getCalendarEvents({ userId, role, isViewQA }: { userId: string; role?: 'buyer' | 'worker'; isViewQA?: boolean; }) {
 
-  if (isViewQA) return { events: MOCK_EVENTS };
+  console.log('getCalendarEvents called with:', { userId, role, isViewQA });
+  console.log('MOCK_EVENTS:', MOCK_EVENTS);
+
+  if (isViewQA) {
+    console.log('Returning mock events:', { events: MOCK_EVENTS });
+    return { events: MOCK_EVENTS };
+  }
 
   if (!userId) {
     return { error: 'User id is required', events: [], status: 404 };

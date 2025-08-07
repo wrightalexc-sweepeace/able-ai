@@ -1,7 +1,6 @@
 /* eslint-disable max-lines-per-function */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import React, { useState } from 'react';
-import React, { useState } from 'react';
 import { Calendar as BigCalendar, Formats, momentLocalizer, View } from 'react-big-calendar';
 import moment from 'moment';
 import { Eye } from 'lucide-react';
@@ -60,9 +59,7 @@ const AppCalendar = <TEvent extends object>({
   // Simple event prop getter that forces proper positioning
   const defaultEventPropGetter = (event: TEvent) => {
     const baseStyle: React.CSSProperties = {
-    const baseStyle: React.CSSProperties = {
       backgroundColor: '#3a3a3a',
-      borderRadius: '4px',
       borderRadius: '4px',
       color: '#e0e0e0',
       border: '1px solid #525252',
@@ -117,13 +114,40 @@ const AppCalendar = <TEvent extends object>({
     
     // Add data attributes to the parent rbc-event element (for month view)
     React.useEffect(() => {
-      const eventElement = document.querySelector(`[data-event-id="${props.event.id}"]`) || 
-                          document.querySelector('.rbc-event');
+      // Use a more reliable method to find the parent rbc-event element
+      const findParentEventElement = () => {
+        // Try multiple selectors to find the parent event element
+        const selectors = [
+          '.rbc-event',
+          `[title="${props.event.title}"]`,
+          `[data-event-id="${props.event.id}"]`
+        ];
+        
+        for (const selector of selectors) {
+          const element = document.querySelector(selector);
+          if (element) {
+            const parentEvent = element.closest('.rbc-event') || element;
+            if (parentEvent && parentEvent.classList.contains('rbc-event')) {
+              return parentEvent;
+            }
+          }
+        }
+        
+        // Fallback: find any rbc-event element
+        return document.querySelector('.rbc-event');
+      };
+      
+      const eventElement = findParentEventElement();
       if (eventElement) {
         eventElement.setAttribute('data-status', props.event.status || '');
         eventElement.setAttribute('data-role', userRole || '');
+        console.log('Set data attributes:', {
+          status: props.event.status,
+          role: userRole,
+          element: eventElement
+        });
       }
-    }, [props.event.status, userRole, props.event.id]);
+    }, [props.event.status, userRole, props.event.title, props.event.id]);
     
     if (isMonthView) {
       // Month view: vertical layout with text on top, icon below
@@ -239,12 +263,10 @@ const AppCalendar = <TEvent extends object>({
       <BigCalendar
         localizer={localizer}
         events={filteredEvents}
-        events={filteredEvents}
         date={date}
         view={view}
         startAccessor={(event: TEvent) => (event as { start: Date }).start}
         endAccessor={(event: TEvent) => (event as { end: Date }).end}
-        allDayAccessor={(event: TEvent) => (event as { allDay?: boolean }).allDay || false}
         allDayAccessor={(event: TEvent) => (event as { allDay?: boolean }).allDay || false}
         titleAccessor={(event: TEvent & { title?: string }) => event.title || ''}
         defaultView={defaultView}
@@ -258,41 +280,7 @@ const AppCalendar = <TEvent extends object>({
         eventPropGetter={handleEventPropGetter}
         components={calendarComponents}
         formats={calendarFormats}
-        formats={calendarFormats}
         popup
-        step={60}
-        timeslots={1}
-        showMultiDayTimes={false}
-        dayLayoutAlgorithm="no-overlap"
-      />
-
-      {/* Day View Navigation Modal */}
-      {showDayViewModal && selectedDate && (
-        <div className={styles.modalOverlay} onClick={handleCloseModal}>
-          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.modalHeader}>
-              <h3>Switch to Day View</h3>
-              <button className={styles.closeButton} onClick={handleCloseModal}>
-                ×
-              </button>
-            </div>
-            <div className={styles.modalBody}>
-              <p>Would you like to switch to day view for:</p>
-              <p className={styles.selectedDate}>
-                {moment(selectedDate).format('dddd, MMMM Do, YYYY')}
-              </p>
-            </div>
-            <div className={styles.modalFooter}>
-              <button className={styles.cancelButton} onClick={handleCloseModal}>
-                Cancel
-              </button>
-              <button className={styles.confirmButton} onClick={handleNavigateToDayView}>
-                Go to Day View
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
         step={60}
         timeslots={1}
         showMultiDayTimes={false}
