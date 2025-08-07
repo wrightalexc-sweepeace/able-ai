@@ -5,6 +5,7 @@ import { useRouter, usePathname, useParams } from "next/navigation";
 import AppCalendar from "@/app/components/shared/AppCalendar";
 import CalendarHeader from "@/app/components/shared/CalendarHeader";
 import CalendarEventComponent from "@/app/components/shared/CalendarEventComponent";
+import EventDetailModal from "@/app/components/shared/EventDetailModal";
 import { View } from "react-big-calendar";
 import { useAuth } from "@/context/AuthContext";
 import { CalendarEvent } from "@/app/types/CalendarEventTypes";
@@ -47,6 +48,10 @@ const BuyerCalendarPage = () => {
   const [date, setDate] = useState<Date>(new Date());
   const [activeFilter, setActiveFilter] = useState<string>(FILTERS[1]);
   const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [allEvents, setAllEvents] = useState<CalendarEvent[]>([]);
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isFilterTransitioning, setIsFilterTransitioning] = useState(false);
 
   useEffect(() => {
     if (loadingAuth) {
@@ -76,12 +81,23 @@ const BuyerCalendarPage = () => {
       const data: CalendarEvent[] = res.events;
 
       const parsed = data.map((event: CalendarEvent) => ({ ...event, start: new Date(event.start), end: new Date(event.end) }));
+      setAllEvents(parsed);
       setEvents(filterEvents(parsed, activeFilter));
     };
 
     fetchEvents();
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeFilter, loadingAuth]);
+  }, [loadingAuth]);
+
+  const handleEventClick = (event: CalendarEvent) => {
+    setSelectedEvent(event);
+    setIsModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setIsModalOpen(false);
+    setSelectedEvent(null);
+  };
 
   const redirectGigOfferHandler = (event: CalendarEvent) => {
     router.push(`/user/${pageUserId}/buyer/gigs/${event.id}`);
@@ -105,29 +121,46 @@ const BuyerCalendarPage = () => {
     }
   };
 
+  // When filter changes, update events with smooth transition
+  const handleFilterChange = (filter: string) => {
+    setIsFilterTransitioning(true);
+    
+    // Add a small delay to show the transition
+    setTimeout(() => {
+      setActiveFilter(filter);
+      setEvents(filterEvents(allEvents, filter));
+      setIsFilterTransitioning(false);
+    }, 150);
+  };
+
+  // Handle view changes with smooth transition
+  const handleViewChange = (newView: View) => {
+    setView(newView);
+  };
+
   return (
     <div className={styles.container}>
       <CalendarHeader
         date={date}
         view={view}
         role="buyer"
-        onViewChange={setView}
+        onViewChange={handleViewChange}
         onNavigate={handleNavigate}
         filters={FILTERS}
         activeFilter={activeFilter}
-        onFilterChange={setActiveFilter}
+        onFilterChange={handleFilterChange}
       />
-      <main className={styles.mainContent}>
+      <main className={`${styles.mainContent} ${isFilterTransitioning ? styles.filterTransitioning : ''}`}>
         <AppCalendar
           events={events}
           date={date}
           view={view}
           onView={setView}
           onNavigate={setDate}
-          onSelectEvent={redirectGigOfferHandler}
+          onSelectEvent={handleEventClick}
           components={{
             event: (({ event }: { event: CalendarEvent; title: string }) => (
-              <CalendarEventComponent event={event} userRole="buyer" />
+              <CalendarEventComponent event={event} userRole="buyer" view={view} />
             )) as React.ComponentType<unknown>,
           }}
           hideToolbar={true}
@@ -138,7 +171,13 @@ const BuyerCalendarPage = () => {
           <Image src="/images/home.svg" alt="Home" width={40} height={40} />
         </button>
       </footer>
-      {/* No footer for buyer view as per design */}
+
+      <EventDetailModal
+        event={selectedEvent}
+        isOpen={isModalOpen}
+        onClose={handleModalClose}
+        userRole="buyer"
+      />
     </div>
   );
 };
