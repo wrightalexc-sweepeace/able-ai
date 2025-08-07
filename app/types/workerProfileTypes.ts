@@ -1,51 +1,95 @@
-interface Skill {
-    name: string;
-    ableGigs?: number | string;
-    experience?: string;
-    eph?: number | string;
+export interface Skill {
+  id: string;
+  workerProfileId: string;
+  name: string;
+  experienceMonths: number;
+  agreedRate: string;
+  skillVideoUrl?: string | null;
+  adminTags?: string[] | null;
+  ableGigs?: number | null;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-interface Statistic {
-    id: string;
-    icon: React.ElementType;
-    value: string;
-    label: string;
-    iconColor?: string;
+export interface Award {
+  id: string;
+  userId: string;
+  badgeId: string;
+  gigId?: string | null;
+  notes?: string | null;
+  awardedAt: Date;
+  awardedBySystem?: boolean | null;
+  awardedByUserId?: string | null;
 }
 
-interface Award {
-    id: string;
-    icon: React.ElementType;
-    textLines: string;
+export interface Equipment {
+  id: string;
+  workerProfileId: string;
+  name: string;
+  description?: string | null;
+  isVerifiedByAdmin?: boolean | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Review {
+  id: string;
+  gigId: string;
+  authorUserId: string;
+  targetUserId: string;
+  rating: number;
+  comment: string | null;
+  wouldWorkAgain?: boolean | null;
+  awardedBadgeNamesToTargetJson?: string[] | unknown;
+  isPublic: boolean;
+  type: string;
+  moderationStatus: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Qualification {
+  id: string;
+  workerProfileId: string;
+  title: string;
+  institution?: string | null;
+  yearAchieved?: number | null;
+  description?: string | null;
+  documentUrl?: string | null;
+  isVerifiedByAdmin?: boolean | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface Availability {
+  days: string[];
+  hours: string;
+}
+
+export interface SemanticProfile {
+  tags: string[];
 }
 
 export default interface PublicWorkerProfile {
-    id: string;
-    displayName: string;
-    userHandle?: string;
-    profileHeadline?: string;
-    bio?: string;
-    avatarUrl?: string;
-    profileImageUrl?: string;
-    qrCodeUrl?: string;
-    location?: string;
+  id?: string | undefined;
+  userId?: string | undefined;
+  location?: string | undefined;
 
-    primaryRole?: string;
+  fullBio: string | undefined;
+  privateNotes?: string;
+  averageRating?: number | undefined;
 
-    statistics?: Statistic[];
+  responseRateInternal?: string | undefined;
 
-    skills?: Skill[];
+  availabilityJson?: Availability;
+  semanticProfileJson?: SemanticProfile;
 
-    awards?: Award[];
-    feedbackSummary?: string;
+  createdAt?: Date | undefined;
+  updatedAt?: Date | undefined;
 
-    qualifications?: string[];
-    equipment?: string[];
-
-    ableGigsCompleted?: number;
-    averageRating?: number;
-    reviewCount?: number;
-    experienceYears?: number | string;
-    isVerified?: boolean;
-    viewCalendarLink?: string;
+  awards?: Award[];
+  equipment?: Equipment[];
+  skills?: Skill[];
+  reviews?: Review[];
+  qualifications?: Qualification[];
 }
