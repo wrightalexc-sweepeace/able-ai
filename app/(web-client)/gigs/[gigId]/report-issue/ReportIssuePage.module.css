@@ -30,12 +30,33 @@
   color: #ffffff;
   margin: 0;
 }
+
+.chatBot {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 90%;
+  margin: 1rem auto 0;
+  
+  p {
+     color: #ffffff;
+    font-size: 14px;
+    font-family: "Roboto";
+    font-weight: 700;
+    line-height: 18px;
+    font-style: italic;
+  }
+}
+
 .formCard {
   margin: 1rem;
   padding: 1.5rem;
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  background-color: #161616;
+  border-radius: 24px;
+  border: 1px solid #2b2b2b;
 }
 .formField {
   display: flex;
