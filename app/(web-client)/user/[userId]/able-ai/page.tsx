@@ -147,6 +147,12 @@ export default function AbleAIPage() {
   }]);
   const [isTyping, setIsTyping] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [feedbackTargetId, setFeedbackTargetId] = useState<number | null>(null);
+  const [feedbackPending, setFeedbackPending] = useState<boolean>(false);
+  const [notHelpfulCount, setNotHelpfulCount] = useState<number>(0);
+  const [escalated, setEscalated] = useState<boolean>(false);
+
+  const SUPPORT_EMAIL = 'support@ableai.com';
 
   // AI response handler
   const handleAIResponse = useCallback(async (userMessage: string) => {
@@ -228,16 +234,25 @@ Respond with a helpful message and include any relevant gigs if applicable.`;
               // TODO: Implement live agent redirect logic here
             }
 
-            return [
+            const newMessage: ChatStep = {
+              id: Date.now() + 2,
+              type: "bot",
+              content: responseContent,
+              gigs: aiResponse.gigs,
+              isNew: true,
+            };
+
+            const next = [
               ...filtered,
-              {
-                id: Date.now() + 2,
-                type: "bot",
-                content: responseContent,
-                gigs: aiResponse.gigs,
-                isNew: true,
-              },
+              newMessage,
             ];
+
+            // After any AI response, show feedback prompt unless escalated
+            setFeedbackTargetId(newMessage.id);
+            setFeedbackPending(true);
+            setEscalated(false);
+
+            return next;
           });
         }, 700);
       } else {
@@ -264,6 +279,58 @@ Respond with a helpful message and include any relevant gigs if applicable.`;
       }, 700);
     }
   }, [ai]);
+
+  const handleHelpful = useCallback(() => {
+    if (!feedbackPending) return;
+    setFeedbackPending(false);
+    setNotHelpfulCount(0);
+    setChatSteps(prev => ([
+      ...prev,
+      {
+        id: Date.now() + 3,
+        type: 'bot',
+        content: 'Thanks for the feedback! If you have more questions, I\'m here to help.',
+        isNew: true,
+      },
+    ]));
+  }, [feedbackPending]);
+
+  const handleNotHelpful = useCallback(() => {
+    if (!feedbackPending) return;
+    const nextCount = notHelpfulCount + 1;
+    setNotHelpfulCount(nextCount);
+    setFeedbackPending(false);
+
+    if (nextCount >= 4) {
+      setEscalated(true);
+      setChatSteps(prev => ([
+        ...prev,
+        {
+          id: Date.now() + 4,
+          type: 'bot',
+          content: `I\'m sorry I couldn\'t resolve this. I\'m escalating to human support. Please email us at ${SUPPORT_EMAIL} or compose an email here: mailto:${SUPPORT_EMAIL}`,
+          isNew: true,
+        },
+      ]));
+      return;
+    }
+
+    // Ask for clarification and continue the loop
+    setChatSteps(prev => ([
+      ...prev,
+      {
+        id: Date.now() + 5,
+        type: 'bot',
+        content: 'Sorry about that. Could you share a bit more detail so I can better assist?',
+        isNew: true,
+      },
+    ]));
+
+    // Re-show feedback for the next AI turn
+    setTimeout(() => {
+      setFeedbackPending(true);
+    }, 0);
+  }, [feedbackPending, notHelpfulCount]);
 
   // Handle sending messages
   const onSendMessage = useCallback((message: string) => {
@@ -416,6 +483,43 @@ Respond with a helpful message and include any relevant gigs if applicable.`;
                       description={gig.description}
                     />
                   ))}
+                </div>
+              )}
+              {feedbackPending && feedbackTargetId === step.id && !escalated && (
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  marginLeft: '40px',
+                  marginTop: '8px'
+                }}>
+                  <span style={{ fontSize: '14px', color: 'var(--text-color)' }}>Was this helpful?</span>
+                  <button
+                    type="button"
+                    onClick={handleHelpful}
+                    style={{
+                      padding: '6px 10px',
+                      background: 'var(--secondary-color)',
+                      color: '#000',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      fontWeight: 600,
+                    }}
+                  >Helpful</button>
+                  <button
+                    type="button"
+                    onClick={handleNotHelpful}
+                    style={{
+                      padding: '6px 10px',
+                      background: 'transparent',
+                      color: 'var(--secondary-color)',
+                      border: '1px solid var(--secondary-color)',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      fontWeight: 600,
+                    }}
+                  >Not helpful</button>
                 </div>
               )}
             </div>
