@@ -10,13 +10,12 @@ import { View } from "react-big-calendar";
 import { useAuth } from "@/context/AuthContext";
 import { CalendarEvent } from "@/app/types/CalendarEventTypes";
 import { getCalendarEvents } from "@/actions/events/get-calendar-events";
-// Import the CSS module for this page
+import { BUYER_MOCK_EVENTS } from "./mockData";
 import styles from "./BuyerCalendarPage.module.css";
 import Image from "next/image";
 
 const FILTERS = ["Manage availability", "Accepted gigs", "See gig offers"];
 
-// Helper to filter events based on active filter
 function filterEvents(events: CalendarEvent[], filter: string): CalendarEvent[] {
   switch (filter) {
     case 'Manage availability':
@@ -38,7 +37,6 @@ const BuyerCalendarPage = () => {
   const { user, loading: loadingAuth } = useAuth();
   const authUserId = user?.uid;
 
-  // Set default view based on screen size
   const [view, setView] = useState<View>(() => {
     if (typeof window !== "undefined" && window.innerWidth < 768) {
       return "day";
@@ -51,7 +49,6 @@ const BuyerCalendarPage = () => {
   const [allEvents, setAllEvents] = useState<CalendarEvent[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isFilterTransitioning, setIsFilterTransitioning] = useState(false);
 
   useEffect(() => {
     if (loadingAuth) {
@@ -64,7 +61,7 @@ const BuyerCalendarPage = () => {
     }
 
     if (authUserId !== pageUserId) {
-      router.push(`/signin?error=unauthorized`); // Or user's own profile, or a generic error page
+      router.push(`/signin?error=unauthorized`);
       return;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -74,15 +71,34 @@ const BuyerCalendarPage = () => {
     const fetchEvents = async () => {
       if (!user) return;
 
-      const res = await getCalendarEvents({ userId: user.uid, role: 'buyer', isViewQA: true });
+      // Prefer explicit buyer mock on client when integrating
+      const isViewQA = true;
+      let source: CalendarEvent[];
+      if (isViewQA) {
+        source = BUYER_MOCK_EVENTS;
+      } else {
+        const res = await getCalendarEvents({ userId: user.uid, role: 'buyer', isViewQA });
+        if (res.error) throw new Error(res.error);
+        source = res.events as CalendarEvent[];
+      }
 
-      if (res.error) throw new Error(res.error);
+      const parsed = source.map((event: CalendarEvent) => ({ ...event, start: new Date(event.start), end: new Date(event.end) }));
 
-      const data: CalendarEvent[] = res.events;
+      // Normalize buyer-facing fields so modal shows correct roles
+      const normalized = parsed.map(e => {
+        const next = { ...e } as CalendarEvent;
+        next.buyerName = 'You';
+        if (!next.workerName || next.workerName === 'You') {
+          const match = typeof next.title === 'string' ? next.title.split(':').pop()?.trim() : undefined;
+          if (match && match.length > 0 && match !== next.title) {
+            next.workerName = match;
+          }
+        }
+        return next;
+      });
 
-      const parsed = data.map((event: CalendarEvent) => ({ ...event, start: new Date(event.start), end: new Date(event.end) }));
-      setAllEvents(parsed);
-      setEvents(filterEvents(parsed, activeFilter));
+      setAllEvents(normalized);
+      setEvents(filterEvents(normalized, activeFilter));
     };
 
     fetchEvents();
@@ -99,11 +115,6 @@ const BuyerCalendarPage = () => {
     setSelectedEvent(null);
   };
 
-  const redirectGigOfferHandler = (event: CalendarEvent) => {
-    router.push(`/user/${pageUserId}/buyer/gigs/${event.id}`);
-  };
-
-  // Calendar navigation handler
   const handleNavigate = (action: "TODAY" | "PREV" | "NEXT") => {
     const current = new Date(date);
     if (action === "TODAY") {
@@ -121,19 +132,11 @@ const BuyerCalendarPage = () => {
     }
   };
 
-  // When filter changes, update events with smooth transition
   const handleFilterChange = (filter: string) => {
-    setIsFilterTransitioning(true);
-    
-    // Add a small delay to show the transition
-    setTimeout(() => {
-      setActiveFilter(filter);
-      setEvents(filterEvents(allEvents, filter));
-      setIsFilterTransitioning(false);
-    }, 150);
+    setEvents(filterEvents(allEvents, filter));
+    setActiveFilter(filter);
   };
 
-  // Handle view changes with smooth transition
   const handleViewChange = (newView: View) => {
     setView(newView);
   };
@@ -150,7 +153,7 @@ const BuyerCalendarPage = () => {
         activeFilter={activeFilter}
         onFilterChange={handleFilterChange}
       />
-      <main className={`${styles.mainContent} ${isFilterTransitioning ? styles.filterTransitioning : ''}`}>
+      <main className={styles.mainContent}>
         <AppCalendar
           events={events}
           date={date}
@@ -172,7 +175,7 @@ const BuyerCalendarPage = () => {
           <Image src="/images/home.svg" alt="Home" width={24} height={24} />
         </button>
         <button className={styles.dashboardButton} onClick={() => router.push(`/user/${pageUserId}/buyer`)}>
-          Dashboard
+          Home
         </button>
       </footer>
 

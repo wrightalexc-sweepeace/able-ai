@@ -595,36 +595,62 @@ export default function OnboardBuyerPage() {
     }
   }
 
+  function parseTimeToHHMM(timeValue: any): string | null {
+    try {
+      if (!timeValue) return null;
+      if (timeValue instanceof Date) {
+        const h = timeValue.getHours().toString().padStart(2, '0');
+        const m = timeValue.getMinutes().toString().padStart(2, '0');
+        return `${h}:${m}`;
+      }
+      if (typeof timeValue === 'string') {
+        const val = timeValue.trim();
+        if (val.includes('T')) {
+          const d = new Date(val);
+          if (!isNaN(d.getTime())) {
+            const h = d.getHours().toString().padStart(2, '0');
+            const m = d.getMinutes().toString().padStart(2, '0');
+            return `${h}:${m}`;
+          }
+        }
+        const hm = val.match(/^(\d{1,2}):(\d{2})\s*([AaPp][Mm])?$/);
+        if (hm) {
+          let hours = parseInt(hm[1], 10);
+          const minutes = parseInt(hm[2], 10);
+          const mer = hm[3]?.toLowerCase();
+          if (mer) {
+            if (hours === 12) hours = 0;
+            if (mer === 'pm') hours += 12;
+          }
+          if (hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59) {
+            return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+          }
+        }
+        const hOnly = val.match(/^(\d{1,2})\s*([AaPp][Mm])$/);
+        if (hOnly) {
+          let hours = parseInt(hOnly[1], 10);
+          const mer = hOnly[2].toLowerCase();
+          if (hours === 12) hours = 0;
+          if (mer === 'pm') hours += 12;
+          if (hours >= 0 && hours <= 23) return `${hours.toString().padStart(2, '0')}:00`;
+        }
+      }
+    } catch {}
+    return null;
+  }
+
   function formatTimeForDisplay(timeValue: any): string {
     if (!timeValue) return '';
-    
     try {
-      // Handle time input format (e.g., "08:00")
-      if (typeof timeValue === 'string' && timeValue.match(/^\d{2}:\d{2}$/)) {
-        const [hours, minutes] = timeValue.split(':');
+      const hhmm = parseTimeToHHMM(timeValue);
+      if (hhmm) {
+        const [hours, minutes] = hhmm.split(':');
         const date = new Date();
-        date.setHours(parseInt(hours), parseInt(minutes));
-        return date.toLocaleTimeString('en-GB', { 
-          hour: 'numeric', 
-          minute: '2-digit',
-          hour12: true 
-        });
+        date.setHours(parseInt(hours, 10), parseInt(minutes, 10));
+        return date.toLocaleTimeString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true });
       }
-      
-      // Handle time with seconds (e.g., "08:00:00")
-      if (typeof timeValue === 'string' && timeValue.match(/^\d{2}:\d{2}:\d{2}$/)) {
-        const [hours, minutes] = timeValue.split(':');
-        const date = new Date();
-        date.setHours(parseInt(hours), parseInt(minutes));
-        return date.toLocaleTimeString('en-GB', { 
-          hour: 'numeric', 
-          minute: '2-digit',
-          hour12: true 
-        });
-      }
-      
       return String(timeValue);
-    } catch (error) {
+    } catch {
       return String(timeValue);
     }
   }
@@ -769,21 +795,9 @@ Make the conversation feel natural and build on what they've already told you.`;
         // For time fields, ensure proper time format
         if (field === 'gigTime') {
           try {
-            // If it's already a valid time string, keep it
-            if (typeof value === 'string' && value.match(/^\d{2}:\d{2}$/)) {
-              return {
-                sufficient: true,
-                sanitized: value,
-              };
-            }
-            // If it's a Date object, extract time
-            if (value instanceof Date) {
-              const hours = value.getHours().toString().padStart(2, '0');
-              const minutes = value.getMinutes().toString().padStart(2, '0');
-              return {
-                sufficient: true,
-                sanitized: `${hours}:${minutes}`,
-              };
+            const hhmm = parseTimeToHHMM(value);
+            if (hhmm) {
+              return { sufficient: true, sanitized: hhmm };
             }
           } catch (error) {
             console.error('Time validation error:', error);
@@ -1271,25 +1285,12 @@ Make the conversation feel natural and build on what they've already told you.`;
       
       setFormData((prev) => ({ ...prev, [name]: processedValue }));
     } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
-    }
-    // Special handling for date fields to ensure only date part is stored
-    if (name === 'gigDate' && value) {
-      let processedValue = value;
-      
-      // If it's an ISO string with time, extract just the date part
-      if (typeof value === 'string' && value.includes('T')) {
-        processedValue = value.split('T')[0];
+      if (name === 'gigTime' && value) {
+        const hhmm = parseTimeToHHMM(value);
+        setFormData((prev) => ({ ...prev, [name]: hhmm || value }));
+      } else {
+        setFormData((prev) => ({ ...prev, [name]: value }));
       }
-      
-      // If it's a Date object, convert to date string
-      if (value instanceof Date) {
-        processedValue = value.toISOString().split('T')[0];
-      }
-      
-      setFormData((prev) => ({ ...prev, [name]: processedValue }));
-    } else {
-      setFormData((prev) => ({ ...prev, [name]: value }));
     }
   };
 
@@ -1416,7 +1417,7 @@ Make the conversation feel natural and build on what they've already told you.`;
         }}
       >
         {chatSteps.map((step, idx) => {
-          const key = `step-${step.id}-${step.type}-${step.inputConfig?.name || idx}`;
+          const key = `step-${step.id}-${idx}`;
           
           // User message
           if (step.type === "user") {

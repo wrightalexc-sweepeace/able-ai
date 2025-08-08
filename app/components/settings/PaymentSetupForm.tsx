@@ -27,9 +27,9 @@ const PaymentSetupForm = ({ userId }: PaymentSetupFormProps) => {
         const response = await createSetupIntent(userId);
         const data = await response;
 
-        if (data.clientSecret) {
-          setClientSecret(data.clientSecret);
-          setStripeCustomerId(data.stripeCustomerId);
+          if (data.clientSecret) {
+            setClientSecret(data.clientSecret);
+            setStripeCustomerId(data.stripeCustomerId || '');
         } else {
           setMessage(data?.error || 'Error obtaining the SetupIntent.');
         }

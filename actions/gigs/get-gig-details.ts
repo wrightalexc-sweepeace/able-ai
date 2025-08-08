@@ -16,19 +16,19 @@ function getMockedQAData(gigId: string) {
       gigTitle: "Corporate Mixer Event",
       buyerName: "Innovate Solutions Ltd.", buyerAvatarUrl: "/images/logo-placeholder.svg",
       date: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(), // In 2 days
-      startTime: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).setHours(18, 0, 0, 0).toString(),
-      endTime: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).setHours(23, 0, 0, 0).toString(),
+      startTime: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+      endTime: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000 + 3 * 60 * 60 * 1000).toISOString(),
       location: "123 Business Rd, Tech Park, London, EC1A 1BB",
       hourlyRate: 25,
       estimatedEarnings: 125,
       specialInstructions: "Focus on high-quality cocktails. Dress code: smart black. Setup starts 30 mins prior. Contact person on site: Jane (07xxxxxxxxx).",
-      status: "IN_PROGRESS", // Initially pending
+      status: "IN_PROGRESS",
       statusInternal: "IN_PROGRESS",
       hiringManager: "Jane Smith",
       hiringManagerUsername: "@janesmith",
       isBuyerSubmittedFeedback: false,
       isWorkerSubmittedFeedback: true,
-    };
+    } as GigDetails;
   }
   if (gigId === "gig456-inprogress") {
     return {
@@ -42,16 +42,39 @@ function getMockedQAData(gigId: string) {
       location: "The Manor House, Countryside Lane, GU21 5ZZ",
       hourlyRate: 18, estimatedEarnings: 108,
       specialInstructions: "Silver service required. Liaise with the event coordinator Sarah upon arrival.",
-      status: "IN_PROGRESS", // Initially completed
+      status: "IN_PROGRESS",
       statusInternal: "IN_PROGRESS",
       hiringManager: "Sarah Johnson",
       hiringManagerUsername: "@sarahjohnson",
       isBuyerSubmittedFeedback: false,
       isWorkerSubmittedFeedback: true,
-    };
+    } as GigDetails;
   }
 
-  return null; // Or throw an error
+  // Fallback generic mock for any other gigId in QA mode
+  const now = new Date();
+  const start = new Date(now.getTime() + 24 * 60 * 60 * 1000); // tomorrow
+  const end = new Date(start.getTime() + 2 * 60 * 60 * 1000); // +2h
+  return {
+    id: gigId,
+    role: "Bartender",
+    gigTitle: "Pop-up Bar Night",
+    buyerName: "Acme Events",
+    date: start.toISOString(),
+    startTime: start.toISOString(),
+    endTime: end.toISOString(),
+    duration: "2 hours",
+    location: "221B Baker Street, London",
+    hourlyRate: 20,
+    estimatedEarnings: 40,
+    specialInstructions: "Arrive 20 mins early for setup.",
+    status: "PENDING",
+    statusInternal: "PENDING_WORKER_ACCEPTANCE",
+    hiringManager: "Alex Doe",
+    hiringManagerUsername: "@alexd",
+    isBuyerSubmittedFeedback: false,
+    isWorkerSubmittedFeedback: false,
+  } as GigDetails;
 }
 
 function getMappedStatus(internalStatus: string): GigDetails['status'] {

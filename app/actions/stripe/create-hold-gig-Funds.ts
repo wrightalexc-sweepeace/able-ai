@@ -2,6 +2,7 @@
 
 import { eq } from 'drizzle-orm';
 import { stripeApi } from '@/lib/stripe-server';
+import type Stripe from 'stripe';
 import { db } from "@/lib/drizzle/db";
 import { PaymentsTable, UsersTable } from "@/lib/drizzle/schema";
 import { getPaymentAccountDetailsForGig } from '../../../lib/stripe/get-payment-account-details-for-gig';
@@ -29,8 +30,10 @@ async function holdGigAmount(params: HoldGigAmountParams) {
   const { buyerStripeCustomerId, destinationAccountId, gigPaymentInfo, currency, serviceAmountInCents } = params;
   const { gigId, payerUserId, receiverUserId } = gigPaymentInfo;
 
-  const setupIntents = (await stripeApi.setupIntents.list()).data;
-  const userSetupIntent = setupIntents.find(intent => intent.customer === buyerStripeCustomerId && intent.payment_method && intent.status === 'succeeded');
+  const setupIntents: Stripe.SetupIntent[] = (await stripeApi.setupIntents.list()).data as Stripe.SetupIntent[];
+  const userSetupIntent: Stripe.SetupIntent | undefined = setupIntents.find(
+    (intent: Stripe.SetupIntent) => intent.customer === buyerStripeCustomerId && intent.payment_method != null && intent.status === 'succeeded'
+  );
   const customerPaymentMethodId = userSetupIntent?.payment_method as string;
 
   const paymentIntent = await stripeApi.paymentIntents.create({
