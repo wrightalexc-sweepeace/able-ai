@@ -68,13 +68,13 @@ const BuyerCalendarPage = () => {
       return;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [loadingAuth]);
 
   useEffect(() => {
     const fetchEvents = async () => {
       if (!user) return;
 
-      const res = await getCalendarEvents({ userId: user.uid, role: 'buyer', isViewQA: false });
+      const res = await getCalendarEvents({ userId: user.uid, role: 'buyer', isViewQA: true });
 
       if (res.error) throw new Error(res.error);
 
@@ -158,6 +158,7 @@ const BuyerCalendarPage = () => {
           onView={setView}
           onNavigate={setDate}
           onSelectEvent={handleEventClick}
+          userRole="buyer"
           components={{
             event: (({ event }: { event: CalendarEvent; title: string }) => (
               <CalendarEventComponent event={event} userRole="buyer" view={view} />
@@ -168,7 +169,10 @@ const BuyerCalendarPage = () => {
       </main>
       <footer className={styles.footer}>
         <button className={styles.homeButton} onClick={() => router.push(`/user/${pageUserId}/buyer`)}>
-          <Image src="/images/home.svg" alt="Home" width={40} height={40} />
+          <Image src="/images/home.svg" alt="Home" width={24} height={24} />
+        </button>
+        <button className={styles.dashboardButton} onClick={() => router.push(`/user/${pageUserId}/buyer`)}>
+          Dashboard
         </button>
       </footer>
 

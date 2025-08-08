@@ -20,9 +20,11 @@ function extractCoordsFromGoogleMapsUrl(url: string) {
 
 const LocationPickerBubble: React.FC<LocationPickerBubbleProps> = ({ value, onChange, showConfirm, onConfirm }) => {
   const [urlInput, setUrlInput] = useState('');
-  const [addressInput, setAddressInput] = useState('');
+  const [latitude, setLatitude] = useState('');
+  const [longitude, setLongitude] = useState('');
   const [error, setError] = useState('');
-  const [selectedMethod, setSelectedMethod] = useState<'geo' | 'url' | 'address' | null>(null);
+  const [selectedMethod, setSelectedMethod] = useState<'geo' | 'url' | 'coordinates' | null>(null);
+  const [useCoordinates, setUseCoordinates] = useState(false);
 
   const handleGeo = () => {
     setError('');
@@ -51,11 +53,35 @@ const LocationPickerBubble: React.FC<LocationPickerBubbleProps> = ({ value, onCh
     }
   };
 
-  const handleAddressBlur = () => {
-    setSelectedMethod('address');
-    if (addressInput) {
-      setError('');
-      onChange(addressInput);
+  const handleCoordinatesSubmit = () => {
+    setSelectedMethod('coordinates');
+    // Validate coordinates
+    const lat = parseFloat(latitude);
+    const lng = parseFloat(longitude);
+    
+    if (isNaN(lat) || isNaN(lng)) {
+      setError('Please enter valid coordinates');
+      return;
+    }
+    
+    if (lat < -90 || lat > 90) {
+      setError('Latitude must be between -90 and 90');
+      return;
+    }
+    
+    if (lng < -180 || lng > 180) {
+      setError('Longitude must be between -180 and 180');
+      return;
+    }
+
+    const coords = { lat, lng };
+    onChange(coords);
+    setError('');
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && useCoordinates) {
+      handleCoordinatesSubmit();
     }
   };
 
@@ -71,6 +97,7 @@ const LocationPickerBubble: React.FC<LocationPickerBubbleProps> = ({ value, onCh
           <i className="fa-solid fa-location-dot" style={{ color: '#0f766e', fontSize: 20 }} />
           Use my current location
         </button>
+        
         <div style={{ display: 'flex', alignItems: 'center', background: selectedMethod === 'url' ? '#0f766e' : '#18181b', borderRadius: 8, padding: '4px 8px' }}>
           <i className="fa-solid fa-map-location-dot" style={{ color: '#0f766e', fontSize: 18, marginRight: 8 }} />
           <input
@@ -82,18 +109,81 @@ const LocationPickerBubble: React.FC<LocationPickerBubbleProps> = ({ value, onCh
             style={{ flex: 1, background: 'transparent', border: 'none', color: '#fff', fontSize: 15, outline: 'none' }}
           />
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', background: selectedMethod === 'address' ? '#0f766e' : '#18181b', borderRadius: 8, padding: '4px 8px' }}>
-          <i className="fa-solid fa-building" style={{ color: '#0f766e', fontSize: 18, marginRight: 8 }} />
-          <input
-            type="text"
-            placeholder="Enter address manually"
-            value={addressInput}
-            onChange={e => setAddressInput(e.target.value)}
-            onBlur={handleAddressBlur}
-            style={{ flex: 1, background: 'transparent', border: 'none', color: '#fff', fontSize: 15, outline: 'none' }}
-          />
-        </div>
+
+        {/* Manual Coordinates Toggle */}
+        <button
+          onClick={() => setUseCoordinates(!useCoordinates)}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 8, 
+            background: useCoordinates ? '#0f766e' : '#18181b', 
+            color: '#fff', border: 'none', borderRadius: 8, 
+            padding: '8px 12px', fontWeight: 600, cursor: 'pointer', 
+            fontSize: 16, transition: 'background-color 0.2s ease'
+          }}
+        >
+          <i className="fa-solid fa-crosshairs" style={{ color: '#0f766e', fontSize: 18 }} />
+          {useCoordinates ? 'Hide Manual Coordinates' : 'Enter Coordinates Manually'}
+        </button>
+
+        {useCoordinates && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, background: selectedMethod === 'coordinates' ? '#0f766e' : '#18181b', borderRadius: 8, padding: '8px' }}>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <div style={{ flex: 1 }}>
+                <label style={{ color: '#fff', fontSize: 12, marginBottom: 4, display: 'block' }}>Latitude:</label>
+                <input
+                  type="number"
+                  placeholder="e.g., 51.5074"
+                  value={latitude}
+                  onChange={e => setLatitude(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  step="any"
+                  style={{ 
+                    width: '100%', 
+                    background: 'transparent', 
+                    border: '1px solid #3a3a3a', 
+                    color: '#fff', 
+                    fontSize: 14, 
+                    outline: 'none',
+                    padding: '6px 8px',
+                    borderRadius: '4px'
+                  }}
+                />
+              </div>
+              <div style={{ flex: 1 }}>
+                <label style={{ color: '#fff', fontSize: 12, marginBottom: 4, display: 'block' }}>Longitude:</label>
+                <input
+                  type="number"
+                  placeholder="e.g., -0.1278"
+                  value={longitude}
+                  onChange={e => setLongitude(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  step="any"
+                  style={{ 
+                    width: '100%', 
+                    background: 'transparent', 
+                    border: '1px solid #3a3a3a', 
+                    color: '#fff', 
+                    fontSize: 14, 
+                    outline: 'none',
+                    padding: '6px 8px',
+                    borderRadius: '4px'
+                  }}
+                />
+              </div>
+            </div>
+            <button
+              onClick={handleCoordinatesSubmit}
+              style={{
+                background: '#0f766e', color: '#fff', border: 'none', borderRadius: 4, padding: '6px 12px', fontWeight: 600, cursor: 'pointer', fontSize: 12, alignSelf: 'flex-start'
+              }}
+            >
+              Set Coordinates
+            </button>
+          </div>
+        )}
+
         {error && <div style={{ color: '#f87171', fontSize: 14 }}>{error}</div>}
+        
         {value && (
           <div style={{ color: '#0f766e', fontSize: 15, marginTop: 8 }}>
             Selected: {typeof value === 'object' && value !== null && 'lat' in value && 'lng' in value && typeof value.lat === 'number' && typeof value.lng === 'number' 
@@ -101,6 +191,7 @@ const LocationPickerBubble: React.FC<LocationPickerBubbleProps> = ({ value, onCh
               : String(value)}
           </div>
         )}
+        
         {showConfirm && value && onConfirm && (
           <button
             style={{

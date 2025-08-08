@@ -114,16 +114,6 @@ export default function WorkerDashboardPage() {
       icon: <DollarSign size={28} />,
       to: `/user/${uid}/worker/earnings`,
     },
-    {
-      label: "Chat",
-      icon: <MessageCircle size={28} />,
-      to: `/user/${uid}/worker/chat`,
-    },
-    {
-      label: "AI Support",
-      icon: <MessageCircle size={28} />,
-      to: `/user/${uid}/able-ai`,
-    },
   ];
 
   // Optional: Fetch summary data for upcoming gigs/offers
