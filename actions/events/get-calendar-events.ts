@@ -3,6 +3,7 @@
 import { db } from "@/lib/drizzle/db";
 import { eq } from "drizzle-orm";
 import { MOCK_EVENTS } from '@/app/(web-client)/user/[userId]/worker/calendar/mockData';
+import { BUYER_MOCK_EVENTS } from '@/app/(web-client)/user/[userId]/buyer/calendar/mockData';
 import { GigsTable, gigStatusEnum, UsersTable } from "@/lib/drizzle/schema";
 import { CalendarEvent, EventStatusEnum, EventStatusEnumType } from "@/app/types/CalendarEventTypes";
 
@@ -48,8 +49,8 @@ export async function getCalendarEvents({ userId, role, isViewQA }: { userId: st
   console.log('MOCK_EVENTS:', MOCK_EVENTS);
 
   if (isViewQA) {
-    console.log('Returning mock events:', { events: MOCK_EVENTS });
-    return { events: MOCK_EVENTS };
+    console.log('Returning mock events:', { events: role === 'buyer' ? BUYER_MOCK_EVENTS : MOCK_EVENTS });
+    return { events: role === 'buyer' ? BUYER_MOCK_EVENTS : MOCK_EVENTS };
   }
 
   if (!userId) {

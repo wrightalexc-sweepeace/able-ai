@@ -55,7 +55,7 @@ const CalendarEventComponent: React.FC<CalendarEventComponentProps> = ({
   let statusClass = styles.statusBadge;
   let statusText: string = event.status || "";
   if (event.status === "ACCEPTED") {
-    statusClass += " " + (event.isBuyerAccepted ? styles.statusBuyerAccepted : styles.statusAccepted);
+    statusClass += " " + (userRole === 'buyer' ? styles.statusBuyerAccepted : styles.statusAccepted);
     statusText = "Accepted";
   } else if (event.status === "OFFER") {
     statusClass += " " + styles.statusOffer;
@@ -87,7 +87,7 @@ const CalendarEventComponent: React.FC<CalendarEventComponentProps> = ({
   // For month view, show minimal content
   if (view === 'month') {
     return (
-      <div className={styles.eventContainer}>
+      <div className={styles.eventContainer} data-view="month">
         <div className={styles.eventHeader}>
           <div className={styles.eventTitle}>
             {event.title}
@@ -101,7 +101,7 @@ const CalendarEventComponent: React.FC<CalendarEventComponentProps> = ({
   // For week view, show compact content
   if (view === 'week') {
     return (
-      <div className={styles.eventContainer}>
+      <div className={styles.eventContainer} data-view="week">
         <div className={styles.eventHeader}>
           <div className={styles.eventTitle}>
             {event.title}
@@ -125,7 +125,7 @@ const CalendarEventComponent: React.FC<CalendarEventComponentProps> = ({
 
   // For day view, show full content with View Gig button
   return (
-    <div className={styles.eventContainer}>
+    <div className={styles.eventContainer} data-view="day">
       <div className={styles.eventHeader}>
         <div className={styles.eventTitle}>
           {event.title}
@@ -144,10 +144,18 @@ const CalendarEventComponent: React.FC<CalendarEventComponentProps> = ({
         </div>
 
         {(event.buyerName || event.workerName) && (
-          <div className={styles.participantInfo}>
-            <User size={12} className={styles.userIcon} />
-            {event.buyerName && <span className={styles.participantName}>{event.buyerName}</span>}
-            {event.workerName && <span className={styles.participantName}>{event.workerName}</span>}
+          <div className={`${styles.participantInfo} ${styles.participantSplit}`}>
+            <div className={styles.participantLeft}>
+              <User size={12} className={styles.userIcon} />
+              <span className={styles.participantName}>
+                {userRole === 'buyer' ? (event.buyerName || 'You') : (event.buyerName || '')}
+              </span>
+            </div>
+            <div className={styles.participantRight}>
+              <span className={styles.participantName}>
+                {userRole === 'buyer' ? (event.workerName || '') : 'You'}
+              </span>
+            </div>
           </div>
         )}
       </div>
@@ -155,7 +163,7 @@ const CalendarEventComponent: React.FC<CalendarEventComponentProps> = ({
       {/* View Gig button for accepted gigs and offers */}
       {(event.status === 'ACCEPTED' || event.status === 'OFFER') && (
         <div className={styles.actionButtons}>
-          <button className={`${styles.actionButton} ${styles.viewGigBtn}`}>
+          <button className={`${styles.actionButton} ${styles.viewGigBtn} ${userRole === 'buyer' ? styles.viewGigBtnSecondary : ''}`}>
             <Eye size={12} className={styles.viewIcon} />
             View Gig
           </button>

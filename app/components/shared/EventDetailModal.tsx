@@ -2,9 +2,9 @@
 
 import React from 'react';
 import styles from './EventDetailModal.module.css';
-import { X, Clock, User, Calendar, MapPin, CheckCircle, AlertCircle, PlayCircle, CheckSquare, XCircle } from 'lucide-react';
+import { X, Clock, User, Calendar, MapPin } from 'lucide-react';
 import { CalendarEvent } from '@/app/types/CalendarEventTypes';
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 
 interface EventDetailModalProps {
   event: CalendarEvent | null;
@@ -20,6 +20,9 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
   userRole
 }) => {
   const router = useRouter();
+  const params = useParams();
+  const pageUserId = (params as Record<string, string | string[]>)?.userId;
+  const resolvedUserId = Array.isArray(pageUserId) ? pageUserId[0] : pageUserId;
 
   if (!isOpen || !event) return null;
 
@@ -49,17 +52,17 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
   const getStatusColor = (status: string | undefined) => {
     switch (status) {
       case 'ACCEPTED':
-        return '#10b981'; // Green
+        return '#10b981';
       case 'OFFER':
-        return '#6b7280'; // Gray
+        return '#6b7280';
       case 'IN_PROGRESS':
-        return '#f59e0b'; // Amber
+        return '#f59e0b';
       case 'COMPLETED':
-        return '#10b981'; // Green
+        return '#10b981';
       case 'CANCELLED':
-        return '#ef4444'; // Red
+        return '#ef4444';
       default:
-        return '#6b7280'; // Gray
+        return '#6b7280';
     }
   };
 
@@ -81,9 +84,8 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
   };
 
   const handleGoToOffer = () => {
-    // Navigate to the offer view
-    if (event.id) {
-      router.push(`/user/current/${userRole}/gigs/${event.id}`);
+    if (event.id && resolvedUserId) {
+      router.push(`/user/${resolvedUserId}/${userRole}/gigs/${event.id}`);
     }
     onClose();
   };
@@ -137,7 +139,8 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
               </div>
             )}
 
-            {userRole === 'worker' && event.buyerName && (
+            {/* Always show both Buyer and Worker when available */}
+            {event.buyerName && (
               <div className={styles.detailRow}>
                 <User className={styles.icon} size={16} />
                 <span className={styles.label}>Buyer:</span>
@@ -145,7 +148,7 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
               </div>
             )}
 
-            {userRole === 'buyer' && event.workerName && (
+            {event.workerName && (
               <div className={styles.detailRow}>
                 <User className={styles.icon} size={16} />
                 <span className={styles.label}>Worker:</span>

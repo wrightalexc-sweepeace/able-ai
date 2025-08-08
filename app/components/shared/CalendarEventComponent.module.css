@@ -150,6 +150,21 @@
   text-overflow: ellipsis;
 }
 
+.statusBuyerAccepted {
+  background-color: var(--secondary-color);
+  color: #000000;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.75rem;
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  animation: offerPulse 2s ease-in-out infinite;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 @keyframes offerPulse {
   0%, 100% {
     box-shadow: 0 0 0 rgba(59, 130, 246, 0.4);
@@ -316,6 +331,32 @@
 .viewGigBtn:hover {
   background-color: var(--primary-darker-color);
   color: #ffffff;
+}
+
+.viewGigBtnSecondary {
+  background-color: var(--secondary-color);
+  color: #000000;
+}
+
+.viewGigBtnSecondary:hover {
+  background-color: var(--secondary-color);
+  color: #ffffff;
+}
+
+.participantSplit {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+.participantLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.participantRight {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
 }
 
 .viewIcon {

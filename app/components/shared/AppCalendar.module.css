@@ -1006,8 +1006,8 @@
 
 /* For accepted events in buyer view */
 .calendarWrapper :global(.rbc-event[data-status="ACCEPTED"][data-role="buyer"]) {
-  background-color: var(--success-color) !important;
-  border-color: var(--success-color) !important;
+  background-color: var(--secondary-color) !important;
+  border-color: var(--secondary-color) !important;
 }
 
 /* For non-accepted events (explicit) */

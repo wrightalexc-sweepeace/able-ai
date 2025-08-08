@@ -153,7 +153,7 @@ const AppCalendar = <TEvent extends object>({
       // Month view: vertical layout with text on top, icon below
       return (
         <div className={styles.eventComponent}>
-          <span style={{ fontSize: '2.5vw', color: '#fff', fontWeight: '500', whiteSpace: 'nowrap' }}>Open gig</span>
+          <span style={{ fontSize: '2.5vw', color: '#000', fontWeight: '500', whiteSpace: 'nowrap' }}>Open gig</span>
           <br />
           <Eye size={25} color="#888" />
         </div>
