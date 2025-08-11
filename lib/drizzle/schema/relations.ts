@@ -175,13 +175,11 @@ export const gigsRelations = relations(GigsTable, ({ one, many }) => ({
     // Gig -> User (Buyer)
     fields: [GigsTable.buyerUserId],
     references: [UsersTable.id],
-    relationName: "UserAsBuyerOfGig",
   }),
   worker: one(UsersTable, {
     // Gig -> User (Worker)
     fields: [GigsTable.workerUserId],
     references: [UsersTable.id],
-    relationName: "UserAsWorkerOfGig",
   }),
   skillsRequired: many(GigSkillsRequiredTable), // Gig -> GigSkillsRequired (1-to-many)
   payments: many(PaymentsTable), // Gig -> Payments (1-to-many)

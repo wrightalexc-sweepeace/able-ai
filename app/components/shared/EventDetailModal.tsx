@@ -1,10 +1,14 @@
 "use client";
 
-import React from 'react';
-import styles from './EventDetailModal.module.css';
-import { X, Clock, User, Calendar, MapPin } from 'lucide-react';
-import { CalendarEvent } from '@/app/types/CalendarEventTypes';
-import { useRouter, useParams } from 'next/navigation';
+import React from "react";
+import { useRouter, useParams } from "next/navigation";
+import { X, Calendar, Clock, MapPin, User } from "lucide-react";
+import { CalendarEvent } from "@/app/types/CalendarEventTypes";
+import { acceptGigOffer } from "@/actions/gigs/accept-gig-offer";
+import { updateGigOfferStatus } from "@/actions/gigs/update-gig-offer-status";
+import { useAuth } from "@/context/AuthContext";
+import { toast } from "sonner";
+import styles from "./EventDetailModal.module.css";
 
 interface EventDetailModalProps {
   event: CalendarEvent | null;
@@ -166,12 +170,28 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
 
           {(event.status === 'ACCEPTED' || event.status === 'OFFER') && (
             <div className={styles.actions}>
-              <button 
-                className={styles.actionButton}
-                onClick={handleGoToOffer}
-              >
-                Go to Offer
-              </button>
+              {event.status === 'OFFER' && userRole === 'worker' ? (
+                // For offers, redirect to gig offers page
+                <button 
+                  className={styles.actionButton}
+                  onClick={() => {
+                    if (resolvedUserId) {
+                      router.push(`/user/${resolvedUserId}/worker/offers`);
+                    }
+                    onClose();
+                  }}
+                >
+                  View All Offers
+                </button>
+              ) : (
+                // For accepted gigs, show the original button
+                <button 
+                  className={styles.actionButton}
+                  onClick={handleGoToOffer}
+                >
+                  Go to Offer
+                </button>
+              )}
             </div>
           )}
         </div>

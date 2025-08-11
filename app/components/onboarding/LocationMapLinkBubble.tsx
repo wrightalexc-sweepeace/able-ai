@@ -6,7 +6,7 @@ interface LocationMapLinkBubbleProps {
   id?: string;
   name?: string;
   label?: string;
-  onLocationSet?: (coords: { lat: number; lon: number } | null) => void;
+  onLocationSet?: (coords: string | null) => void;
   disabled?: boolean;
   placeholder?: string;
 }
@@ -43,8 +43,9 @@ const LocationMapLinkBubble = React.forwardRef<HTMLInputElement, LocationMapLink
       if (match && match[1] && match[2]) {
         const lat = parseFloat(match[1]);
         const lon = parseFloat(match[2]);
+        const coordinatesString = `${lat.toFixed(6)}, ${lon.toFixed(6)}`;
         if (onLocationSet) {
-          onLocationSet({ lat, lon });
+          onLocationSet(coordinatesString);
         }
       } else {
         setError('Invalid Google Maps URL. Please paste the full URL.');

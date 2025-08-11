@@ -183,7 +183,6 @@ const DayViewCalendar: React.FC<DayViewCalendarProps> = ({
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: '4px',
-
                   flexDirection: 'column'
                 }}
               >

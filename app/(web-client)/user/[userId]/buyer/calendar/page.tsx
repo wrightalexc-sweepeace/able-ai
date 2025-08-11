@@ -71,16 +71,12 @@ const BuyerCalendarPage = () => {
     const fetchEvents = async () => {
       if (!user) return;
 
-      // Prefer explicit buyer mock on client when integrating
-      const isViewQA = true;
+      // Use real DB-backed events so newly created gigs appear
+      const isViewQA = false;
       let source: CalendarEvent[];
-      if (isViewQA) {
-        source = BUYER_MOCK_EVENTS;
-      } else {
-        const res = await getCalendarEvents({ userId: user.uid, role: 'buyer', isViewQA });
-        if (res.error) throw new Error(res.error);
-        source = res.events as CalendarEvent[];
-      }
+      const res = await getCalendarEvents({ userId: user.uid, role: 'buyer', isViewQA });
+      if (res.error) throw new Error(res.error);
+      source = res.events as CalendarEvent[];
 
       const parsed = source.map((event: CalendarEvent) => ({ ...event, start: new Date(event.start), end: new Date(event.end) }));
 

@@ -86,14 +86,20 @@ const GigOfferCard = ({
       </div>
       <div className={styles.buttons}>
         <button
-          onClick={() => onAccept(offer.id)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onAccept(offer.id);
+          }}
           className={`${styles.button} ${styles.acceptButton} ${isProcessingAccept ? styles.processing : ''}`}
           disabled={isProcessingAccept || isProcessingDecline || isExpired}
         >
              {isProcessingAccept ? <Loader2 size={16} className="animate-spin"/> : 'Accept'}
         </button>
         <button
-          onClick={() => onDecline(offer.id)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onDecline(offer.id);
+          }}
           className={`${styles.button} ${styles.declineButton} ${isProcessingDecline ? styles.processing : ''}`}
           disabled={isProcessingDecline || isProcessingAccept || isExpired}
         >

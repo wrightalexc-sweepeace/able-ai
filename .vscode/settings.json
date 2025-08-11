@@ -1,0 +1,16 @@
+{
+  "sqltools.connections": [
+    {
+      "name": "Able AI MVP Dev",
+      "driver": "PostgreSQL",
+      "server": "eu-central-1.db.thenile.dev",
+      "port": 5432,
+      "database": "able_ai_mvp_dev",
+      "username": "0196cadf-d785-7094-9139-d4776d9bac1e",
+      "password": "6ce6472d-997b-41af-a1ba-310414c82a97",
+      "ssl": true,
+      "schema": "public",
+      "askForPassword": false
+    }
+  ]
+}

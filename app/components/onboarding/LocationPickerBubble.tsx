@@ -31,11 +31,10 @@ const LocationPickerBubble: React.FC<LocationPickerBubbleProps> = ({ value, onCh
     setSelectedMethod('geo');
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition((position) => {
-        const coords = {
-          lat: position.coords.latitude,
-          lng: position.coords.longitude,
-        };
-        onChange(coords);
+        const lat = position.coords.latitude;
+        const lng = position.coords.longitude;
+        // Pass coordinates as an object to preserve lat/lng for backend storage
+        onChange({ lat, lng, formatted_address: `Coordinates: ${lat.toFixed(6)}, ${lng.toFixed(6)}` });
       }, () => setError('Unable to get your location.'));
     } else {
       setError('Geolocation is not supported by your browser.');
@@ -47,7 +46,8 @@ const LocationPickerBubble: React.FC<LocationPickerBubbleProps> = ({ value, onCh
     const coords = extractCoordsFromGoogleMapsUrl(urlInput);
     if (coords) {
       setError('');
-      onChange(coords);
+      // Pass coordinates as an object to preserve lat/lng for backend storage
+      onChange({ lat: coords.lat, lng: coords.lng, formatted_address: `Coordinates: ${coords.lat.toFixed(6)}, ${coords.lng.toFixed(6)}` });
     } else if (urlInput) {
       setError('Could not extract coordinates from this URL.');
     }
@@ -74,8 +74,8 @@ const LocationPickerBubble: React.FC<LocationPickerBubbleProps> = ({ value, onCh
       return;
     }
 
-    const coords = { lat, lng };
-    onChange(coords);
+    // Pass coordinates as an object to preserve lat/lng for backend storage
+    onChange({ lat, lng, formatted_address: `Coordinates: ${lat.toFixed(6)}, ${lng.toFixed(6)}` });
     setError('');
   };
 

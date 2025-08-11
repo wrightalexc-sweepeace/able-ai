@@ -10,6 +10,7 @@ import IconGrid from "@/app/components/shared/IconGrid";
 import ReferralBanner from "@/app/components/shared/ReferralBanner";
 import RoleToggle from "@/app/components/shared/RoleToggle";
 import SettingsButton from "@/app/components/shared/SettingsButton";
+import WorkerGigRequestAICard from "@/app/components/shared/WorkerGigRequestAICard";
 
 // Import Lucide icons as needed for the specific dashboard
 import {
@@ -179,6 +180,11 @@ export default function WorkerDashboardPage() {
 
         {/* <h2 className={styles.sectionTitle}>Manage Your Activity</h2> */}
         <IconGrid items={actionItems} />
+
+        {/* AI Gig Request Chat Card */}
+        {uid && (
+          <WorkerGigRequestAICard userId={uid} />
+        )}
 
         {/* Optional Summary Section - Example Structure
         {summaryData.length > 0 && (
