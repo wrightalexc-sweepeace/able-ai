@@ -164,7 +164,6 @@ export default function AbleAIPage() {
   const [escalated, setEscalated] = useState<boolean>(false);
 
   const SUPPORT_EMAIL = 'support@ableai.com';
-<<<<<<< HEAD
 
   // Fetch gigs from database - only when needed
   const fetchGigsForUser = async () => {
@@ -198,8 +197,6 @@ export default function AbleAIPage() {
     }
     setIsModalOpen(false);
   };
-=======
->>>>>>> 03bc6b34126fe6470d321d11b613d7fdbd61b34e
 
   // AI response handler
   const handleAIResponse = useCallback(async (userMessage: string) => {
@@ -297,39 +294,24 @@ For gig requests, provide a helpful response and set hasGigs to true.`;
               responseContent += '\n\n*Note: For more complex issues, you can request a live agent.*';
               // TODO: Implement live agent redirect logic here
             }
-<<<<<<< HEAD
             
-            return [
-              ...filtered,
-              {
-                id: Date.now() + 1,
-                type: "bot" as const,
-                content: responseContent,
-                gigs: gigsToShow,
-                isNew: true,
-              },
-=======
-
-            const newMessage: ChatStep = {
-              id: Date.now() + 2,
-              type: "bot",
+            const newMessage = {
+              id: Date.now() + 1,
+              type: "bot" as const,
               content: responseContent,
-              gigs: aiResponse.gigs,
+              gigs: gigsToShow,
               isNew: true,
             };
-
-            const next = [
-              ...filtered,
-              newMessage,
->>>>>>> 03bc6b34126fe6470d321d11b613d7fdbd61b34e
-            ];
 
             // After any AI response, show feedback prompt unless escalated
             setFeedbackTargetId(newMessage.id);
             setFeedbackPending(true);
             setEscalated(false);
 
-            return next;
+            return [
+              ...filtered,
+              newMessage,
+            ];
           });
           
           // After any AI response, show feedback prompt unless escalated
