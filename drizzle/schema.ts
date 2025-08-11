@@ -1,5 +1,81 @@
-import { pgTable, foreignKey, serial, uuid, varchar, jsonb, timestamp, unique, text, integer, boolean, uniqueIndex, numeric, date, index, vector } from "drizzle-orm/pg-core"
+import { pgTable, foreignKey, serial, uuid, varchar, jsonb, timestamp, unique, text, integer, boolean, uniqueIndex, numeric, date, index, vector, pgEnum } from "drizzle-orm/pg-core"
 import { sql } from "drizzle-orm"
+
+// Enum definitions
+export const gigStatusEnum = pgEnum("gig_status_enum", [
+  'PENDING_WORKER_ACCEPTANCE',
+  'PAYMENT_HELD_PENDING_ACCEPTANCE',
+  'ACCEPTED',
+  'DECLINED_BY_WORKER',
+  'IN_PROGRESS',
+  'PENDING_COMPLETION_WORKER',
+  'PENDING_COMPLETION_BUYER',
+  'COMPLETED',
+  'AWAITING_PAYMENT',
+  'PAID'
+]);
+
+export const moderationStatusEnum = pgEnum("moderation_status_enum", [
+  'PENDING',
+  'APPROVED',
+  'REJECTED',
+  'AUTO_FLAGGED'
+]);
+
+export const cancellationPartyEnum = pgEnum("cancellation_party_enum", [
+  'BUYER',
+  'WORKER',
+  'ADMIN',
+  'SYSTEM'
+]);
+
+export const paymentStatusEnum = pgEnum("payment_status_enum", [
+  'PENDING',
+  'PROCESSING',
+  'COMPLETED',
+  'FAILED',
+  'REFUNDED',
+  'REQUIRES_ACTION'
+]);
+
+export const vectorEntityTypeEnum = pgEnum("vector_entity_type_enum", [
+  'WORKER_PROFILE_BIO',
+  'WORKER_SKILL_DESCRIPTION',
+  'GIG_REQUIREMENT_DESCRIPTION',
+  'USER_REVIEW_TEXT'
+]);
+
+export const userAppRoleEnum = pgEnum("user_app_role_enum", [
+  'USER',
+  'SUPER_ADMIN',
+  'ADMIN',
+  'QA'
+]);
+
+export const activeRoleContextEnum = pgEnum("active_role_context_enum", [
+  'BUYER',
+  'GIG_WORKER'
+]);
+
+export const rtwKycStatusEnum = pgEnum("rtw_kyc_status_enum", [
+  'NOT_SUBMITTED',
+  'PENDING',
+  'VERIFIED',
+  'REJECTED'
+]);
+
+export const stripeAccountStatusEnum = pgEnum("stripe_account_status_enum", [
+  'connected',
+  'pending_verification',
+  'incomplete',
+  'restricted',
+  'disabled'
+]);
+
+export const reviewTypeEnum = pgEnum("review_type_enum", [
+  'INTERNAL_PLATFORM',
+  'EXTERNAL_REQUESTED'
+]);
 
 
 
@@ -45,7 +121,7 @@ export const badgeDefinitions = pgTable("badge_definitions", {
 	description: text().notNull(),
 	iconUrlOrLucideName: varchar("icon_url_or_lucide_name", { length: 255 }),
 	// TODO: failed to parse database type 'badge_type_enum'
-	type: unknown("type").notNull(),
+	type: varchar("type", { length: 50 }).notNull(),
 	criteriaJson: jsonb("criteria_json"),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
@@ -80,7 +156,8 @@ export const chatMessages = pgTable("chat_messages", {
 	imageUrl: text("image_url"),
 	isReadByReceiver: boolean("is_read_by_receiver").default(false).notNull(),
 	// TODO: failed to parse database type 'moderation_status_enum'
-	moderationStatus: unknown("moderation_status").notNull(),
+	// Original: moderationStatus: unknown("moderation_status").notNull(),
+	moderationStatus: varchar("moderation_status", { length: 50 }).notNull(),
 	sentAt: timestamp("sent_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 }, (table) => [
 	foreignKey({
@@ -243,16 +320,19 @@ export const gigs = pgTable("gigs", {
 	estimatedHours: numeric("estimated_hours", { precision: 5, scale:  2 }),
 	totalAgreedPrice: numeric("total_agreed_price", { precision: 10, scale:  2 }),
 	// TODO: failed to parse database type 'gig_status_enum'
-	statusInternal: unknown("status_internal").notNull(),
+	// Original: statusInternal: unknown("status_internal").notNull(),
+	statusInternal: gigStatusEnum("status_internal").notNull(),
 	ableFeePercent: numeric("able_fee_percent", { precision: 5, scale:  4 }),
 	stripeFeePercent: numeric("stripe_fee_percent", { precision: 5, scale:  4 }),
 	stripeFeeFixed: numeric("stripe_fee_fixed", { precision: 10, scale:  2 }),
 	promoCodeApplied: varchar("promo_code_applied", { length: 50 }),
 	// TODO: failed to parse database type 'moderation_status_enum'
-	moderationStatus: unknown("moderation_status").notNull(),
+	// Original: moderationStatus: unknown("moderation_status").notNull(),
+	moderationStatus: moderationStatusEnum("moderation_status").notNull(),
 	cancellationReason: text("cancellation_reason"),
 	// TODO: failed to parse database type 'cancellation_party_enum'
-	cancellationParty: unknown("cancellation_party"),
+	// Original: cancellationParty: unknown("cancellation_party"),
+	cancellationParty: cancellationPartyEnum("cancellation_party"),
 	notesForWorker: text("notes_for_worker"),
 	notesForBuyer: text("notes_for_buyer"),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
@@ -336,7 +416,8 @@ export const payments = pgTable("payments", {
 	stripeFeeAmount: numeric("stripe_fee_amount", { precision: 10, scale:  2 }).notNull(),
 	amountNetToWorker: numeric("amount_net_to_worker", { precision: 10, scale:  2 }).notNull(),
 	// TODO: failed to parse database type 'payment_status_enum'
-	status: unknown("status").notNull(),
+	// Original: status: unknown("status").notNull(),
+	status: paymentStatusEnum("status").notNull(),
 	stripePaymentIntentId: varchar("stripe_payment_intent_id", { length: 255 }),
 	stripeChargeId: varchar("stripe_charge_id", { length: 255 }),
 	stripeTransferIdToWorker: varchar("stripe_transfer_id_to_worker", { length: 255 }),
@@ -400,9 +481,11 @@ export const reviews = pgTable("reviews", {
 	awardedBadgeNamesToTargetJson: jsonb("awarded_badge_names_to_target_json"),
 	isPublic: boolean("is_public").default(true).notNull(),
 	// TODO: failed to parse database type 'review_type_enum'
-	type: unknown("type").notNull(),
+	// Original: type: unknown("type").notNull(),
+	type: reviewTypeEnum("type").notNull(),
 	// TODO: failed to parse database type 'moderation_status_enum'
-	moderationStatus: unknown("moderation_status").notNull(),
+	// Original: moderationStatus: unknown("moderation_status").notNull(),
+	moderationStatus: moderationStatusEnum("moderation_status").notNull(),
 	createdAt: timestamp("created_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 	updatedAt: timestamp("updated_at", { withTimezone: true, mode: 'string' }).default(sql`CURRENT_TIMESTAMP`).notNull(),
 }, (table) => [
@@ -543,20 +626,24 @@ export const users = pgTable("users", {
 	fullName: varchar("full_name", { length: 255 }).notNull(),
 	phone: varchar({ length: 30 }),
 	// TODO: failed to parse database type 'user_app_role_enum'
-	appRole: unknown("app_role").notNull(),
+	// Original: appRole: unknown("app_role").notNull(),
+	appRole: userAppRoleEnum("app_role").notNull(),
 	isGigWorker: boolean("is_gig_worker").default(false).notNull(),
 	isBuyer: boolean("is_buyer").default(false).notNull(),
 	// TODO: failed to parse database type 'active_role_context_enum'
-	lastRoleUsed: unknown("last_role_used"),
+	// Original: lastRoleUsed: unknown("last_role_used"),
+	lastRoleUsed: activeRoleContextEnum("last_role_used"),
 	lastViewVisitedBuyer: text("last_view_visited_buyer"),
 	lastViewVisitedWorker: text("last_view_visited_worker"),
 	stripeCustomerId: varchar("stripe_customer_id", { length: 255 }),
 	stripeConnectAccountId: varchar("stripe_connect_account_id", { length: 255 }),
 	// TODO: failed to parse database type 'rtw_kyc_status_enum'
-	rtwStatus: unknown("rtw_status"),
+	// Original: rtwStatus: unknown("rtw_status"),
+	rtwStatus: rtwKycStatusEnum("rtw_status"),
 	rtwDocumentUrl: text("rtw_document_url"),
 	// TODO: failed to parse database type 'rtw_kyc_status_enum'
-	kycStatus: unknown("kyc_status"),
+	// Original: kycStatus: unknown("kyc_status"),
+	kycStatus: rtwKycStatusEnum("kyc_status"),
 	kycDocumentUrl: text("kyc_document_url"),
 	isBanned: boolean("is_banned").default(false).notNull(),
 	isDisabled: boolean("is_disabled").default(false).notNull(),
@@ -565,7 +652,8 @@ export const users = pgTable("users", {
 	profileVisibility: boolean("profile_visibility").default(false),
 	canReceivePayouts: boolean("can_receive_payouts").default(false).notNull(),
 	// TODO: failed to parse database type 'stripe_account_status_enum'
-	stripeAccountStatus: unknown("stripe_account_status"),
+	// Original: stripeAccountStatus: unknown("stripe_account_status"),
+	stripeAccountStatus: stripeAccountStatusEnum("stripe_account_status"),
 }, (table) => [
 	unique("users_firebase_uid_unique").on(table.firebaseUid),
 	unique("users_email_unique").on(table.email),
@@ -575,7 +663,8 @@ export const users = pgTable("users", {
 
 export const vectorEmbeddings = pgTable("vector_embeddings", {
 	id: uuid().defaultRandom().primaryKey().notNull(),
-	entityType: vector("entity_type", { dimensions: entity_type_enu }).notNull(),
+	// Original: entityType: vector("entity_type", { dimensions: entity_type_enu }).notNull(),
+	entityType: vectorEntityTypeEnum("entity_type").notNull(),
 	entityPostgresId: uuid("entity_postgres_id"),
 	entityFirestoreId: text("entity_firestore_id"),
 	embedding: vector({ dimensions: 1536 }).notNull(),

@@ -871,7 +871,7 @@
 
 /* Legend Colors */
 .legendAccepted { background-color: var(--primary-color); }
-.legendOffer { background-color: #525252; }
+.legendOffer { background-color: #3b82f6; }
 .legendInProgress { background-color: #f59e0b; }
 .legendCompleted { background-color: var(--success-color); }
 .legendCancelled { background-color: var(--error-color); }
@@ -990,7 +990,7 @@
   .calendarWrapper :global(.rbc-time-slot) {
     min-height: 40px;
   }
-} 
+}
 
 /* Override react-big-calendar event colors with our conditional colors */
 .calendarWrapper :global(.rbc-event) {
@@ -1026,8 +1026,8 @@
   background-color: var(--primary-color) !important;
 }
 
-.calendarWrapper :global(.rbc-event[style*="#f59e0b"]) {
-  background-color: #f59e0b !important;
+.calendarWrapper :global(.rbc-event[style*="#3b82f6"]) {
+  background-color: #3b82f6 !important;
 }
 
 .calendarWrapper :global(.rbc-event[style*="#10b981"]) {
@@ -1048,4 +1048,4 @@
 
 .calendarWrapper :global(.rbc-event[style*="#dc2626"]) {
   background-color: #dc2626 !important;
-} 
+}

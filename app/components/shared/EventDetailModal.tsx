@@ -58,7 +58,7 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
       case 'ACCEPTED':
         return '#10b981';
       case 'OFFER':
-        return '#6b7280';
+        return '#3b82f6';
       case 'IN_PROGRESS':
         return '#f59e0b';
       case 'COMPLETED':
@@ -200,4 +200,4 @@ const EventDetailModal: React.FC<EventDetailModalProps> = ({
   );
 };
 
-export default EventDetailModal; 
+export default EventDetailModal;

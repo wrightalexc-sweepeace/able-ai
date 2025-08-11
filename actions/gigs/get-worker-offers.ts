@@ -158,8 +158,8 @@ export async function getWorkerOffers(userId: string) {
         tipsExpected: false,
         status: 'pending',
         fullDescriptionLink: `/user/${userId}/worker/gigs/${gig.id}`,
-        gigDescription: gig.fullDescription,
-        notesForWorker: gig.notesForWorker,
+        gigDescription: gig.fullDescription || undefined,
+        notesForWorker: gig.notesForWorker || undefined,
       };
     });
 
@@ -220,8 +220,8 @@ export async function getWorkerOffers(userId: string) {
         tipsExpected: false,
         status: gig.statusInternal,
         fullDescriptionLink: `/user/${userId}/worker/gigs/${gig.id}`,
-        gigDescription: gig.fullDescription,
-        notesForWorker: gig.notesForWorker,
+        gigDescription: gig.fullDescription || undefined,
+        notesForWorker: gig.notesForWorker || undefined,
       };
     });
 

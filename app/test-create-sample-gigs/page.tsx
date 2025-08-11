@@ -19,7 +19,7 @@ export default function TestCreateSampleGigsPage() {
       console.log('Create result:', response);
     } catch (error) {
       console.error('Create error:', error);
-      setResult({ error: error.message });
+      setResult({ error: error instanceof Error ? error.message : 'Unknown error' });
     } finally {
       setLoading(false);
     }

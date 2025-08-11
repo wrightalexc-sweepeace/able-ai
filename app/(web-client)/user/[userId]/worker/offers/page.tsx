@@ -19,9 +19,7 @@ import { getWorkerOffers, WorkerGigOffer } from "@/actions/gigs/get-worker-offer
 import { acceptGigOffer } from "@/actions/gigs/accept-gig-offer";
 import { updateGigOfferStatus } from "@/actions/gigs/update-gig-offer-status";
 
-interface GigOffer extends WorkerGigOffer {
-  // Extend the database interface with any additional frontend-specific properties
-}
+type GigOffer = WorkerGigOffer;
 
 // Database function to fetch worker offers and accepted gigs
 async function fetchWorkerData(

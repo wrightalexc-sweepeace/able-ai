@@ -99,7 +99,7 @@ export async function createSampleGigs(
           },
           startTime: start,
           endTime: end,
-          agreedRate,
+          agreedRate: agreedRate.toString(),
           statusInternal: gigStatusEnum.enumValues[0],
           moderationStatus: moderationStatusEnum.enumValues[0],
         })

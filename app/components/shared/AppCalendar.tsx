@@ -64,7 +64,7 @@ const AppCalendar = <TEvent extends object>({
         case 'ACCEPTED':
           return userRole === 'worker' ? 'var(--primary-color)' : 'var(--success-color)';
         case 'OFFER':
-          return '#f59e0b'; // Amber color for offers
+          return '#3b82f6'; // Blue color for offers (changed from amber)
         case 'IN_PROGRESS':
           return '#10b981'; // Emerald green
         case 'COMPLETED':
@@ -337,4 +337,4 @@ const AppCalendar = <TEvent extends object>({
   );
 };
 
-export default AppCalendar; 
+export default AppCalendar;

@@ -73,10 +73,9 @@ const BuyerCalendarPage = () => {
 
       // Use real DB-backed events so newly created gigs appear
       const isViewQA = false;
-      let source: CalendarEvent[];
       const res = await getCalendarEvents({ userId: user.uid, role: 'buyer', isViewQA });
       if (res.error) throw new Error(res.error);
-      source = res.events as CalendarEvent[];
+      const source = res.events as CalendarEvent[];
 
       const parsed = source.map((event: CalendarEvent) => ({ ...event, start: new Date(event.start), end: new Date(event.end) }));
 

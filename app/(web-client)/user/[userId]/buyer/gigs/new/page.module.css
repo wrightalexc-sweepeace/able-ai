@@ -1,7 +1,7 @@
 /* app/onboard-buyer/OnboardBuyerPage.module.css */
 
 /* CSS Variables for sanitized step buttons */
-:root {
+.cssVariables {
   --primary-color: #7eecf9;
   --primary-darker-color: #5dd8e8;
   --secondary-color: #7eecf9;

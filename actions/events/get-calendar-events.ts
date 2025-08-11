@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/lib/drizzle/db";
-import { eq, and, ne } from "drizzle-orm";
+import { eq, and, ne, isNull } from "drizzle-orm";
 import { MOCK_EVENTS } from '@/app/(web-client)/user/[userId]/worker/calendar/mockData';
 import { BUYER_MOCK_EVENTS } from '@/app/(web-client)/user/[userId]/buyer/calendar/mockData';
 import { GigsTable, gigStatusEnum, UsersTable } from "@/lib/drizzle/schema";
@@ -133,7 +133,7 @@ export async function getCalendarEvents({ userId, role, isViewQA }: { userId: st
       const originalQueryOffers = await db.query.GigsTable.findMany({
         where: and(
           eq(GigsTable.statusInternal, 'PENDING_WORKER_ACCEPTANCE'),
-          eq(GigsTable.workerUserId, null)
+          isNull(GigsTable.workerUserId)
         ),
         with: {
           buyer: {
@@ -168,7 +168,7 @@ export async function getCalendarEvents({ userId, role, isViewQA }: { userId: st
       }
 
       // Map accepted gigs
-      const acceptedEvents = acceptedGigs.map((gig) => {
+      const acceptedEvents: CalendarEvent[] = acceptedGigs.map((gig) => {
         const displayStatus = mapEventStatus(gig.statusInternal);
         return {
           id: gig.id,
@@ -182,8 +182,8 @@ export async function getCalendarEvents({ userId, role, isViewQA }: { userId: st
           workerName: gig.worker?.fullName || 'Unassigned Worker',
           isMyGig: true,
           isBuyerAccepted: gig.statusInternal === 'ACCEPTED',
-          location: gig.addressJson?.address || gig.exactLocation || 'Location not specified',
-          description: gig.fullDescription,
+          location: (gig.addressJson as any)?.address || gig.exactLocation || 'Location not specified',
+          description: gig.fullDescription || undefined,
           resource: {
             gigId: gig.id,
             buyerId: gig.buyerUserId,
@@ -197,7 +197,7 @@ export async function getCalendarEvents({ userId, role, isViewQA }: { userId: st
       });
 
       // Map available offers
-      const offerEvents = availableOffers.map((gig) => {
+      const offerEvents: CalendarEvent[] = availableOffers.map((gig) => {
         return {
           id: gig.id,
           title: `🎯 ${gig.titleInternal} (Offer)`,
@@ -210,8 +210,8 @@ export async function getCalendarEvents({ userId, role, isViewQA }: { userId: st
           workerName: 'Available for you',
           isMyGig: false,
           isBuyerAccepted: false,
-          location: gig.addressJson?.address || gig.exactLocation || 'Location not specified',
-          description: gig.fullDescription,
+          location: (gig.addressJson as any)?.address || gig.exactLocation || 'Location not specified',
+          description: gig.fullDescription || undefined,
           resource: {
             gigId: gig.id,
             buyerId: gig.buyerUserId,
@@ -264,8 +264,8 @@ export async function getCalendarEvents({ userId, role, isViewQA }: { userId: st
           workerName: gig.worker?.fullName || 'Unassigned Worker',
           isMyGig: isMyGig,
           isBuyerAccepted: isBuyerAccepted,
-          location: gig.addressJson?.address || gig.exactLocation || 'Location not specified',
-          description: gig.fullDescription,
+          location: (gig.addressJson as any)?.address || gig.exactLocation || 'Location not specified',
+          description: gig.fullDescription || undefined,
           resource: {
             gigId: gig.id,
             buyerId: gig.buyerUserId,
