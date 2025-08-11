@@ -46,3 +46,6 @@ ableai-mvp-firebase-adminsdk-fbsvc-b84d672846.json
 .firebase
 
 !public/firebase-config.json
+
+# editor settings
+settings.json
