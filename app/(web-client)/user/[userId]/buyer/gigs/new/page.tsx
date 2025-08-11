@@ -15,7 +15,6 @@ import Loader from "@/app/components/shared/Loader";
 import pageStyles from "./page.module.css";
 import { useAuth } from "@/context/AuthContext";
 import { createGig } from "@/actions/gigs/create-gig";
-import { createSampleGigs } from "@/actions/gigs/create-sample-gigs";
 import { StepInputConfig, FormInputType } from "@/app/types/form";
 import { geminiAIAgent } from '@/lib/firebase/ai';
 import { useFirebase } from '@/context/FirebaseContext';
@@ -1581,41 +1580,7 @@ Make the conversation feel natural and build on what they've already told you.`;
           }
         }}
       >
-        {/* Seed sample gigs CTA */}
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 12 }}>
-          <button
-            style={{
-              background: 'transparent',
-              color: 'var(--secondary-color)',
-              border: '1px dashed var(--secondary-color)',
-              borderRadius: 8,
-              padding: '6px 10px',
-              fontSize: 12,
-              cursor: isSubmitting ? 'not-allowed' : 'pointer',
-              opacity: isSubmitting ? 0.7 : 1,
-            }}
-            disabled={isSubmitting}
-            onClick={async () => {
-              if (!user) return;
-              setIsSubmitting(true);
-              try {
-                const res = await createSampleGigs({ userId: user.uid, count: 5 });
-                const msg: ChatStep = {
-                  id: Date.now(),
-                  type: 'bot',
-                  content: res.status === 200
-                    ? `Created ${res.createdGigIds?.length || 0} sample gigs (Aug 10–20). Check Calendar & Gigs.`
-                    : `Failed to create sample gigs: ${res.error || 'Unknown error'}`,
-                };
-                setChatSteps(prev => [...prev, msg]);
-              } finally {
-                setIsSubmitting(false);
-              }
-            }}
-          >
-            Seed sample gigs (Aug 10–20)
-          </button>
-        </div>
+
 
         {chatSteps.map((step, idx) => {
           const key = `step-${step.id}-${idx}`;
