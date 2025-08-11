@@ -871,7 +871,7 @@
 
 /* Legend Colors */
 .legendAccepted { background-color: var(--primary-color); }
-.legendOffer { background-color: #525252; }
+.legendOffer { background-color: #3b82f6; }
 .legendInProgress { background-color: #f59e0b; }
 .legendCompleted { background-color: var(--success-color); }
 .legendCancelled { background-color: var(--error-color); }
@@ -990,12 +990,12 @@
   .calendarWrapper :global(.rbc-time-slot) {
     min-height: 40px;
   }
-} 
+}
 
 /* Override react-big-calendar event colors with our conditional colors */
 .calendarWrapper :global(.rbc-event) {
-  background-color: #525252 !important; /* Default grey for non-accepted */
-  border: 1px solid #525252 !important;
+  /* Remove the !important background-color override to allow eventPropGetter colors */
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 /* For accepted events in worker view */
@@ -1014,4 +1014,38 @@
 .calendarWrapper :global(.rbc-event[data-status]:not([data-status="ACCEPTED"])) {
   background-color: #525252 !important;
   border-color: #525252 !important;
-} 
+}
+
+/* Force inline styles to take precedence over CSS */
+.calendarWrapper :global(.rbc-event[style*="background-color"]) {
+  background-color: inherit !important;
+}
+
+/* Specific overrides for different event statuses */
+.calendarWrapper :global(.rbc-event[style*="var(--primary-color)"]) {
+  background-color: var(--primary-color) !important;
+}
+
+.calendarWrapper :global(.rbc-event[style*="#3b82f6"]) {
+  background-color: #3b82f6 !important;
+}
+
+.calendarWrapper :global(.rbc-event[style*="#10b981"]) {
+  background-color: #10b981 !important;
+}
+
+.calendarWrapper :global(.rbc-event[style*="#059669"]) {
+  background-color: #059669 !important;
+}
+
+.calendarWrapper :global(.rbc-event[style*="#eab308"]) {
+  background-color: #eab308 !important;
+}
+
+.calendarWrapper :global(.rbc-event[style*="#6b7280"]) {
+  background-color: #6b7280 !important;
+}
+
+.calendarWrapper :global(.rbc-event[style*="#dc2626"]) {
+  background-color: #dc2626 !important;
+}

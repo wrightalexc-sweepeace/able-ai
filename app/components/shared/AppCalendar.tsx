@@ -56,13 +56,37 @@ const AppCalendar = <TEvent extends object>({
   // No filtering - let react-big-calendar handle the layout naturally
   const filteredEvents = events;
 
-  // Simple event prop getter that forces proper positioning
+  // Event prop getter that applies dynamic colors based on event status
   const defaultEventPropGetter = (event: TEvent) => {
+    // Get event background color based on status and user role
+    const getEventBackgroundColor = (event: any) => {
+      switch (event.status) {
+        case 'ACCEPTED':
+          return userRole === 'worker' ? 'var(--primary-color)' : 'var(--success-color)';
+        case 'OFFER':
+          return '#3b82f6'; // Blue color for offers (changed from amber)
+        case 'IN_PROGRESS':
+          return '#10b981'; // Emerald green
+        case 'COMPLETED':
+          return '#059669'; // Dark green
+        case 'PENDING':
+          return '#eab308'; // Yellow
+        case 'UNAVAILABLE':
+          return '#6b7280'; // Gray
+        case 'CANCELLED':
+          return '#dc2626'; // Red
+        default:
+          return '#9ca3af'; // Default: Light gray
+      }
+    };
+
+    const backgroundColor = getEventBackgroundColor(event);
+    
     const baseStyle: React.CSSProperties = {
-      backgroundColor: '#3a3a3a',
+      backgroundColor: backgroundColor,
       borderRadius: '4px',
-      color: '#e0e0e0',
-      border: '1px solid #525252',
+      color: '#ffffff', // White text for better contrast on colored backgrounds
+      border: '1px solid rgba(255, 255, 255, 0.2)',
       cursor: 'pointer',
       transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
       overflow: 'hidden',
@@ -74,7 +98,13 @@ const AppCalendar = <TEvent extends object>({
       gap: '4px',
     };
 
-    return { style: baseStyle };
+    // Return style with !important for background color to override CSS
+    return { 
+      style: {
+        ...baseStyle,
+        backgroundColor: backgroundColor
+      }
+    };
   };
 
   // Custom date cell component for click-to-navigate functionality
@@ -85,6 +115,13 @@ const AppCalendar = <TEvent extends object>({
         setShowDayViewModal(true);
       }
     };
+
+    // Check if this date has any events
+    const hasEvents = filteredEvents.some(event => {
+      const eventDate = moment((event as any).start).startOf('day');
+      const cellDate = moment(props.value).startOf('day');
+      return eventDate.isSame(cellDate);
+    });
 
     return (
       <div 
@@ -101,16 +138,6 @@ const AppCalendar = <TEvent extends object>({
   const EventComponent = (props: any) => {
     // Check if we're in month view by looking at the current view prop
     const isMonthView = view === 'month';
-    
-    // Get event background color based on status and user role (for day/agenda view)
-    const getEventBackgroundColor = (event: any) => {
-      if (event.status !== 'ACCEPTED') {
-        return '#525252'; // Grey for non-accepted events
-      }
-      
-      // For accepted events, color depends on user role
-      return userRole === 'worker' ? 'var(--primary-color)' : 'var(--success-color)';
-    };
     
     // Add data attributes to the parent rbc-event element (for month view)
     React.useEffect(() => {
@@ -141,35 +168,27 @@ const AppCalendar = <TEvent extends object>({
       if (eventElement) {
         eventElement.setAttribute('data-status', props.event.status || '');
         eventElement.setAttribute('data-role', userRole || '');
-        console.log('Set data attributes:', {
-          status: props.event.status,
-          role: userRole,
-          element: eventElement
-        });
       }
     }, [props.event.status, userRole, props.event.title, props.event.id]);
     
-    if (isMonthView) {
-      // Month view: vertical layout with text on top, icon below
-      return (
-        <div className={styles.eventComponent}>
-          <span style={{ fontSize: '2.5vw', color: '#000', fontWeight: '500', whiteSpace: 'nowrap' }}>Open gig</span>
-          <br />
-          <Eye size={25} color="#888" />
-        </div>
-      );
-    } else {
-      // Day/Agenda view: horizontal layout with icon and text side by side
-      return (
-        <div 
-          className={styles.eventComponentHorizontal} 
-          style={{ backgroundColor: getEventBackgroundColor(props.event) }}
-        >
-          <Eye size={8} color="#888" />
-          <span style={{ fontSize: '1.5vw', color: '#fff', fontWeight: '500', whiteSpace: 'nowrap' }}>Open gig</span>
-        </div>
-      );
-    }
+         if (isMonthView) {
+       // Month view: vertical layout with text on top, icon below
+       return (
+         <div className={styles.eventComponent}>
+           <span style={{ fontSize: '2.5vw', color: '#fff', fontWeight: '500', whiteSpace: 'nowrap' }}>Open gig</span>
+           <br />
+           <Eye size={25} color="#fff" />
+         </div>
+       );
+     } else {
+       // Day/Agenda view: horizontal layout with icon and text side by side
+       return (
+         <div className={styles.eventComponentHorizontal}>
+           <Eye size={8} color="#888" />
+           <span style={{ fontSize: '1.5vw', color: '#fff', fontWeight: '500', whiteSpace: 'nowrap' }}>Open gig</span>
+         </div>
+       );
+     }
   };
 
   // Handle navigation to day view
@@ -318,4 +337,4 @@ const AppCalendar = <TEvent extends object>({
   );
 };
 
-export default AppCalendar; 
+export default AppCalendar;

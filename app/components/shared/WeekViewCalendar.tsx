@@ -276,30 +276,7 @@ const WeekViewCalendar: React.FC<WeekViewCalendarProps> = ({
                     );
                   })}
                   
-                  {/* Show placeholder when no events */}
-                  {weekEvents.length === 0 && hour === 9 && moment(day).day() === 1 && (
-                    <div
-                      style={{
-                        backgroundColor: '#3a3a3a',
-                        height: '40px',
-                        margin: '10px 0',
-                        borderRadius: '4px',
-                        position: 'absolute',
-                        top: '10px',
-                        left: '5px',
-                        right: '5px',
-                        zIndex: 1,
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        color: '#888',
-                        fontSize: '12px',
-                        fontStyle: 'italic'
-                      }}
-                    >
-                      No gigs scheduled this week
-                    </div>
-                  )}
+                  {/* Events will be rendered here */}
               </div>
             ))}
           </div>

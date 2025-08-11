@@ -11,6 +11,7 @@ import { useAuth } from '@/context/AuthContext';
 import { getLastRoleUsed } from '@/lib/last-role-used';
 import { updateGigOfferStatus } from '@/actions/gigs/update-gig-offer-status';
 import { holdGigFunds } from '@/app/actions/stripe/create-hold-gig-Funds';
+import { deleteGig } from '@/actions/gigs/delete-gig';
 import { toast } from 'sonner';
 
 
@@ -34,6 +35,8 @@ interface GigDetailsProps {
 	role: 'buyer' | 'worker';
 	gig: GigDetails;
 	setGig: (gig: GigDetails) => void; // Function to update gig state
+	isAvailableOffer?: boolean; // Whether this gig is an available offer for workers
+	isCheckingOffer?: boolean; // Whether we're checking if this is an offer
 }
 
 const worker = {
@@ -67,7 +70,7 @@ function getGigAcceptActionText(gig: GigDetails, lastRoleUsed: string): string {
 	else return 'Gig Accepted';
 }
 
-const GigDetailsComponent = ({ userId, role, gig, setGig }: GigDetailsProps) => {
+const GigDetailsComponent = ({ userId, role, gig, setGig, isAvailableOffer = false, isCheckingOffer = false }: GigDetailsProps) => {
 	const router = useRouter();
 	const [isActionLoading, setIsActionLoading] = useState(false);
 	const { user } = useAuth();
@@ -113,7 +116,7 @@ const GigDetailsComponent = ({ userId, role, gig, setGig }: GigDetailsProps) => 
 		}
 	};
 
-	const handleGigAction = async (action: 'accept' | 'start' | 'complete' | 'requestAmendment' | 'reportIssue' | 'awaiting' | 'confirmed' | 'requested') => {
+	const handleGigAction = async (action: 'accept' | 'start' | 'complete' | 'requestAmendment' | 'reportIssue' | 'awaiting' | 'confirmed' | 'requested' | 'delete') => {
 		if (!gig) return;
 		setIsActionLoading(true);
 		console.log(`Performing action: ${action} for gig: ${gig.id}`);
@@ -167,6 +170,22 @@ const GigDetailsComponent = ({ userId, role, gig, setGig }: GigDetailsProps) => 
 				setGig({ ...gig, status: 'CONFIRMED' });
 				// Show success message
 			}
+			else if (action === 'delete') {
+				if (!user?.uid) {
+					toast.error('User not authenticated');
+					return;
+				}
+
+				const result = await deleteGig({ gigId: gig.id, userId: user.uid });
+				
+				if (result.error) {
+					toast.error(result.error);
+				} else {
+					toast.success('Gig deleted successfully');
+					// Redirect to buyer home page
+					router.push(`/user/${user.uid}/buyer`);
+				}
+			}
 			// Handle other actions
 		} catch (err: unknown) {
 			if (err instanceof Error) {
@@ -191,9 +210,21 @@ const GigDetailsComponent = ({ userId, role, gig, setGig }: GigDetailsProps) => 
 				<Logo width={70} height={70} />
 				<h1 className={styles.pageTitle}>{gig.role} Gig</h1>
 				{/* <span className={`${styles.statusBadge} ${getStatusBadgeClass(gig.status)}`}>{gig.status.replace('_', ' ')}</span> */}
-				<button onClick={() => router.push(`/chat?gigId=${gig.id}`)} className={styles.chatButton}>
-					<MessageSquare size={40} fill="#ffffff" className={styles.icon} />
-				</button>
+				<div className={styles.headerActions}>
+					{/* Calendar navigation button for workers */}
+					{role === 'worker' && (
+						<button 
+							onClick={() => router.push(`/user/${userId}/worker/calendar`)} 
+							className={styles.calendarButton}
+							title="View Calendar"
+						>
+							<Calendar size={24} />
+						</button>
+					)}
+					<button onClick={() => router.push(`/chat?gigId=${gig.id}`)} className={styles.chatButton}>
+						<MessageSquare size={40} fill="#ffffff" className={styles.icon} />
+					</button>
+				</div>
 			</header>
 
 			{/* Core Gig Info Section - Adapted to new structure */}
@@ -202,6 +233,14 @@ const GigDetailsComponent = ({ userId, role, gig, setGig }: GigDetailsProps) => 
 					<h2 className={styles.sectionTitle}>Gig Details</h2>
 					<Calendar size={26} color='#ffffff' />
 				</div>
+
+				{/* Title */}
+				{gig.gigTitle && (
+					<div className={styles.gigDetailsRow}>
+						<span className={styles.label}>Title:</span>
+						<span className={styles.detailValue}>{gig.gigTitle}</span>
+					</div>
+				)}
 
 				{/* <div className={styles.gigDetailsRow}>
                     <span className={styles.label}>Buyer:</span>
@@ -280,6 +319,34 @@ const GigDetailsComponent = ({ userId, role, gig, setGig }: GigDetailsProps) => 
 				</section>
 			)}
 
+			{/* Gig Offer Actions Section - Show when this is an available offer for workers */}
+			{isAvailableOffer && role === 'worker' && (
+				<section className={styles.offerActionsSection}>
+					<div className={styles.offerHeader}>
+						<h2>🎯 Available Gig Offer</h2>
+						<p>This gig is available for you to accept. Review the details below and take action.</p>
+					</div>
+					
+					<div className={styles.offerActionButtons}>
+						<button 
+							className={`${styles.acceptOfferButton} ${styles.primaryAction}`}
+							onClick={() => handleGigAction('accept')}
+							disabled={isActionLoading}
+						>
+							{isActionLoading ? 'Accepting...' : 'Accept Gig Offer'}
+						</button>
+						
+						<button 
+							className={`${styles.declineOfferButton} ${styles.secondaryAction}`}
+							onClick={() => router.push(`/user/${userId}/worker/offers`)}
+							disabled={isActionLoading}
+						>
+							View Other Offers
+						</button>
+					</div>
+				</section>
+			)}
+
 			{/* Primary Actions Section - Adapted to new structure */}
 			<section className={styles.actionSection}>
 				<GigActionButton
@@ -343,6 +410,18 @@ const GigDetailsComponent = ({ userId, role, gig, setGig }: GigDetailsProps) => 
 				<button onClick={() => handleGigAction('reportIssue')} className={styles.secondaryActionButton} disabled={isActionLoading}>
 					Report an Issue
 				</button>
+				
+				{/* Delete button - only show for buyers when gig is not yet accepted */}
+				{lastRoleUsed === "BUYER" && gig.statusInternal === 'PENDING_WORKER_ACCEPTANCE' && (
+					<button 
+						onClick={() => handleGigAction('delete')} 
+						className={`${styles.secondaryActionButton} ${styles.deleteButton}`} 
+						disabled={isActionLoading}
+					>
+						Delete Gig
+					</button>
+				)}
+				
 				{/* <button onClick={() => handleGigAction('delegate')} className={styles.secondaryActionButton} disabled={isActionLoading}>
                         <Share2 size={16} style={{marginRight: '8px'}}/> Delegate Gig
                     </button> */}
