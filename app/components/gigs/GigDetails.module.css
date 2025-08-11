@@ -4,10 +4,9 @@
 
 /* Main container with dark background */
 .container {
-  background: linear-gradient(135deg, var(--background-dark) 0%, var(--header-background) 100%);
-  min-height: 100vh;
-  padding: 1rem;
-  color: var(--text-white);
+  background-color: var(--foreground);
+  border-radius: 10px;
+  color: #fff; /* White text */
   width: 100%;
   max-width: 450px;
   margin: 0 auto;
@@ -215,11 +214,10 @@
   border: none;
   outline: none;
   background: none;
-  transition: transform 0.2s ease;
 }
 
-.chatButton:hover {
-  transform: scale(1.05);
+.gigDetailsMain {
+  padding: 1rem;
 }
 
 .gigDetailsSection {

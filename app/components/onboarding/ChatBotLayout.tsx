@@ -36,10 +36,6 @@ const ChatBotLayout = React.forwardRef<HTMLDivElement, ChatBotLayoutProps>(
     return (
       <div className={`${styles.chatContainerWrapper} ${className}`}>
         <div className={styles.chatContainer} onScroll={onScroll} ref={ref}>
-          {/* <div className={styles.header}>
-            <span className={styles.headerText}>Chat with Able</span>
-            <Logo width={50} height={50} />
-          </div> */}
           <ScreenHeaderWithBack onBackClick={() => router.back()} />
           <div className={styles.chatContent}>{children}</div>
           {showChatInput && (
