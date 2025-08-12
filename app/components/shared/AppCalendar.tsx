@@ -28,6 +28,7 @@ type AppCalendarProps<TEvent> = {
   hideToolbar?: boolean;
   formats?: Formats | undefined;
   userRole?: string;
+  activeFilter?: string;
 };
 
 const AppCalendar = <TEvent extends object>({
@@ -48,6 +49,7 @@ const AppCalendar = <TEvent extends object>({
     eventTimeRangeFormat: () => ''
   },
   userRole,
+  activeFilter,
 }: AppCalendarProps<TEvent>) => {
 
   const [showDayViewModal, setShowDayViewModal] = useState(false);
@@ -62,9 +64,9 @@ const AppCalendar = <TEvent extends object>({
     const getEventBackgroundColor = (event: any) => {
       switch (event.status) {
         case 'ACCEPTED':
-          return userRole === 'worker' ? 'var(--primary-color)' : 'var(--success-color)';
+          return userRole === 'worker' ? 'var(--primary-color)' : 'var(--secondary-color)';
         case 'OFFER':
-          return '#3b82f6'; // Blue color for offers (changed from amber)
+          return '#6b7280'; // Gray color for offers
         case 'IN_PROGRESS':
           return '#10b981'; // Emerald green
         case 'COMPLETED':
@@ -96,6 +98,8 @@ const AppCalendar = <TEvent extends object>({
       alignItems: 'center',
       justifyContent: 'center',
       gap: '4px',
+      // Apply bold styling when "Accepted gigs" filter is active and event is accepted
+      fontWeight: (activeFilter === 'Accepted gigs' && (event as any).status === 'ACCEPTED') ? '700' : '500',
     };
 
     // Return style with !important for background color to override CSS
@@ -139,56 +143,47 @@ const AppCalendar = <TEvent extends object>({
     // Check if we're in month view by looking at the current view prop
     const isMonthView = view === 'month';
     
-    // Add data attributes to the parent rbc-event element (for month view)
-    React.useEffect(() => {
-      // Use a more reliable method to find the parent rbc-event element
-      const findParentEventElement = () => {
-        // Try multiple selectors to find the parent event element
-        const selectors = [
-          '.rbc-event',
-          `[title="${props.event.title}"]`,
-          `[data-event-id="${props.event.id}"]`
-        ];
-        
-        for (const selector of selectors) {
-          const element = document.querySelector(selector);
-          if (element) {
-            const parentEvent = element.closest('.rbc-event') || element;
-            if (parentEvent && parentEvent.classList.contains('rbc-event')) {
-              return parentEvent;
-            }
-          }
-        }
-        
-        // Fallback: find any rbc-event element
-        return document.querySelector('.rbc-event');
-      };
-      
-      const eventElement = findParentEventElement();
-      if (eventElement) {
-        eventElement.setAttribute('data-status', props.event.status || '');
-        eventElement.setAttribute('data-role', userRole || '');
+    // Determine text and icon color based on event status and user role
+    const getTextColor = () => {
+      if (props.event.status === 'ACCEPTED' && userRole === 'buyer') {
+        return '#000000'; // Black for accepted gigs in buyer view
       }
-    }, [props.event.status, userRole, props.event.title, props.event.id]);
+      return '#ffffff'; // White for everything else
+    };
     
-         if (isMonthView) {
-       // Month view: vertical layout with text on top, icon below
-       return (
-         <div className={styles.eventComponent}>
-           <span style={{ fontSize: '2.5vw', color: '#fff', fontWeight: '500', whiteSpace: 'nowrap' }}>Open gig</span>
-           <br />
-           <Eye size={25} color="#fff" />
-         </div>
-       );
-     } else {
-       // Day/Agenda view: horizontal layout with icon and text side by side
-       return (
-         <div className={styles.eventComponentHorizontal}>
-           <Eye size={8} color="#888" />
-           <span style={{ fontSize: '1.5vw', color: '#fff', fontWeight: '500', whiteSpace: 'nowrap' }}>Open gig</span>
-         </div>
-       );
-     }
+    const getIconColor = () => {
+      if (props.event.status === 'ACCEPTED' && userRole === 'buyer') {
+        return '#000000'; // Black for accepted gigs in buyer view
+      }
+      return '#ffffff'; // White for everything else
+    };
+    
+    // Determine font weight based on filter and event status
+    const getFontWeight = () => {
+      if (activeFilter === 'Accepted gigs' && props.event.status === 'ACCEPTED') {
+        return '700'; // Bold when "Accepted gigs" filter is active
+      }
+      return '500'; // Normal weight for everything else
+    };
+    
+    if (isMonthView) {
+      // Month view: vertical layout with text on top, icon below
+      return (
+        <div className={styles.eventComponent}>
+          <span style={{ fontSize: '2.5vw', color: getTextColor(), fontWeight: getFontWeight(), whiteSpace: 'nowrap' }}>Open gig</span>
+          <br />
+          <Eye size={25} color={getIconColor()} />
+        </div>
+      );
+    } else {
+      // Day/Agenda view: horizontal layout with icon and text side by side
+      return (
+        <div className={styles.eventComponentHorizontal}>
+          <Eye size={8} color="#888" />
+          <span style={{ fontSize: '1.5vw', color: getTextColor(), fontWeight: getFontWeight(), whiteSpace: 'nowrap' }}>Open gig</span>
+        </div>
+      );
+    }
   };
 
   // Handle navigation to day view
@@ -249,6 +244,7 @@ const AppCalendar = <TEvent extends object>({
             }
           }}
           userRole={userRole || 'buyer'}
+          activeFilter={activeFilter}
         />
       </div>
     );
@@ -272,6 +268,7 @@ const AppCalendar = <TEvent extends object>({
             }
           }}
           userRole={userRole || 'buyer'}
+          activeFilter={activeFilter}
         />
       </div>
     );
@@ -326,7 +323,15 @@ const AppCalendar = <TEvent extends object>({
               <button className={styles.cancelButton} onClick={handleCloseModal}>
                 Cancel
               </button>
-              <button className={styles.confirmButton} onClick={handleNavigateToDayView}>
+              <button 
+                className={styles.confirmButton} 
+                onClick={handleNavigateToDayView}
+                style={{
+                  backgroundColor: userRole === 'worker' ? 'var(--primary-color)' : 'var(--secondary-color)',
+                  borderColor: userRole === 'worker' ? 'var(--primary-color)' : 'var(--secondary-color)',
+                  color: userRole === 'worker' ? '#ffffff' : '#000000'
+                }}
+              >
                 Go to Day View
               </button>
             </div>

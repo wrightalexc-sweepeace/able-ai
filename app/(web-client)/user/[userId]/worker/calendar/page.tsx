@@ -179,9 +179,10 @@ const WorkerCalendarPage = () => {
           onNavigate={setDate}
           onSelectEvent={handleEventClick}
           userRole="worker"
+          activeFilter={activeFilter}
           components={{
             event: (props: any) => (
-              <CalendarEventComponent {...props} userRole="worker" view={view} />
+              <CalendarEventComponent {...props} userRole="worker" view={view} activeFilter={activeFilter} />
             )
           }}
           hideToolbar={true}
