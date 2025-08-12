@@ -34,11 +34,11 @@ import { useCallback, useState } from "react";
 
 const WorkerProfile = ({
   workerProfile,
+  isSelfView = false,
   handleAddSkill,
   handleSkillDetails, // Optional handler for skill details
   fetchUserProfile,
-  userId,
-  isSelfView
+  userId
 }: {
   workerProfile: PublicWorkerProfile;
   handleAddSkill?: () => void;
