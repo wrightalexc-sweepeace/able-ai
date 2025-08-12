@@ -28,6 +28,8 @@ export async function registerUserAction(data: RegisterUserData) {
       phone: data.phone,
     });
 
+    
+
     return { ok: true };
   } catch (error: unknown) {
     if (error instanceof Error) {
