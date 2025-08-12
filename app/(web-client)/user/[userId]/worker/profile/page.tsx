@@ -1,16 +1,16 @@
 "use client";
 
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter, useParams, usePathname } from "next/navigation";
 import { UserCircle } from "lucide-react";
 import styles from "./page.module.css";
 import WorkerProfile from "@/app/components/profile/WorkerProfile";
 import CloseButton from "@/app/components/profile/CloseButton";
-import { useAuth, User } from "@/context/AuthContext";
+import { useAuth } from "@/context/AuthContext";
 import { getLastRoleUsed } from "@/lib/last-role-used";
 import PublicWorkerProfile from "@/app/types/workerProfileTypes";
 import {
-  getGigWorkerProfile,
+  getPrivateWorkerProfileAction,
 } from "@/actions/user/gig-worker-profile";
 
 export default function WorkerOwnedProfilePage() {
@@ -27,11 +27,10 @@ export default function WorkerOwnedProfilePage() {
   >(null);
   const [loadingProfile, setLoadingProfile] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const isSelfView = true;
 
-  const fetchUserProfile = (user: User) => {
+  const fetchUserProfile = (token: string) => {
         setLoadingProfile(true);
-        getGigWorkerProfile(user.token)
+        getPrivateWorkerProfileAction(token)
           .then((data) => {
             setProfile(data.data);
             setError(null);
@@ -46,7 +45,7 @@ export default function WorkerOwnedProfilePage() {
   useEffect(() => {
     if (!loadingAuth && user) {
       if (lastRoleUsed === "GIG_WORKER" || user.claims.role === "QA") {
-        fetchUserProfile(user)
+        fetchUserProfile(user.token)
       } else {
         router.replace("/select-role");
       }
@@ -86,7 +85,7 @@ export default function WorkerOwnedProfilePage() {
       <CloseButton />
       <WorkerProfile
         workerProfile={profile}
-        isSelfView={isSelfView}
+        isSelfView={true}
         handleAddSkill={() => {}}
         handleSkillDetails={handleSkillDetails}
         fetchUserProfile={fetchUserProfile}

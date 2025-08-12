@@ -48,7 +48,7 @@
 }
 
 .profileImageVideo {
-  width: 15px;
+  flex: 2; /* Takes more space */
   display: flex;
   justify-content: center;
   align-items: center;

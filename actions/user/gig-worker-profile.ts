@@ -18,11 +18,21 @@ import { ERROR_CODES } from "@/lib/responses/errors";
 import { isUserAuthenticated } from "@/lib/user.server";
 import { eq } from "drizzle-orm";
 
-export const getGigWorkerProfile = async (
-  token: string
-): Promise<{ success: true; data: PublicWorkerProfile }> => {
-  try {
-    if (!token) {
+
+export const getPublicWorkerProfileAction = async (workerId: string) => {
+    if (!workerId) throw "Worker ID is required"
+
+    const workerProfile = await db.query.GigWorkerProfilesTable.findFirst({
+      where: eq(GigWorkerProfilesTable.id, workerId),
+    });
+
+    const data = await getGigWorkerProfile(workerProfile)
+
+    return data
+}
+
+export const getPrivateWorkerProfileAction = async (token: string) => {
+      if (!token) {
       throw new Error("User ID is required to fetch buyer profile");
     }
 
@@ -41,33 +51,38 @@ export const getGigWorkerProfile = async (
       where: eq(GigWorkerProfilesTable.userId, user.id),
     });
 
-    let skills;
-    let equipment;
-    let qualifications;
+    const data = await getGigWorkerProfile(workerProfile)
 
-    if (workerProfile) {
-      skills = await db.query.SkillsTable.findMany({
+    return data
+}
+export const getGigWorkerProfile = async (
+  workerProfile: typeof GigWorkerProfilesTable.$inferSelect | undefined,
+): Promise<{ success: true; data: PublicWorkerProfile }> => {
+  try {
+
+    if (!workerProfile) throw "Getting worker profile error";
+
+      const skills = await db.query.SkillsTable.findMany({
         where: eq(SkillsTable.workerProfileId, workerProfile.id),
       });
 
-      equipment = await db.query.EquipmentTable.findMany({
+      const equipment = await db.query.EquipmentTable.findMany({
         where: eq(EquipmentTable.workerProfileId, workerProfile.id),
       });
 
-      qualifications = await db.query.QualificationsTable.findMany({
+      const qualifications = await db.query.QualificationsTable.findMany({
         where: eq(QualificationsTable.workerProfileId, workerProfile.id),
       });
-    }
 
-    const awards = await db.query.UserBadgesLinkTable.findMany({
-      where: eq(UserBadgesLinkTable.userId, user.id),
-    });
+      const awards = await db.query.UserBadgesLinkTable.findMany({
+        where: eq(UserBadgesLinkTable.userId, workerProfile.userId),
+      });
+  
+      const reviews = await db.query.ReviewsTable.findMany({
+        where: eq(ReviewsTable.targetUserId, workerProfile.userId),
+      });
 
-    const reviews = await db.query.ReviewsTable.findMany({
-      where: eq(ReviewsTable.targetUserId, user.id),
-    });
-
-    const totalReviews = reviews.length;
+    const totalReviews = reviews?.length;
 
     const positiveReviews = reviews?.filter((item) => item.rating === 1).length;
 
@@ -98,6 +113,7 @@ export const getGigWorkerProfile = async (
     throw error;
   }
 };
+
 export const getSkillDetailsWorker = async (id: string) => {
   try {
     const skill = await db.query.SkillsTable.findFirst({
@@ -173,8 +189,8 @@ export const getSkillDetailsWorker = async (id: string) => {
 };
 
 export const updateVideoUrlProfileAction = async (
-  token: string,
-  videoUrl: string
+  videoUrl: string,
+  token?: string | undefined
 ) => {
   try {
     if (!token) {
