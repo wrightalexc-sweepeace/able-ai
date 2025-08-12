@@ -34,12 +34,14 @@ interface CalendarEventComponentProps {
   event: CalendarEvent;
   userRole: string;
   view?: View;
+  activeFilter?: string;
 }
 
 const CalendarEventComponent: React.FC<CalendarEventComponentProps> = ({ 
   event, 
   userRole, 
-  view = 'day' 
+  view = 'day',
+  activeFilter
 }) => {
   // Format time (e.g., 9:00 AM - 11:00 AM)
   const formatTime = (start: Date, end: Date) => {
@@ -89,9 +91,11 @@ const CalendarEventComponent: React.FC<CalendarEventComponentProps> = ({
     return (
       <div className={styles.eventContainer} data-view="month">
         <div className={styles.eventHeader}>
-          <div className={styles.eventTitle}>
-            {event.title}
-          </div>
+                  <div className={styles.eventTitle} style={{
+          fontWeight: (activeFilter === 'Accepted gigs' && event.status === 'ACCEPTED') ? '700' : '500'
+        }}>
+          {event.title}
+        </div>
           {checkIcon}
         </div>
       </div>

@@ -190,6 +190,9 @@ const requiredFields: RequiredField[] = [
   { name: "gigDate", type: "date", defaultPrompt: "What date is the gig?" },
 ];
 
+// Currency note for users
+const CURRENCY_NOTE = "💡 All amounts and rates are in British Pounds (£)";
+
 // Type definitions for better type safety
 interface RequiredField {
   name: string;
@@ -1580,6 +1583,7 @@ Make the conversation feel natural and build on what they've already told you.`;
           }
         }}
       >
+
 
 
         {chatSteps.map((step, idx) => {

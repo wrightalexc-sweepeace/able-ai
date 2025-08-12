@@ -106,6 +106,9 @@ const requiredFields: RequiredField[] = [
   { name: "references", type: "text", placeholder: "Provide your references...", defaultPrompt: "Do you have any references or testimonials?", rows: 3 },
 ];
 
+// Currency note for users
+const CURRENCY_NOTE = "💡 All amounts and rates are in British Pounds (£)";
+
 // Type definitions for better type safety
 interface RequiredField {
   name: string;
@@ -1465,6 +1468,8 @@ Make the conversation feel natural and build on what they've already told you.`;
           {error}
         </div>
       )}
+      
+
       
       {chatSteps.map((step, idx) => {
         const key = `${step.id}-${idx}`;

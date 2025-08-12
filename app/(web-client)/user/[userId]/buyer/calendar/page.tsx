@@ -157,9 +157,10 @@ const BuyerCalendarPage = () => {
           onNavigate={setDate}
           onSelectEvent={handleEventClick}
           userRole="buyer"
+          activeFilter={activeFilter}
           components={{
             event: (({ event }: { event: CalendarEvent; title: string }) => (
-              <CalendarEventComponent event={event} userRole="buyer" view={view} />
+              <CalendarEventComponent event={event} userRole="buyer" view={view} activeFilter={activeFilter} />
             )) as React.ComponentType<unknown>,
           }}
           hideToolbar={true}
