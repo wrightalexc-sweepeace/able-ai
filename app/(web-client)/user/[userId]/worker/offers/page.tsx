@@ -15,6 +15,7 @@ import Image from "next/image";
 import { useAuth } from "@/context/AuthContext";
 import { getLastRoleUsed } from "@/lib/last-role-used";
 import { useAiSuggestionBanner } from "@/hooks/useAiSuggestionBanner";
+import ScreenHeaderWithBack from "@/app/components/layout/ScreenHeaderWithBack";
 import { getWorkerOffers, WorkerGigOffer } from "@/actions/gigs/get-worker-offers";
 import { acceptGigOffer } from "@/actions/gigs/accept-gig-offer";
 import { updateGigOfferStatus } from "@/actions/gigs/update-gig-offer-status";
@@ -260,15 +261,14 @@ export default function WorkerOffersPage() {
 
   return (
     <div className={styles.container}>
-      {" "}
-      {/* Use styles */}
+      <ScreenHeaderWithBack title="Gig Offers" onBackClick={() => router.back()} />
       <div className={styles.pageWrapper}>
         {" "}
         {/* Use styles */}
         <div className={styles.infoBanner}>
           {" "}
           {/* Use styles */}
-          <Logo width={70} height={70} />
+          
           {/* <p>Accept these gigs within the time shown or we will offer them to someone else!</p> */}
           {uid && (
             <AiSuggestionBanner
