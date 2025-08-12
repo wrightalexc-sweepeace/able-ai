@@ -182,9 +182,6 @@ export default function WorkerDashboardPage() {
         <IconGrid items={actionItems} />
 
         {/* AI Gig Request Chat Card */}
-        {uid && (
-          <WorkerGigRequestAICard userId={uid} />
-        )}
 
         {/* Optional Summary Section - Example Structure
         {summaryData.length > 0 && (

@@ -384,7 +384,7 @@ Generate a friendly, contextual prompt for the next question. The prompt should:
 Field-specific guidance for WORKERS:
 - experience: Ask about their work history, relevant experience, or professional background as a worker
 - skills: Ask about their specific skills, certifications, or qualifications they can offer to clients
-- hourlyRate: Ask about their preferred hourly rate for their services
+- hourlyRate: Ask about their preferred hourly rate for their services in British Pounds (£)
 - location: Ask about their location with context about finding nearby gig opportunities
 - availability: Ask about when they are available to work for clients
 - time: Ask about their preferred working hours for gigs
@@ -1894,7 +1894,6 @@ Make the conversation feel natural and build on what they've already told you.`;
                   <button
                     style={{
                       background: isConfirming ? '#555' : 'var(--primary-color)',
-                      color: '#fff',
                       border: 'none',
                       borderRadius: '8px',
                       padding: '8px 16px',
@@ -1924,8 +1923,7 @@ Make the conversation feel natural and build on what they've already told you.`;
               {confirmedSteps.has(step.id) && (
                 <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'flex-end' }}>
                   <div style={{
-                    background: '#28a745',
-                    color: '#fff',
+                    background: 'var(--primary-color)',
                     border: 'none',
                     borderRadius: '8px',
                     padding: '8px 16px',
@@ -1995,13 +1993,13 @@ Make the conversation feel natural and build on what they've already told you.`;
                 onChange={val => handleInputChange('location', val)}
                 showConfirm={false}
                 onConfirm={() => handlePickerConfirm(step.id, 'location')}
+                role="GIG_WORKER"
               />
               {!confirmedSteps.has(step.id) && (
                 <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'flex-end' }}>
                   <button
                     style={{
                       background: isConfirming ? '#555' : 'var(--primary-color)',
-                      color: '#fff',
                       border: 'none',
                       borderRadius: '8px',
                       padding: '8px 16px',
@@ -2031,8 +2029,7 @@ Make the conversation feel natural and build on what they've already told you.`;
               {confirmedSteps.has(step.id) && (
                 <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'flex-end' }}>
                   <div style={{
-                    background: '#28a745',
-                    color: '#fff',
+                    background: 'var(--primary-color)',
                     border: 'none',
                     borderRadius: '8px',
                     padding: '8px 16px',
