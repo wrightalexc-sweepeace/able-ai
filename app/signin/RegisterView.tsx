@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 import { registerUserAction } from "@/actions/auth/signup";
 import { isPasswordCommon } from "./actions";
 import { Eye, EyeOff } from "lucide-react";
-import { actionCodeSettings, authClient } from "@/lib/firebase/clientApp";
+import { authClient } from "@/lib/firebase/clientApp";
 import { toast } from "sonner";
 
 interface RegisterViewProps {
@@ -103,20 +103,30 @@ const RegisterView: React.FC<RegisterViewProps> = ({
       phone: phone.trim(),
     });
 
+    const host =
+      window?.location.origin || "https://able-ai-mvp-able-ai-team.vercel.app";
+    const actionCodeSettings = {
+      // URL you want to redirect back to. The domain (www.example.com) for this
+      // URL must be in the authorized domains list in the Firebase Console.
+      url: host + "/usermgmt",
+      handleCodeInApp: true,
+    };
+
     sendSignInLinkToEmail(authClient, email, actionCodeSettings)
       .then(() => {
         // The link was successfully sent. Inform the user.
         // Save the email locally so you don't need to ask the user for it again
         // if they open the link on the same device.
         window.localStorage.setItem("emailForSignIn", email);
-        toast.success("Registration successful! Please check your email to sign in.");
+        toast.success(
+          "Registration successful! Please check your email to sign in."
+        );
       })
       .catch((error) => {
         const errorCode = error.code;
         console.error("Error sending email:", errorCode);
         const errorMessage = error.message;
         toast.error(`Error sending email: ${errorMessage}`);
-    
       });
 
     setLoading(false);
