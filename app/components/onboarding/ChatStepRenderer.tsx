@@ -21,6 +21,7 @@ interface ChatStepRendererProps {
   setConfirmDisabled: (updater: (prev: Record<string, boolean>) => Record<string, boolean>) => void;
   setExpandedSummaryFields: (updater: (prev: Record<string, boolean>) => Record<string, boolean>) => void;
   isSubmitting?: boolean;
+  role?: 'BUYER' | 'GIG_WORKER';
 }
 
 // Typing indicator component
@@ -50,6 +51,7 @@ export default function ChatStepRenderer({
   setConfirmDisabled,
   setExpandedSummaryFields,
   isSubmitting = false,
+  role = 'GIG_WORKER',
 }: ChatStepRendererProps) {
   const key = `step-${step.id}-${step.type}-${step.inputConfig?.name || Math.random()}`;
 
@@ -167,6 +169,7 @@ export default function ChatStepRenderer({
             onChange={val => handleInputChange('gigLocation', val)}
             showConfirm={!!formData.gigLocation && isActive}
             onConfirm={() => handleInputSubmit(step.id, 'gigLocation')}
+            role={role}
           />
         </div>
       );
@@ -221,7 +224,7 @@ export default function ChatStepRenderer({
 
           {isActive && formData[inputConf.name] && (
             <button
-              style={{ margin: '8px 0', background: '#0f766e', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 16px', fontWeight: 600 }}
+              style={{ margin: '8px 0', background: '#0f766e', border: 'none', borderRadius: 8, padding: '6px 16px', fontWeight: 600 }}
               onClick={() => {
                 setConfirmDisabled(prev => ({ ...prev, [inputConf.name]: true }));
                 handleInputSubmit(step.id, inputConf.name);
@@ -262,7 +265,7 @@ export default function ChatStepRenderer({
         />
         {isActive && formData[inputConf.name] && (
           <button
-            style={{ margin: '8px 0', background: '#0f766e', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 16px', fontWeight: 600 }}
+            style={{ margin: '8px 0', background: '#0f766e', border: 'none', borderRadius: 8, padding: '6px 16px', fontWeight: 600 }}
             onClick={() => {
               setConfirmDisabled(prev => ({ ...prev, [inputConf.name]: true }));
               handleInputSubmit(step.id, inputConf.name);
@@ -295,7 +298,7 @@ export default function ChatStepRenderer({
               <div style={{ marginBottom: 8 }}>{step.sanitizedValue}</div>
               {!isStepComplete && (
                 <button
-                  style={{ background: '#0f766e', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 16px' }}
+                  style={{ background: '#0f766e', border: 'none', borderRadius: 8, padding: '6px 16px' }}
                   onClick={() => handleSanitizedConfirm(step.fieldName!, step.originalValue!)}
                 >
                   Confirm Location
@@ -319,7 +322,7 @@ export default function ChatStepRenderer({
             {!isStepComplete && (
               <div style={{ display: 'flex', gap: 12 }}>
                 <button
-                  style={{ background: '#0f766e', color: '#fff', border: 'none', borderRadius: 8, padding: '6px 16px', fontWeight: 600 }}
+                  style={{ background: '#0f766e', border: 'none', borderRadius: 8, padding: '6px 16px', fontWeight: 600 }}
                   onClick={() => handleSanitizedConfirm(step.fieldName!, step.sanitizedValue!)}
                   disabled={isStepComplete}
                 >

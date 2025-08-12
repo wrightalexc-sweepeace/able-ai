@@ -231,7 +231,7 @@ Generate a friendly, contextual prompt for the next question. The prompt should:
 
 Field-specific guidance:
 - additionalInstructions: Ask about specific skills, requirements, or preferences for the job
-- hourlyRate: Ask about budget with relevant pricing guidance for hiring someone
+- hourlyRate: Ask about budget with relevant pricing guidance for hiring someone in British Pounds (£)
 - gigLocation: Ask about location with context about finding nearby workers
 - gigDate: Ask about timing with context about availability
 - gigTime: Ask about the specific start time of the gig
@@ -297,7 +297,7 @@ Your job is to:
 - Respond in a friendly, helpful, and concise way, like the following examples:
   - "Hi! Tell me about yourself and what gig or gigs you need filling - we can assemble a team if you need one!"
   - "We have some great bartenders available. Do you need any special skills or do you have instructions for your hire?"
-  - "How much you would like to pay per hour? We suggest £15 plus tips to keep a motivated and happy team!"
+  - "How much you would like to pay per hour? We suggest £15 plus tips to keep a motivated and happy team! All amounts are in British Pounds (£)"
   - "Where is the gig? What time and day do you need someone and for how long?"
 - If the answer is clear, confirm it and move to the next logical question (e.g., ask about pay, location, date, etc.).
 - If the answer is unclear, ask for clarification.
@@ -1980,7 +1980,6 @@ Make the conversation feel natural and build on what they've already told you.`;
                       <button
                         style={{
                           background: isConfirming ? '#555' : 'var(--secondary-color)',
-                          color: '#fff',
                           border: 'none',
                           borderRadius: '8px',
                           padding: '8px 16px',
@@ -2016,8 +2015,7 @@ Make the conversation feel natural and build on what they've already told you.`;
                   {confirmedSteps.has(step.id) && (
                     <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'flex-end' }}>
                       <div style={{
-                        background: '#28a745',
-                        color: '#fff',
+                        background: 'var(--secondary-color)',
                         border: 'none',
                         borderRadius: '8px',
                         padding: '8px 16px',
@@ -2094,6 +2092,7 @@ Make the conversation feel natural and build on what they've already told you.`;
                         handleInputChange(step.inputConfig.name, value);
                       }
                     }}
+                    role="BUYER"
                   />
                   
                   {/* Confirm button when location is selected */}
@@ -2102,7 +2101,6 @@ Make the conversation feel natural and build on what they've already told you.`;
                       <button
                         style={{
                           background: isConfirming ? '#555' : 'var(--secondary-color)',
-                          color: '#fff',
                           border: 'none',
                           borderRadius: '8px',
                           padding: '8px 16px',
@@ -2138,8 +2136,7 @@ Make the conversation feel natural and build on what they've already told you.`;
                   {confirmedSteps.has(step.id) && (
                     <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'flex-end' }}>
                       <div style={{
-                        background: '#28a745',
-                        color: '#fff',
+                        background: 'var(--secondary-color)',
                         border: 'none',
                         borderRadius: '8px',
                         padding: '8px 16px',
