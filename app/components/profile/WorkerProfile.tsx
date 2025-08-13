@@ -18,7 +18,10 @@ import {
   ThumbsUp,
   MessageSquare,
 } from "lucide-react";
-import { getPrivateWorkerProfileAction, updateVideoUrlProfileAction } from "@/actions/user/gig-worker-profile";
+import {
+  getPrivateWorkerProfileAction,
+  updateVideoUrlProfileAction,
+} from "@/actions/user/gig-worker-profile";
 import VideoRecorderBubble from "@/app/components/onboarding/VideoRecorderBubble";
 import { firebaseApp } from "@/lib/firebase/clientApp";
 import {
@@ -31,24 +34,24 @@ import {
 import PublicWorkerProfile, { Review } from "@/app/types/workerProfileTypes";
 import { useAuth } from "@/context/AuthContext";
 import { useCallback, useState } from "react";
+import { toast } from "sonner";
 
 const WorkerProfile = ({
   workerProfile,
   isSelfView = false,
   handleAddSkill,
   handleSkillDetails, // Optional handler for skill details
-  fetchUserProfile,
-  userId
 }: {
   workerProfile: PublicWorkerProfile;
   handleAddSkill?: () => void;
   handleSkillDetails: (id: string) => void; // Now optional
   fetchUserProfile: (id: string) => void;
   userId?: string;
-  isSelfView: boolean
+  isSelfView: boolean;
 }) => {
   const { user } = useAuth();
   const [error, setError] = useState<string | null>(null);
+  const [isEditingVideo, setIsEditingVideo] = useState(false);
 
   const handleVideoUpload = useCallback(
     async (file: Blob) => {
@@ -92,10 +95,9 @@ const WorkerProfile = ({
           () => {
             getDownloadURL(uploadTask.snapshot.ref)
               .then((downloadURL) => {
-                updateVideoUrlProfileAction(user.token, downloadURL);
-                getPrivateWorkerProfileAction(user.uid);
-                //handleInputChange(name, downloadURL);
-                //handleInputSubmit(stepId, name, downloadURL);
+                updateVideoUrlProfileAction(downloadURL, user.token);
+                toast.success("Video upload successfully");
+                getPrivateWorkerProfileAction(user.token);
               })
               .catch((error) => {
                 console.error("Failed to get download URL:", error);
@@ -143,26 +145,61 @@ const WorkerProfile = ({
               </p>
             )
           ) : (
-            <Link
-              href={workerProfile.videoUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ display: "inline-block", textDecoration: "none" }}
-            >
-              <video
-                width="320"
-                height="180"
-                style={{ borderRadius: "8px", objectFit: "cover" }}
-                preload="metadata"
-                muted
-                poster="/video-placeholder.jpg"
+            <div style={{ textAlign: "center" }}>
+              {/* Video with link */}
+              <Link
+                href={workerProfile.videoUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ display: "inline-block", textDecoration: "none" }}
               >
-                <source
-                  src={workerProfile.videoUrl + "#t=0.1"}
-                  type="video/webm"
-                />
-              </video>
-            </Link>
+                <video
+                  width="180"
+                  height="180"
+                  style={{ borderRadius: "8px", objectFit: "cover" }}
+                  preload="metadata"
+                  muted
+                  poster="/video-placeholder.jpg"
+                >
+                  <source
+                    src={workerProfile.videoUrl + "#t=0.1"}
+                    type="video/webm"
+                  />
+                </video>
+              </Link>
+
+              {/* Record video link */}
+              {isSelfView && (
+                <div style={{ marginTop: "8px" }}>
+                  <button
+                    onClick={() => setIsEditingVideo(true)}
+                    style={{
+                      padding: "6px 12px",
+                      backgroundColor: "#0070f3",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Editar video
+                  </button>
+                </div>
+              )}
+
+              {/* Show video recorder */}
+              {isEditingVideo && (
+                <div style={{ marginTop: "12px" }}>
+                  <VideoRecorderBubble
+                    key={2}
+                    onVideoRecorded={(video) => {
+                      handleVideoUpload(video);
+                      setIsEditingVideo(false);
+                    }}
+                  />
+                </div>
+              )}
+            </div>
           )}
 
           {/* Add play icon if it's a video */}
@@ -187,7 +224,11 @@ const WorkerProfile = ({
             <button
               className={styles.shareProfileButton}
               aria-label="Share profile"
-              onClick={() => alert("Share functionality coming soon!")}
+              onClick={() =>
+                alert(
+                  `${window.location.origin}/worker/${workerProfile.id}/profile`
+                )
+              }
             >
               <Share2 size={33} color="#ffffff" />
             </button>
