@@ -552,6 +552,30 @@ export default function Home() {
                 In Progress
               </span>
             </div>
+            {/* Add Buyer Dashboard route */}
+            <div className={styles.pageItem}>
+              <Link
+                href={user ? `/user/${user.uid}/buyer` : "/user/test-user-id/buyer"}
+                className={styles.pageName}
+              >
+                /user/[userId]/buyer (Dashboard)
+              </Link>
+              <span className={styles.badge} data-status="in-progress">
+                In Progress
+              </span>
+            </div>
+            {/* Add Worker Dashboard route */}
+            <div className={styles.pageItem}>
+              <Link
+                href={user ? `/user/${user.uid}/worker` : "/user/test-user-id/worker"}
+                className={styles.pageName}
+              >
+                /user/[userId]/worker (Dashboard)
+              </Link>
+              <span className={styles.badge} data-status="in-progress">
+                In Progress
+              </span>
+            </div>
           </div>
         </section>
 

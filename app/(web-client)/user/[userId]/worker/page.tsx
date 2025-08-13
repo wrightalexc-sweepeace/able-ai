@@ -10,6 +10,7 @@ import IconGrid from "@/app/components/shared/IconGrid";
 import ReferralBanner from "@/app/components/shared/ReferralBanner";
 import RoleToggle from "@/app/components/shared/RoleToggle";
 import SettingsButton from "@/app/components/shared/SettingsButton";
+import WorkerGigRequestAICard from "@/app/components/shared/WorkerGigRequestAICard";
 
 // Import Lucide icons as needed for the specific dashboard
 import {
@@ -114,16 +115,6 @@ export default function WorkerDashboardPage() {
       icon: <DollarSign size={28} />,
       to: `/user/${uid}/worker/earnings`,
     },
-    {
-      label: "Chat",
-      icon: <MessageCircle size={28} />,
-      to: `/user/${uid}/worker/chat`,
-    },
-    {
-      label: "AI Support",
-      icon: <MessageCircle size={28} />,
-      to: `/user/${uid}/able-ai`,
-    },
   ];
 
   // Optional: Fetch summary data for upcoming gigs/offers
@@ -189,6 +180,8 @@ export default function WorkerDashboardPage() {
 
         {/* <h2 className={styles.sectionTitle}>Manage Your Activity</h2> */}
         <IconGrid items={actionItems} />
+
+        {/* AI Gig Request Chat Card */}
 
         {/* Optional Summary Section - Example Structure
         {summaryData.length > 0 && (

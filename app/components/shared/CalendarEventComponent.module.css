@@ -5,7 +5,7 @@
   height: 100%;
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
-  background-color: #3a3a3a;
+  /* background-color removed to allow parent eventPropGetter to control colors */
   color: #e0e0e0;
   font-size: 0.75rem;
   line-height: 1.2;
@@ -137,6 +137,21 @@
 
 .statusAccepted {
   background-color: var(--primary-color);
+  color: #000000;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.75rem;
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  animation: offerPulse 2s ease-in-out infinite;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.statusBuyerAccepted {
+  background-color: var(--secondary-color);
   color: #000000;
   padding: 0.125rem 0.375rem;
   border-radius: 0.75rem;
@@ -316,6 +331,32 @@
 .viewGigBtn:hover {
   background-color: var(--primary-darker-color);
   color: #ffffff;
+}
+
+.viewGigBtnSecondary {
+  background-color: var(--secondary-color);
+  color: #000000;
+}
+
+.viewGigBtnSecondary:hover {
+  background-color: var(--secondary-color);
+  color: #ffffff;
+}
+
+.participantSplit {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+.participantLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.participantRight {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
 }
 
 .viewIcon {

@@ -2,14 +2,27 @@
 
 .calendarWrapper {
   background-color: #161616;
+  background-color: #161616;
   padding: 1rem;
   border-radius: 0.75rem;
   border: 1px solid #2b2b2b;
+  color: #e0e0e0;
   color: #e0e0e0;
   margin-bottom: 4rem;
   animation: calendarFadeIn 0.6s ease-out;
   overflow: visible;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes calendarFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes calendarFadeIn {
@@ -74,7 +87,6 @@
   position: relative;
   overflow: hidden;
   white-space: nowrap;
-  min-width: fit-content;
 }
 
 .calendarWrapper :global(.rbc-btn-group button::before) {
@@ -141,6 +153,17 @@
   }
 }
 
+@keyframes labelFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 /* Header Styling */
 .calendarWrapper :global(.rbc-header) {
   padding: 0.75rem 0;
@@ -150,6 +173,15 @@
   font-weight: 500;
   font-size: 0.8rem;
   text-transform: uppercase;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.calendarWrapper :global(.rbc-header:hover) {
+  color: #ffffff;
+  background-color: rgba(255, 255, 255, 0.05);
   transition: all 0.3s ease;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -172,6 +204,9 @@
   height: 100%;
 }
 
+.calendarWrapper :global(.rbc-month-view) {
+  height: 600px !important;
+}
 
 
 @keyframes viewFadeIn {
@@ -252,6 +287,7 @@
   transition: background-color 0.3s ease;
   min-height: 80px;
   position: relative;
+  height: 120px !important;
 }
 
 .calendarWrapper :global(.rbc-day-bg:hover) {
@@ -267,6 +303,7 @@
   border-bottom: 1px solid #2b2b2b;
   min-height: 100px;
   transition: all 0.3s ease;
+  height: 120px !important;
 }
 
 .calendarWrapper :global(.rbc-month-row:hover) {
@@ -307,11 +344,31 @@
   }
 }
 
+.calendarWrapper :global(.rbc-today::after) {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, transparent 30%, rgba(255, 255, 255, 0.05) 50%, transparent 70%);
+  animation: todayGlow 3s ease-in-out infinite;
+}
+
+@keyframes todayGlow {
+  0%, 100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
 /* Event Styling - Comprehensive */
 .calendarWrapper :global(.rbc-event) {
   box-shadow: 0 2px 4px rgba(0,0,0,0.4);
   font-weight: 500;
-  background-color: #3a3a3a;
+  /* background-color removed to allow eventPropGetter to control colors */
   border-radius: 4px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -399,6 +456,7 @@
   white-space: nowrap;
 }
 
+
 .calendarWrapper :global(.rbc-event-content) {
   font-size: 14px;
   font-family: var(--font-family);
@@ -413,6 +471,10 @@
   font-size: 0.75rem;
   line-height: 1.2;
   border-radius: 4px;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  height: 100% !important;
 }
 
 
@@ -429,6 +491,53 @@
 
 .clickableDateCell:hover {
   background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Event Component with View Icon */
+.eventComponent {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 120px;
+  padding-bottom: 100%;
+  font-size: 15px !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* Horizontal layout for day/agenda views */
+.eventComponentHorizontal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  padding: 2px 4px;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  /* background-color removed to allow eventPropGetter to control colors */
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  flex-direction: row;
+  gap: 4px;
+}
+
+.eventComponent:hover,
+.eventComponentHorizontal:hover {
+  background-color: #4a4a4a;
+  transform: scale(1.02);
 }
 
 /* Modal Overlay */
@@ -543,21 +652,20 @@
 }
 
 .confirmButton {
-  background-color: var(--primary-color, #0f766e);
+  /* Default styles - will be overridden by inline styles for role-based colors */
   color: #ffffff;
-  border: 1px solid var(--primary-color, #0f766e);
   padding: 0.75rem 1.5rem;
   border-radius: 0.5rem;
   cursor: pointer;
   font-size: 0.9rem;
   font-weight: 500;
   transition: all 0.2s ease;
+  border: 1px solid;
 }
 
 .confirmButton:hover {
-  background-color: #0d5a55;
-  border-color: #0d5a55;
   transform: translateY(-1px);
+  filter: brightness(0.9);
 }
 
 /* Animations */
@@ -680,13 +788,22 @@
 }
 
 /* Time Gutter Styling */
+/* Time Gutter Styling */
 .calendarWrapper :global(.rbc-time-header-gutter),
 .calendarWrapper :global(.rbc-time-gutter) {
   background-color: #161616;
   border-right: 1px solid #2b2b2b;
 }
 
+
 .calendarWrapper :global(.rbc-time-gutter .rbc-timeslot-group .rbc-time-slot) {
+  color: #a0a0a0;
+  font-size: 0.75rem;
+  transition: color 0.3s ease;
+}
+
+.calendarWrapper :global(.rbc-time-gutter .rbc-timeslot-group .rbc-time-slot:hover) {
+  color: #ffffff;
   color: #a0a0a0;
   font-size: 0.75rem;
   transition: color 0.3s ease;
@@ -753,7 +870,7 @@
 
 /* Legend Colors */
 .legendAccepted { background-color: var(--primary-color); }
-.legendOffer { background-color: #525252; }
+.legendOffer { background-color: #6b7280; }
 .legendInProgress { background-color: #f59e0b; }
 .legendCompleted { background-color: var(--success-color); }
 .legendCancelled { background-color: var(--error-color); }
@@ -813,8 +930,8 @@
   }
 
   .calendarWrapper :global(.rbc-event-content) {
-    font-size: 12px;
-    line-height: 14px;
+    font-size: 15px !important;
+    line-height: 13px;
   }
 
   .calendarWrapper :global(.rbc-event-label) {
@@ -872,4 +989,13 @@
   .calendarWrapper :global(.rbc-time-slot) {
     min-height: 40px;
   }
-} 
+}
+
+/* Allow eventPropGetter to control event colors dynamically */
+.calendarWrapper :global(.rbc-event) {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  /* Remove any background-color overrides to allow eventPropGetter colors */
+}
+
+/* Remove the complex data-attribute based styling since it's not reliable */
+/* The eventPropGetter will handle all the color logic consistently */

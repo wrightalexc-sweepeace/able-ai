@@ -9,7 +9,7 @@ import FormCard from '@/app/components/forms/FormCard';
 import LabelledSelectInput from '@/app/components/forms/LabelledSelectInput';
 import LabelledTextareaInput from '@/app/components/forms/LabelledTextareaInput';
 import LabelledFileUploadButton from '@/app/components/forms/LabelledFileUploadButton';
-import ChatWidget from '@/app/components/chat/ChatWidget';
+import Logo from '@/app/components/brand/Logo';
 
 const issueTypes = [
   { value: 'payment_issue', label: 'Payment Issue' },
@@ -96,6 +96,10 @@ export default function ReportIssuePage() {
   return (
     <div className={styles.pageContainer}>
       <ScreenHeaderWithBack title="Report an Issue" onBackClick={() => router.back()} />
+      <div className={styles.chatBot}>
+        {/* <Logo width={50} height={50} /> */}
+        <p>Chat with Able or complete the form manually. A member of our team will be in touch</p>
+      </div>
       <form onSubmit={handleSubmit} className={styles.formCard}>
         <LabelledSelectInput
           label="Type of Issue"
@@ -119,7 +123,7 @@ export default function ReportIssuePage() {
           {isSubmitting ? 'Submitting...' : 'Submit Issue'}
         </button>
       </form>
-      <ChatWidget />
+      {/* <ChatWidget /> */}
     </div>
   );
 } 

@@ -11,6 +11,7 @@ import TextAreaBubble from "@/app/components/onboarding/TextAreaBubble";
 import CalendarPickerBubble from "@/app/components/onboarding/CalendarPickerBubble";
 import VideoRecorderBubble from "@/app/components/onboarding/VideoRecorderBubble";
 import LocationPickerBubble from '@/app/components/onboarding/LocationPickerBubble';
+import ShareLinkBubble from "@/app/components/onboarding/ShareLinkBubble";
 import SanitizedConfirmationBubble from "@/app/components/onboarding/SanitizedConfirmationBubble";
 import Loader from "@/app/components/shared/Loader";
 
@@ -106,6 +107,9 @@ const requiredFields: RequiredField[] = [
   { name: "references", type: "text", placeholder: "Provide your references...", defaultPrompt: "Do you have any references or testimonials?", rows: 3 },
 ];
 
+// Currency note for users
+const CURRENCY_NOTE = "💡 All amounts and rates are in British Pounds (£)";
+
 // Type definitions for better type safety
 interface RequiredField {
   name: string;
@@ -132,9 +136,9 @@ interface FormData {
 }
 
 // Chat step type definition - matching gig creation structure
-type ChatStep = {
+ type ChatStep = {
   id: number;
-  type: "bot" | "user" | "input" | "sanitized" | "typing" | "calendar" | "location" | "confirm" | "video";
+  type: "bot" | "user" | "input" | "sanitized" | "typing" | "calendar" | "location" | "confirm" | "video" | "shareLink";
   content?: string;
   inputConfig?: {
     type: string;
@@ -147,6 +151,8 @@ type ChatStep = {
   originalValue?: string | any; // Allow objects for coordinates
   fieldName?: string;
   isNew?: boolean; // Track if this step is new for animation purposes
+  linkUrl?: string;
+  linkText?: string;
 };
 
 // AI response types for better type safety
@@ -174,18 +180,64 @@ function isValidDate(dateValue: unknown): boolean {
   }
 }
 
-function isValidTime(timeValue: unknown): boolean {
-  if (!timeValue || typeof timeValue !== 'string') return false;
-  
+function parseTimeToHHMM(timeValue: unknown): string | null {
   try {
-    if (timeValue.match(/^\d{2}:\d{2}$/)) {
-      const [hours, minutes] = timeValue.split(':').map(Number);
-      return hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59;
+    if (!timeValue) return null;
+
+    if (timeValue instanceof Date) {
+      const hours = timeValue.getHours().toString().padStart(2, '0');
+      const minutes = timeValue.getMinutes().toString().padStart(2, '0');
+      return `${hours}:${minutes}`;
     }
-    return false;
+
+    if (typeof timeValue === 'string') {
+      const val = timeValue.trim();
+
+      // ISO date string with time
+      if (val.includes('T')) {
+        const d = new Date(val);
+        if (!isNaN(d.getTime())) {
+          const hours = d.getHours().toString().padStart(2, '0');
+          const minutes = d.getMinutes().toString().padStart(2, '0');
+          return `${hours}:${minutes}`;
+        }
+      }
+
+      // Formats: H:MM or HH:MM with optional AM/PM
+      const hmMatch = val.match(/^(\d{1,2}):(\d{2})\s*([AaPp][Mm])?$/);
+      if (hmMatch) {
+        let hours = parseInt(hmMatch[1], 10);
+        const minutes = parseInt(hmMatch[2], 10);
+        const meridiem = hmMatch[3]?.toLowerCase();
+        if (meridiem) {
+          if (hours === 12) hours = 0;
+          if (meridiem === 'pm') hours += 12;
+        }
+        if (hours >= 0 && hours <= 23 && minutes >= 0 && minutes <= 59) {
+          return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+        }
+      }
+
+      // Formats: H AM/PM
+      const hOnly = val.match(/^(\d{1,2})\s*([AaPp][Mm])$/);
+      if (hOnly) {
+        let hours = parseInt(hOnly[1], 10);
+        const meridiem = hOnly[2].toLowerCase();
+        if (hours === 12) hours = 0;
+        if (meridiem === 'pm') hours += 12;
+        if (hours >= 0 && hours <= 23) {
+          return `${hours.toString().padStart(2, '0')}:00`;
+        }
+      }
+    }
   } catch {
-    return false;
+    // ignore
   }
+  return null;
+}
+
+function isValidTime(timeValue: unknown): boolean {
+  return parseTimeToHHMM(timeValue) !== null;
 }
 
 function isValidCoordinate(value: unknown): value is { lat: number; lng: number } {
@@ -194,6 +246,31 @@ function isValidCoordinate(value: unknown): value is { lat: number; lng: number 
   return 'lat' in coord && 'lng' in coord && 
          typeof coord.lat === 'number' && typeof coord.lng === 'number' &&
          !isNaN(coord.lat) && !isNaN(coord.lng);
+}
+
+// Helper: generate a compact random code and build a recommendation URL
+function generateRandomCode(length = 8): string {
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // Avoid ambiguous chars
+  let result = "";
+  const array = new Uint32Array(length);
+  if (typeof window !== 'undefined' && window.crypto?.getRandomValues) {
+    window.crypto.getRandomValues(array);
+    for (let i = 0; i < length; i++) {
+      result += alphabet[array[i] % alphabet.length];
+    }
+  } else {
+    for (let i = 0; i < length; i++) {
+      result += alphabet[Math.floor(Math.random() * alphabet.length)];
+    }
+  }
+  return result;
+}
+
+function buildRecommendationLink(): string {
+  const origin = typeof window !== 'undefined' && window.location?.origin ? window.location.origin : 'http://localhost:3000';
+  const code = generateRandomCode(10);
+  // Example format requested: /worker/{code}/recommendation
+  return `${origin}/worker/${code}/recommendation`;
 }
 
 // Date and time formatting functions with better error handling
@@ -215,28 +292,22 @@ function formatDateForDisplay(dateValue: unknown): string {
 }
 
 function formatTimeForDisplay(timeValue: unknown): string {
-  if (!timeValue || !isValidTime(timeValue)) return '';
-  
+  if (!timeValue) return '';
+
   try {
-    if (typeof timeValue === 'string' && timeValue.match(/^\d{2}:\d{2}$/)) {
-      const [hours, minutes] = timeValue.split(':');
+    // Normalize to HH:MM first
+    const hhmm = parseTimeToHHMM(timeValue);
+    if (hhmm) {
+      const [hours, minutes] = hhmm.split(':');
       const date = new Date();
-      date.setHours(parseInt(hours), parseInt(minutes));
-      return date.toLocaleTimeString('en-GB', { 
-        hour: 'numeric', 
+      date.setHours(parseInt(hours, 10), parseInt(minutes, 10), 0, 0);
+      return date.toLocaleTimeString('en-GB', {
+        hour: 'numeric',
         minute: '2-digit',
-        hour12: true 
+        hour12: true,
       });
     }
-    
-    if (timeValue instanceof Date) {
-      return timeValue.toLocaleTimeString('en-GB', { 
-        hour: 'numeric', 
-        minute: '2-digit',
-        hour12: true 
-      });
-    }
-    
+
     return String(timeValue);
   } catch (error) {
     console.error('Time formatting error:', error);
@@ -314,7 +385,7 @@ Generate a friendly, contextual prompt for the next question. The prompt should:
 Field-specific guidance for WORKERS:
 - experience: Ask about their work history, relevant experience, or professional background as a worker
 - skills: Ask about their specific skills, certifications, or qualifications they can offer to clients
-- hourlyRate: Ask about their preferred hourly rate for their services
+- hourlyRate: Ask about their preferred hourly rate for their services in British Pounds (£)
 - location: Ask about their location with context about finding nearby gig opportunities
 - availability: Ask about when they are available to work for clients
 - time: Ask about their preferred working hours for gigs
@@ -534,21 +605,9 @@ Make the conversation feel natural and build on what they've already told you.`;
         // For time fields, ensure proper time format
         if (field === 'time') {
           try {
-            // If it's already a valid time string, keep it
-            if (isValidTime(value)) {
-              return {
-                sufficient: true,
-                sanitized: value,
-              };
-            }
-            // If it's a Date object, extract time
-            if (value instanceof Date) {
-              const hours = value.getHours().toString().padStart(2, '0');
-              const minutes = value.getMinutes().toString().padStart(2, '0');
-              return {
-                sufficient: true,
-                sanitized: `${hours}:${minutes}`,
-              };
+            const hhmm = parseTimeToHHMM(value);
+            if (hhmm) {
+              return { sufficient: true, sanitized: hhmm };
             }
           } catch (error) {
             console.error('Time validation error:', error);
@@ -612,16 +671,37 @@ Make the conversation feel natural and build on what they've already told you.`;
       });
       
       if (!aiResult.sufficient) {
-        // Add clarification message only - keep the original input visible
-        setChatSteps((prev) => [
-          ...prev,
-          { 
-            id: Date.now() + 2, 
-            type: 'bot', 
-            content: aiResult.clarificationPrompt!,
-            isNew: true
-          }
-        ]);
+        // Add clarification message and re-open the same input step to collect a better answer
+        setChatSteps((prev) => {
+          const reopenedType: "input" | "calendar" | "location" =
+            currentStep?.type === 'location' ? 'location' :
+            currentStep?.type === 'calendar' ? 'calendar' :
+            'input';
+          const reopenedInputConfig = currentStep?.inputConfig ?? {
+            type: 'text',
+            name: inputName,
+            placeholder: '',
+          };
+          const nextSteps: ChatStep[] = [
+            ...prev,
+            { 
+              id: Date.now() + 2, 
+              type: 'bot', 
+              content: aiResult.clarificationPrompt!,
+              isNew: true,
+            },
+            {
+              id: Date.now() + 3,
+              type: reopenedType,
+              inputConfig: reopenedInputConfig,
+              isComplete: false,
+              isNew: true,
+            },
+          ];
+          return nextSteps;
+        });
+        // Focus the same input name on next render
+        setCurrentFocusedInputName(inputName);
         return;
       }
       
@@ -640,6 +720,93 @@ Make the conversation feel natural and build on what they've already told you.`;
         const nextField = getNextRequiredField(updatedFormData);
         
         if (nextField) {
+          // Special handling: auto-generate references link instead of asking for input
+          if (nextField.name === 'references') {
+            const recommendationLink = buildRecommendationLink();
+            const afterRefFormData = { ...updatedFormData, references: recommendationLink };
+            setFormData(afterRefFormData);
+
+            // Add a bot note and a share link bubble, then continue
+            setChatSteps((prev) => [
+              ...prev,
+              {
+                id: Date.now() + 3,
+                type: "bot",
+                content: "You need two references (at least one recommendation per skill) from previous managers, colleagues or teachers. If you don't have experience you can get a reference from a friend or someone in your network.\n\nSend this link to get your reference:",
+                isNew: true,
+              },
+              {
+                id: Date.now() + 4,
+                type: "shareLink",
+                linkUrl: recommendationLink,
+                linkText: recommendationLink,
+                isNew: true,
+              },
+            {
+              id: Date.now() + 5,
+              type: "bot",
+              content: "Please check out your gigfolio and share with your network - if your connections make a hire on Able you get £5!",
+              isNew: true,
+            },
+            {
+              id: Date.now() + 5,
+              type: "bot",
+              content: "Watch out for notifications of your first shift offer! If you don't accept within 90 minutes we will offer the gig to someone else.",
+              isNew: true,
+            },
+            {
+              id: Date.now() + 5,
+              type: "bot",
+              content: "We might offer you gigs outside of your defined skill area, watch out for those opportunities too!",
+              isNew: true,
+            },
+            ]);
+
+            const nextAfterReferences = getNextRequiredField(afterRefFormData);
+            if (nextAfterReferences) {
+              const aboutInfo = afterRefFormData.about || '';
+              const contextAwarePrompt = await generateContextAwarePrompt(nextAfterReferences.name, aboutInfo, ai);
+              const newInputConfig = {
+                type: nextAfterReferences.type as FormInputType,
+                name: nextAfterReferences.name,
+                placeholder: nextAfterReferences.placeholder,
+                ...(nextAfterReferences.rows && { rows: nextAfterReferences.rows }),
+              };
+              let stepType: "input" | "calendar" | "location" | "video" = "input";
+              if (nextAfterReferences.name === "availability") stepType = "calendar";
+              else if (nextAfterReferences.name === "location") stepType = "location";
+              else if (nextAfterReferences.name === "videoIntro") stepType = "video";
+
+              setChatSteps((prev) => [
+                ...prev,
+                {
+                  id: Date.now() + 5,
+                  type: "bot",
+                  content: contextAwarePrompt,
+                  isNew: true,
+                },
+                {
+                  id: Date.now() + 6,
+                  type: stepType,
+                  inputConfig: newInputConfig,
+                  isComplete: false,
+                  isNew: true,
+                },
+              ]);
+            } else {
+              // No more fields -> summary
+              setChatSteps((prev) => [
+                ...prev,
+                {
+                  id: Date.now() + 7,
+                  type: "bot",
+                  content: `Perfect! Here's a summary of your worker profile:\n${JSON.stringify(afterRefFormData, null, 2)}`,
+                  isNew: true,
+                },
+              ]);
+            }
+            return;
+          }
           // Generate context-aware prompt for next field
           const aboutInfo = updatedFormData.about || '';
           const contextAwarePrompt = await generateContextAwarePrompt(nextField.name, aboutInfo, ai);
@@ -664,13 +831,13 @@ Make the conversation feel natural and build on what they've already told you.`;
           setChatSteps((prev) => [
             ...prev,
             {
-              id: Date.now() + 3,
+              id: Date.now() + 6,
               type: "bot",
               content: contextAwarePrompt,
               isNew: true,
             },
             {
-              id: Date.now() + 4,
+              id: Date.now() + 7,
               type: stepType,
               inputConfig: newInputConfig,
               isComplete: false,
@@ -738,6 +905,88 @@ Make the conversation feel natural and build on what they've already told you.`;
       const nextField = getNextRequiredField(updatedFormData);
       
       if (nextField) {
+        // Special handling: auto-generate references link instead of asking for input
+        if (nextField.name === 'references') {
+          const recommendationLink = buildRecommendationLink();
+          const afterRefFormData = { ...formData, [fieldName]: sanitized, references: recommendationLink };
+          setFormData(afterRefFormData);
+
+          // Add share link and then continue
+          setChatSteps((prev) => [
+            ...prev,
+            {
+              id: Date.now() + 2,
+              type: "bot",
+              content: "You need two references (at least one recommendation per skill) from previous managers, colleagues or teachers. If you don't have experience you can get a reference from a friend or someone in your network.\n\nSend this link to get your reference:",
+              isNew: true,
+            },
+            {
+              id: Date.now() + 3,
+              type: "shareLink",
+              linkUrl: recommendationLink,
+              linkText: recommendationLink,
+              isNew: true,
+            },
+            {
+              id: Date.now() + 4,
+              type: "bot",
+              content: "Please check out your gigfolio and share with your network - if your connections make a hire on Able you get £5!",
+              isNew: true,
+            },
+            {
+              id: Date.now() + 6,
+              type: "bot",
+              content: "Watch out for notifications of your first shift offer! If you don't accept within 90 minutes we will offer the gig to someone else.",
+              isNew: true,
+            },
+            {
+              id: Date.now() + 7,
+              type: "bot",
+              content: "We might offer you gigs outside of your defined skill area, watch out for those opportunities too!",
+              isNew: true,
+            },
+          ]);
+
+          const nextAfterReferences = getNextRequiredField(afterRefFormData);
+          if (nextAfterReferences) {
+            const aboutInfo = afterRefFormData.about || '';
+            const contextAwarePrompt = await generateContextAwarePrompt(nextAfterReferences.name, aboutInfo, ai);
+            const newInputConfig = {
+              type: nextAfterReferences.type as FormInputType,
+              name: nextAfterReferences.name,
+              placeholder: nextAfterReferences.placeholder,
+              ...(nextAfterReferences.rows && { rows: nextAfterReferences.rows }),
+            };
+            setChatSteps((prev) => [
+              ...prev,
+              {
+                id: Date.now() + 5,
+                type: "bot",
+                content: contextAwarePrompt,
+                isNew: true,
+              },
+              {
+                id: Date.now() + 6,
+                type: nextAfterReferences.type === "location" ? "location" : nextAfterReferences.type === "date" ? "calendar" : nextAfterReferences.type === "video" ? "video" : "input",
+                inputConfig: newInputConfig,
+                isComplete: false,
+                isNew: true,
+              },
+            ]);
+          } else {
+            // No more fields -> summary
+            setChatSteps((prev) => [
+              ...prev,
+              {
+                id: Date.now() + 6,
+                type: "bot",
+                content: `Perfect! Here's a summary of your worker profile:\n${JSON.stringify(afterRefFormData, null, 2)}`,
+                isNew: true,
+              },
+            ]);
+          }
+          return;
+        }
         // Generate context-aware prompt
         const aboutInfo = updatedFormData.about || (fieldName === 'about' ? (typeof sanitized === 'string' ? sanitized : JSON.stringify(sanitized)) : '');
         
@@ -850,6 +1099,78 @@ Make the conversation feel natural and build on what they've already told you.`;
     const nextField = getNextRequiredField({ ...formData, [inputName]: currentValue });
 
     if (nextField) {
+      // Special handling: auto-generate references link instead of asking for input
+      if (nextField.name === 'references') {
+        const recommendationLink = buildRecommendationLink();
+        const afterRefFormData = { ...formData, references: recommendationLink };
+        setFormData(afterRefFormData);
+
+        // Add share link and then continue
+        setChatSteps(prev => [
+          ...prev,
+          {
+            id: Date.now() + 2,
+            type: "bot",
+            content: "You need two references (at least one recommendation per skill) from previous managers, colleagues or teachers. If you don't have experience you can get a reference from a friend or someone in your network.\n\nSend this link to get your reference:",
+            isNew: true,
+          },
+          {
+            id: Date.now() + 3,
+            type: "shareLink",
+            linkUrl: recommendationLink,
+            linkText: recommendationLink,
+            isNew: true,
+          },
+        ]);
+
+        const nextAfterReferences = getNextRequiredField(afterRefFormData);
+        if (nextAfterReferences) {
+          const contextAwarePrompt = await generateContextAwarePrompt(nextAfterReferences.name, formData.about || '', ai);
+          setTimeout(() => {
+            setChatSteps(prev => {
+              const filtered = prev.filter(s => s.type !== 'typing');
+              return [
+                ...filtered,
+                {
+                  id: Date.now() + 4,
+                  type: "bot",
+                  content: contextAwarePrompt,
+                  isNew: true,
+                },
+                {
+                  id: Date.now() + 5,
+                  type: nextAfterReferences.type === "location" ? "location" : nextAfterReferences.type === "date" ? "calendar" : nextAfterReferences.type === "video" ? "video" : "input",
+                  inputConfig: {
+                    type: nextAfterReferences.type,
+                    name: nextAfterReferences.name,
+                    placeholder: nextAfterReferences.placeholder,
+                    rows: nextAfterReferences.rows,
+                  },
+                  isComplete: false,
+                  isNew: true,
+                },
+              ];
+            });
+          }, 700);
+        } else {
+          setTimeout(() => {
+            setChatSteps(prev => {
+              const filtered = prev.filter(s => s.type !== 'typing');
+              return [
+                ...filtered,
+                {
+                  id: Date.now() + 6,
+                  type: "bot",
+                  content: `Perfect! Here's your worker profile summary:\n\n${JSON.stringify(afterRefFormData, null, 2)}`,
+                  isNew: true,
+                },
+              ];
+            });
+          }, 700);
+        }
+        setIsConfirming(false);
+        return;
+      }
       // Generate context-aware prompt
       const contextAwarePrompt = await generateContextAwarePrompt(nextField.name, formData.about || '', ai);
 
@@ -919,7 +1240,13 @@ Make the conversation feel natural and build on what they've already told you.`;
         
         setFormData((prev) => ({ ...prev, [name]: processedValue }));
       } else {
-        setFormData((prev) => ({ ...prev, [name]: value }));
+        // Normalize time inputs to HH:MM for consistent storage
+        if (name === 'time' && value) {
+          const hhmm = parseTimeToHHMM(value);
+          setFormData((prev) => ({ ...prev, [name]: hhmm || value }));
+        } else {
+          setFormData((prev) => ({ ...prev, [name]: value }));
+        }
       }
     } catch (error) {
       console.error('Error handling input change:', error);
@@ -1144,8 +1471,10 @@ Make the conversation feel natural and build on what they've already told you.`;
         </div>
       )}
       
+
+      
       {chatSteps.map((step, idx) => {
-        const key = step.id;
+        const key = `${step.id}-${idx}`;
         
         if (step.type === "sanitized") {
           // Format the sanitized value properly
@@ -1461,6 +1790,57 @@ Make the conversation feel natural and build on what they've already told you.`;
           return null;
         }
 
+        if (step.type === "shareLink") {
+          return (
+            <div key={key} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {/* AI Avatar - Separated */}
+              <div style={{ 
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '0.5rem',
+                marginBottom: '0.5rem'
+              }}>
+                <div style={{ flexShrink: 0, marginTop: '0.25rem' }}>
+                  <div style={{
+                    width: '32px',
+                    height: '32px',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: 'linear-gradient(135deg, var(--primary-color), var(--primary-darker-color))',
+                    boxShadow: '0 2px 8px rgba(37, 99, 235, 0.3)'
+                  }}>
+                    <div style={{
+                      width: '28px',
+                      height: '28px',
+                      borderRadius: '50%',
+                      background: '#000000',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      border: '1px solid rgba(255, 255, 255, 0.2)'
+                    }}>
+                      <Image 
+                        src="/images/ableai.png" 
+                        alt="Able AI" 
+                        width={24} 
+                        height={24} 
+                        style={{
+                          borderRadius: '50%',
+                          objectFit: 'cover'
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <ShareLinkBubble linkUrl={step.linkUrl} linkText={step.linkText} />
+            </div>
+          );
+        }
+
         if (step.type === "calendar") {
           return (
             <div key={key} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -1516,7 +1896,6 @@ Make the conversation feel natural and build on what they've already told you.`;
                   <button
                     style={{
                       background: isConfirming ? '#555' : 'var(--primary-color)',
-                      color: '#fff',
                       border: 'none',
                       borderRadius: '8px',
                       padding: '8px 16px',
@@ -1546,8 +1925,7 @@ Make the conversation feel natural and build on what they've already told you.`;
               {confirmedSteps.has(step.id) && (
                 <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'flex-end' }}>
                   <div style={{
-                    background: '#28a745',
-                    color: '#fff',
+                    background: 'var(--primary-color)',
                     border: 'none',
                     borderRadius: '8px',
                     padding: '8px 16px',
@@ -1617,13 +1995,13 @@ Make the conversation feel natural and build on what they've already told you.`;
                 onChange={val => handleInputChange('location', val)}
                 showConfirm={false}
                 onConfirm={() => handlePickerConfirm(step.id, 'location')}
+                role="GIG_WORKER"
               />
               {!confirmedSteps.has(step.id) && (
                 <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'flex-end' }}>
                   <button
                     style={{
                       background: isConfirming ? '#555' : 'var(--primary-color)',
-                      color: '#fff',
                       border: 'none',
                       borderRadius: '8px',
                       padding: '8px 16px',
@@ -1653,8 +2031,7 @@ Make the conversation feel natural and build on what they've already told you.`;
               {confirmedSteps.has(step.id) && (
                 <div style={{ marginTop: '12px', display: 'flex', justifyContent: 'flex-end' }}>
                   <div style={{
-                    background: '#28a745',
-                    color: '#fff',
+                    background: 'var(--primary-color)',
                     border: 'none',
                     borderRadius: '8px',
                     padding: '8px 16px',

@@ -103,16 +103,6 @@ export default function BuyerDashboardPage() {
       icon: <CreditCard size={28} />,
       to: `/user/${uid}/buyer/payments`,
     },
-    {
-      label: "Chat",
-      icon: <MessageCircle size={28} />,
-      to: `/user/${uid}/chat`,
-    },
-    {
-      label: "AI Support",
-      icon: <MessageCircle size={28} />,
-      to: `/user/${uid}/able-ai`,
-    },
   ];
 
   if (!userPublicProfile) {
