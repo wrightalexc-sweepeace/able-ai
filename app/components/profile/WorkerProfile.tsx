@@ -182,7 +182,7 @@ const WorkerProfile = ({
                       cursor: "pointer",
                     }}
                   >
-                    Editar video
+                    Edit video
                   </button>
                 </div>
               )}
