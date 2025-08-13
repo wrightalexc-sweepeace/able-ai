@@ -171,6 +171,10 @@ const GigDetailsComponent = ({ userId, role, gig, setGig, isAvailableOffer = fal
 			else if (action === 'confirmed') {
 				setGig({ ...gig, status: 'CONFIRMED' });
 				// Show success message
+			} else if (action === 'requestAmendment') {
+				setGig({ ...gig, status: 'REQUESTED_AMENDMENT' });
+				router.push(`/gigs/${gig.id}/amends/`);
+				// Show success message
 			}
 			else if (action === 'delete') {
 				if (!user?.uid) {
