@@ -161,7 +161,7 @@ export default function WorkerDashboardPage() {
           )}
         <main className={styles.contentWrapper}>
           <IconGrid items={actionItems} />
-          <ReferralBanner title="Refer a worker and earn £5!" />
+          <ReferralBanner />
         </main> 
         <footer className={styles.pageFooter}>
           <RoleToggle />
