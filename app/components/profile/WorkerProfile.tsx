@@ -53,6 +53,16 @@ const WorkerProfile = ({
   const [error, setError] = useState<string | null>(null);
   const [isEditingVideo, setIsEditingVideo] = useState(false);
 
+/**
+ * Sube un archivo de imagen a Firebase Storage
+ * @param file Blob de la imagen
+ * @param pathPath Ruta relativa en Storage, ej: `workers/${userId}/profile.jpg`
+ * @param onProgress Función opcional para progreso (0 a 100)
+ * @returns URL pública de la imagen subida
+ */
+
+
+
   const handleVideoUpload = useCallback(
     async (file: Blob) => {
       if (!user) {

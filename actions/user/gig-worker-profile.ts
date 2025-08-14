@@ -18,69 +18,67 @@ import { ERROR_CODES } from "@/lib/responses/errors";
 import { isUserAuthenticated } from "@/lib/user.server";
 import { eq } from "drizzle-orm";
 
-
 export const getPublicWorkerProfileAction = async (workerId: string) => {
-    if (!workerId) throw "Worker ID is required"
+  if (!workerId) throw "Worker ID is required";
 
-    const workerProfile = await db.query.GigWorkerProfilesTable.findFirst({
-      where: eq(GigWorkerProfilesTable.id, workerId),
-    });
+  const workerProfile = await db.query.GigWorkerProfilesTable.findFirst({
+    where: eq(GigWorkerProfilesTable.id, workerId),
+  });
 
-    const data = await getGigWorkerProfile(workerProfile)
+  const data = await getGigWorkerProfile(workerProfile);
 
-    return data
-}
+  return data;
+};
 
 export const getPrivateWorkerProfileAction = async (token: string) => {
-      if (!token) {
-      throw new Error("User ID is required to fetch buyer profile");
-    }
+  if (!token) {
+    throw new Error("User ID is required to fetch buyer profile");
+  }
 
-    const { uid } = await isUserAuthenticated(token);
-    if (!uid) throw ERROR_CODES.UNAUTHORIZED;
+  const { uid } = await isUserAuthenticated(token);
+  if (!uid) throw ERROR_CODES.UNAUTHORIZED;
 
-    const user = await db.query.UsersTable.findFirst({
-      where: eq(UsersTable.firebaseUid, uid),
-    });
+  const user = await db.query.UsersTable.findFirst({
+    where: eq(UsersTable.firebaseUid, uid),
+  });
 
-    if (!user) {
-      throw new Error("User not found");
-    }
+  if (!user) {
+    throw new Error("User not found");
+  }
 
-    const workerProfile = await db.query.GigWorkerProfilesTable.findFirst({
-      where: eq(GigWorkerProfilesTable.userId, user.id),
-    });
+  const workerProfile = await db.query.GigWorkerProfilesTable.findFirst({
+    where: eq(GigWorkerProfilesTable.userId, user.id),
+  });
 
-    const data = await getGigWorkerProfile(workerProfile)
+  const data = await getGigWorkerProfile(workerProfile);
 
-    return data
-}
+  return data;
+};
 export const getGigWorkerProfile = async (
-  workerProfile: typeof GigWorkerProfilesTable.$inferSelect | undefined,
+  workerProfile: typeof GigWorkerProfilesTable.$inferSelect | undefined
 ): Promise<{ success: true; data: PublicWorkerProfile }> => {
   try {
-
     if (!workerProfile) throw "Getting worker profile error";
 
-      const skills = await db.query.SkillsTable.findMany({
-        where: eq(SkillsTable.workerProfileId, workerProfile.id),
-      });
+    const skills = await db.query.SkillsTable.findMany({
+      where: eq(SkillsTable.workerProfileId, workerProfile.id),
+    });
 
-      const equipment = await db.query.EquipmentTable.findMany({
-        where: eq(EquipmentTable.workerProfileId, workerProfile.id),
-      });
+    const equipment = await db.query.EquipmentTable.findMany({
+      where: eq(EquipmentTable.workerProfileId, workerProfile.id),
+    });
 
-      const qualifications = await db.query.QualificationsTable.findMany({
-        where: eq(QualificationsTable.workerProfileId, workerProfile.id),
-      });
+    const qualifications = await db.query.QualificationsTable.findMany({
+      where: eq(QualificationsTable.workerProfileId, workerProfile.id),
+    });
 
-      const awards = await db.query.UserBadgesLinkTable.findMany({
-        where: eq(UserBadgesLinkTable.userId, workerProfile.userId),
-      });
-  
-      const reviews = await db.query.ReviewsTable.findMany({
-        where: eq(ReviewsTable.targetUserId, workerProfile.userId),
-      });
+    const awards = await db.query.UserBadgesLinkTable.findMany({
+      where: eq(UserBadgesLinkTable.userId, workerProfile.userId),
+    });
+
+    const reviews = await db.query.ReviewsTable.findMany({
+      where: eq(ReviewsTable.targetUserId, workerProfile.userId),
+    });
 
     const totalReviews = reviews?.length;
 
@@ -175,7 +173,7 @@ export const getSkillDetailsWorker = async (id: string) => {
         paymentsCollected: "£4899",
         tipsReceived: "£767",
       },
-      supportingImages: ["/images/bar-action.svg", "/images/bar-action.svg"],
+      supportingImages: skill.images,
       badges,
       qualifications,
       buyerReviews: reviewsData,
@@ -204,7 +202,7 @@ export const updateVideoUrlProfileAction = async (
       where: eq(UsersTable.firebaseUid, uid),
     });
 
-    if (!user) throw "User not found"
+    if (!user) throw "User not found";
 
     await db
       .update(GigWorkerProfilesTable)
@@ -215,6 +213,32 @@ export const updateVideoUrlProfileAction = async (
       .where(eq(GigWorkerProfilesTable.userId, user?.id));
 
     return { success: true, data: "Url video updated successfully" };
+  } catch (error) {
+    console.log("Error saving video url", error);
+    return { success: false, data: "Url video updated successfully", error };
+  }
+};
+
+export const updateProfileImageAction = async (
+  token: string,
+  id: string,
+  images: string[]
+) => {
+  try {
+    if (!token) {
+      throw new Error("User ID is required to fetch buyer profile");
+    }
+
+    const { uid } = await isUserAuthenticated(token);
+
+    if (!uid) throw ERROR_CODES.UNAUTHORIZED;
+    await db
+      .update(SkillsTable)
+      .set({
+        images: images,
+        updatedAt: new Date(),
+      })
+      .where(eq(SkillsTable.id, id));
   } catch (error) {
     console.log("Error saving video url", error);
     return { success: false, data: "Url video updated successfully", error };

@@ -44,5 +44,5 @@ export default function WorkerSkillDetailPage() {
     fetchSkillData();
   }, [skillId]);
 
-  return <SkillSplashScreen profile={profile} />;
+  return <SkillSplashScreen profile={profile}  />;
 }
