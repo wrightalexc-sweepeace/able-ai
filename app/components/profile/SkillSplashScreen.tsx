@@ -160,8 +160,6 @@ const SkillSplashScreen = ({profile}:{profile: SkillProfile | null}) => {
               height={68}
             />
           ))}
-          {/* Dentro de la sección de imagen de perfil */}
-
 
         </div>
         <button className={styles.attachButton} onClick={handleAddImage}>
