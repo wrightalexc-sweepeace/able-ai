@@ -45,6 +45,7 @@ async function uploadImageToFirestore(
         async () => {
           try {
             const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+
             toast.success("Image uploaded successfully");
             resolve(downloadURL);
           } catch (err) {
@@ -88,7 +89,7 @@ const SkillSplashScreen = ({
     const path = `users/${user.uid}/profileImage/image-${encodeURI(
       user.email ?? user.uid
     )}-${timestamp}.jpg`;
-    
+
     try {
       const downloadURL = await uploadImageToFirestore(
         file,
@@ -228,8 +229,8 @@ const SkillSplashScreen = ({
           {profile.badges.map((badge) => (
             <div className={styles.badge} key={badge.id}>
               <AwardDisplayBadge
-                {...(badge?.icon ? { icon: badge.icon } : {})}
-                textLines={badge.notes}
+                {...(badge?.badge?.icon ? { icon: badge.badge?.icon } : {})}
+                textLines={badge?.badge?.description ?? ""}
               />
             </div>
           ))}

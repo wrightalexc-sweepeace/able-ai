@@ -6,6 +6,7 @@ import PublicWorkerProfile, {
 } from "@/app/types/workerProfileTypes";
 import { db } from "@/lib/drizzle/db";
 import {
+  BadgeDefinitionsTable,
   EquipmentTable,
   GigWorkerProfilesTable,
   QualificationsTable,
@@ -128,9 +129,27 @@ export const getSkillDetailsWorker = async (id: string) => {
       where: eq(UsersTable.id, workerProfile?.userId || ""),
     });
 
-    const badges = await db.query.UserBadgesLinkTable.findMany({
-      where: eq(UserBadgesLinkTable.userId, workerProfile?.userId || ""),
-    });
+    const badges = await db
+      .select({
+        id: UserBadgesLinkTable.id,
+        awardedAt: UserBadgesLinkTable.awardedAt,
+        awardedBySystem: UserBadgesLinkTable.awardedBySystem,
+        notes: UserBadgesLinkTable.notes,
+        badge: {
+          id: BadgeDefinitionsTable.id,
+          name: BadgeDefinitionsTable.name,
+          description: BadgeDefinitionsTable.description,
+          icon: BadgeDefinitionsTable.iconUrlOrLucideName,
+          type: BadgeDefinitionsTable.type,
+        },
+      })
+      .from(UserBadgesLinkTable)
+      .innerJoin(
+        BadgeDefinitionsTable,
+        eq(UserBadgesLinkTable.badgeId, BadgeDefinitionsTable.id)
+      )
+      .where(eq(UserBadgesLinkTable.userId, workerProfile?.userId || ""));
+
 
     const qualifications = await db.query.QualificationsTable.findMany({
       where: eq(QualificationsTable.workerProfileId, workerProfile?.id || ""),

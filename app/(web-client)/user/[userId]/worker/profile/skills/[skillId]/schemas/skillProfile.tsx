@@ -20,6 +20,11 @@ export type SkillProfile = {
     id: string | number;
     icon?: React.ElementType | null;
     notes: string;
+    badge: {
+      id: string | number;
+      icon?: React.ElementType | null;
+      description?: string | null
+    }
   }[];
   qualifications: {
     title: string;
