@@ -8,10 +8,103 @@ import ReviewCardItem from "@/app/components/shared/ReviewCardItem";
 import RecommendationCardItem from "@/app/components/shared/RecommendationCardItem";
 import React from "react";
 import { SkillProfile } from "@/app/(web-client)/user/[userId]/worker/profile/skills/[skillId]/schemas/skillProfile";
+import { firebaseApp } from "@/lib/firebase/clientApp";
+import {
+  getStorage,
+  ref as storageRef,
+  uploadBytesResumable,
+  getDownloadURL,
+} from "firebase/storage";
+import { toast } from "sonner";
+import { useAuth } from "@/context/AuthContext";
+import { updateProfileImageAction } from "@/actions/user/gig-worker-profile";
 
-const SkillSplashScreen = ({profile}:{profile: SkillProfile | null}) => {
-  const handleAddImage = () => {
-    console.log("Add image button clicked");
+async function uploadImageToFirestore(
+  file: Blob,
+  path: string,
+  onProgress?: (progress: number) => void
+): Promise<string> {
+  return new Promise((resolve, reject) => {
+    try {
+      const storage = getStorage(firebaseApp);
+      const fileRef = storageRef(storage, path);
+      const uploadTask = uploadBytesResumable(fileRef, file);
+
+      uploadTask.on(
+        "state_changed",
+        (snapshot) => {
+          const progress =
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          if (onProgress) onProgress(progress);
+        },
+        (error) => {
+          console.error("Image upload failed:", error);
+          toast.error("Image upload failed. Please try again.");
+          reject(error);
+        },
+        async () => {
+          try {
+            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+
+            toast.success("Image uploaded successfully");
+            resolve(downloadURL);
+          } catch (err) {
+            console.error("Failed to get download URL:", err);
+            reject(err);
+          }
+        }
+      );
+    } catch (err) {
+      console.error("Unexpected error during image upload:", err);
+      reject(err);
+    }
+  });
+}
+
+const SkillSplashScreen = ({
+  profile,
+  skillId,
+  fetchSkillData,
+  isSelfView,
+}: {
+  profile: SkillProfile | null;
+  skillId: string;
+  fetchSkillData: () => void;
+  isSelfView: boolean;
+}) => {
+  const { user } = useAuth();
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleAddImageClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleSupportingImageUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    const timestamp = Date.now();
+    const path = `users/${user.uid}/profileImage/image-${encodeURI(
+      user.email ?? user.uid
+    )}-${timestamp}.jpg`;
+
+    try {
+      const downloadURL = await uploadImageToFirestore(
+        file,
+        path,
+        (progress) => {
+          console.log(`Image upload progress: ${progress.toFixed(2)}%`);
+        }
+      );
+
+      await updateProfileImageAction(user.token, skillId, downloadURL);
+
+      await fetchSkillData();
+    } catch (err) {
+      console.error("Error uploading profile image:", err);
+    }
   };
 
   if (!profile) return <p className={styles.loading}>Loading...</p>;
@@ -108,10 +201,24 @@ const SkillSplashScreen = ({profile}:{profile: SkillProfile | null}) => {
               height={68}
             />
           ))}
+                  {isSelfView && (
+          <>
+            <button
+              className={styles.attachButton}
+              onClick={handleAddImageClick}
+            >
+              <Paperclip size={29} color="#ffffff" />
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className={styles.hiddenInput}
+              onChange={handleSupportingImageUpload}
+            />
+          </>
+        )}
         </div>
-        <button className={styles.attachButton} onClick={handleAddImage}>
-          <Paperclip size={29} color="#ffffff" />
-        </button>
         <input type="file" accept="image/*" className={styles.hiddenInput} />
       </div>
 
@@ -122,8 +229,8 @@ const SkillSplashScreen = ({profile}:{profile: SkillProfile | null}) => {
           {profile.badges.map((badge) => (
             <div className={styles.badge} key={badge.id}>
               <AwardDisplayBadge
-                {...(badge?.icon ? { icon: badge.icon } : {})}
-                textLines={badge.notes}
+                {...(badge?.badge?.icon ? { icon: badge.badge?.icon } : {})}
+                textLines={badge?.badge?.description ?? ""}
               />
             </div>
           ))}
@@ -135,7 +242,9 @@ const SkillSplashScreen = ({profile}:{profile: SkillProfile | null}) => {
         <h3 className={styles.sectionTitle}>Qualifications and training:</h3>
         <ul className={styles.list}>
           {profile?.qualifications?.map((q, index) => (
-            <li key={index}>{q.title}: {q.description}</li>
+            <li key={index}>
+              {q.title}: {q.description}
+            </li>
           ))}
         </ul>
       </div>
