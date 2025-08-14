@@ -84,9 +84,11 @@ const SkillSplashScreen = ({
     const file = e.target.files?.[0];
     if (!file || !user) return;
 
-    const path = `users/${user.uid}/profileImage/profile-${encodeURI(
+    const timestamp = Date.now();
+    const path = `users/${user.uid}/profileImage/image-${encodeURI(
       user.email ?? user.uid
-    )}.jpg`;
+    )}-${timestamp}.jpg`;
+    
     try {
       const downloadURL = await uploadImageToFirestore(
         file,
