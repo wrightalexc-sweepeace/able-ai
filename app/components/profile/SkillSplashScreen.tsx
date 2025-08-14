@@ -201,8 +201,7 @@ const SkillSplashScreen = ({
               height={68}
             />
           ))}
-        </div>
-        {isSelfView && (
+                  {isSelfView && (
           <>
             <button
               className={styles.attachButton}
@@ -219,6 +218,7 @@ const SkillSplashScreen = ({
             />
           </>
         )}
+        </div>
         <input type="file" accept="image/*" className={styles.hiddenInput} />
       </div>
 
