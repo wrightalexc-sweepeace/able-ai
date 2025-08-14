@@ -222,25 +222,33 @@ export const updateVideoUrlProfileAction = async (
 export const updateProfileImageAction = async (
   token: string,
   id: string,
-  images: string[]
+  newImage: string
 ) => {
   try {
-    if (!token) {
-      throw new Error("User ID is required to fetch buyer profile");
-    }
+    if (!token) throw new Error("User ID is required");
 
     const { uid } = await isUserAuthenticated(token);
-
     if (!uid) throw ERROR_CODES.UNAUTHORIZED;
+
+    const skill = await db.query.SkillsTable.findFirst({
+      where: eq(SkillsTable.id, id),
+      columns: { images: true },
+    });
+
+    const updatedImages = [...(skill?.images ?? []), newImage];
+
     await db
       .update(SkillsTable)
       .set({
-        images: images,
+        images: updatedImages,
         updatedAt: new Date(),
       })
       .where(eq(SkillsTable.id, id));
+
+    return { success: true, data: updatedImages };
   } catch (error) {
-    console.log("Error saving video url", error);
-    return { success: false, data: "Url video updated successfully", error };
+    console.error("Error adding profile image:", error);
+    return { success: false, data: null, error };
   }
 };
+

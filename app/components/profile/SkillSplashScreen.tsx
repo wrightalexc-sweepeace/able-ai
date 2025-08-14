@@ -15,7 +15,7 @@ import {
   uploadBytesResumable,
   getDownloadURL,
 } from "firebase/storage";
-import { toast } from 'sonner';
+import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
 import { updateProfileImageAction } from "@/actions/user/gig-worker-profile";
 
@@ -33,7 +33,8 @@ async function uploadImageToFirestore(
       uploadTask.on(
         "state_changed",
         (snapshot) => {
-          const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+          const progress =
+            (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
           if (onProgress) onProgress(progress);
         },
         (error) => {
@@ -59,11 +60,48 @@ async function uploadImageToFirestore(
   });
 }
 
-const SkillSplashScreen = ({profile}:{profile: SkillProfile | null}) => {
-  const {user} = useAuth();
+const SkillSplashScreen = ({
+  profile,
+  skillId,
+  fetchSkillData,
+  isSelfView,
+}: {
+  profile: SkillProfile | null;
+  skillId: string;
+  fetchSkillData: () => void;
+  isSelfView: boolean;
+}) => {
+  const { user } = useAuth();
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
-  const handleAddImage = () => {
-    console.log("Add image button clicked");
+  const handleAddImageClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleSupportingImageUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+
+    const path = `users/${user.uid}/profileImage/profile-${encodeURI(
+      user.email ?? user.uid
+    )}.jpg`;
+    try {
+      const downloadURL = await uploadImageToFirestore(
+        file,
+        path,
+        (progress) => {
+          console.log(`Image upload progress: ${progress.toFixed(2)}%`);
+        }
+      );
+
+      await updateProfileImageAction(user.token, skillId, downloadURL);
+
+      await fetchSkillData();
+    } catch (err) {
+      console.error("Error uploading profile image:", err);
+    }
   };
 
   if (!profile) return <p className={styles.loading}>Loading...</p>;
@@ -161,9 +199,23 @@ const SkillSplashScreen = ({profile}:{profile: SkillProfile | null}) => {
             />
           ))}
         </div>
-        <button className={styles.attachButton} onClick={handleAddImage}>
-          <Paperclip size={29} color="#ffffff" />
-        </button>
+        {isSelfView && (
+          <>
+            <button
+              className={styles.attachButton}
+              onClick={handleAddImageClick}
+            >
+              <Paperclip size={29} color="#ffffff" />
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className={styles.hiddenInput}
+              onChange={handleSupportingImageUpload}
+            />
+          </>
+        )}
         <input type="file" accept="image/*" className={styles.hiddenInput} />
       </div>
 
@@ -187,7 +239,9 @@ const SkillSplashScreen = ({profile}:{profile: SkillProfile | null}) => {
         <h3 className={styles.sectionTitle}>Qualifications and training:</h3>
         <ul className={styles.list}>
           {profile?.qualifications?.map((q, index) => (
-            <li key={index}>{q.title}: {q.description}</li>
+            <li key={index}>
+              {q.title}: {q.description}
+            </li>
           ))}
         </ul>
       </div>
@@ -216,49 +270,6 @@ const SkillSplashScreen = ({profile}:{profile: SkillProfile | null}) => {
           />
         </div>
       )}
-        {true && (
-    <>
-      <label
-        htmlFor="profile-image-upload"
-        style={{
-          display: "inline-block",
-          marginTop: "8px",
-          padding: "6px 12px",
-          backgroundColor: "#0070f3",
-          color: "#fff",
-          borderRadius: "4px",
-          cursor: "pointer",
-        }}
-      >
-        Upload Profile Image
-      </label>
-      <input
-        id="profile-image-upload"
-        type="file"
-        accept="image/*"
-        style={{ display: "none" }}
-        onChange={async (e) => {
-          const file = e.target.files?.[0];
-          if (!file || !user) return;
-
-          const path = `users/${user.uid}/profileImage/profile-${encodeURI(user.email ?? user.uid)}.jpg`;
-          try {
-            const downloadURL = await uploadImageToFirestore(file, path, (progress) => {
-              console.log(`Image upload progress: ${progress.toFixed(2)}%`);
-            });
-
-            console.log("downloadURL: ", downloadURL);
-            
-            await updateProfileImageAction(user.token, "", []);
-
-            //await getPrivateWorkerProfileAction(user.token);
-          } catch (err) {
-            console.error("Error uploading profile image:", err);
-          }
-        }}
-      />
-    </>
-  )}
     </div>
   );
 };
