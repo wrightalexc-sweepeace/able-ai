@@ -2,7 +2,6 @@ import React from 'react';
 import PillBadge from '../shared/PillBadge';
 import styles from './SkillsDisplayTable.module.css';
 import { Skill } from '@/app/types/workerProfileTypes';
-import { useAuth } from '@/context/AuthContext';
 
 interface SkillsDisplayTableProps {
   skills: Skill[];
@@ -21,7 +20,6 @@ const SkillsDisplayTable: React.FC<SkillsDisplayTableProps> = ({
   const hasAbleGigs = skills.length > 0 && skills[0].ableGigs !== undefined;
   const hasExperience = skills.length > 0 && skills[0].experienceMonths !== undefined;
   const hasEph = skills.length > 0 && skills[0].agreedRate !== undefined;
-  const {user} = useAuth()
 
   
   return (
@@ -50,9 +48,6 @@ const SkillsDisplayTable: React.FC<SkillsDisplayTableProps> = ({
             {isSelfView && <td><button className={styles.addSkill} onClick={handleAddSkill}>+ add skill</button></td>}
           </tr>
         </tbody>
-        <div className={styles.profileImageUploadSection}>
-
-</div>
       </table>
     </div>
   );

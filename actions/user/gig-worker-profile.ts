@@ -173,7 +173,7 @@ export const getSkillDetailsWorker = async (id: string) => {
         paymentsCollected: "£4899",
         tipsReceived: "£767",
       },
-      supportingImages: skill.images,
+      supportingImages: skill.images ?? [],
       badges,
       qualifications,
       buyerReviews: reviewsData,

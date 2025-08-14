@@ -160,7 +160,6 @@ const SkillSplashScreen = ({profile}:{profile: SkillProfile | null}) => {
               height={68}
             />
           ))}
-
         </div>
         <button className={styles.attachButton} onClick={handleAddImage}>
           <Paperclip size={29} color="#ffffff" />
