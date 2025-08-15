@@ -13,13 +13,12 @@ import { getCalendarEvents } from "@/actions/events/get-calendar-events";
 import { BUYER_MOCK_EVENTS } from "./mockData";
 import styles from "./BuyerCalendarPage.module.css";
 import Image from "next/image";
+import ScreenHeaderWithBack from "@/app/components/layout/ScreenHeaderWithBack";
 
-const FILTERS = ["Manage availability", "Accepted gigs", "See gig offers"];
+const FILTERS = ["Accepted gigs", "See gig offers"];
 
 function filterEvents(events: CalendarEvent[], filter: string): CalendarEvent[] {
   switch (filter) {
-    case 'Manage availability':
-      return events.filter(e => e.status === 'UNAVAILABLE');
     case 'Accepted gigs':
       return events.filter(e => e.status === 'ACCEPTED');
     case 'See gig offers':
@@ -72,7 +71,7 @@ const BuyerCalendarPage = () => {
       if (!user) return;
 
       // Use real DB-backed events so newly created gigs appear
-      const isViewQA = false;
+      const isViewQA = true;
       const res = await getCalendarEvents({ userId: user.uid, role: 'buyer', isViewQA });
       if (res.error) throw new Error(res.error);
       const source = res.events as CalendarEvent[];
@@ -138,6 +137,7 @@ const BuyerCalendarPage = () => {
 
   return (
     <div className={styles.container}>
+      <ScreenHeaderWithBack onBackClick={() => router.back()} />
       <CalendarHeader
         date={date}
         view={view}
@@ -168,10 +168,7 @@ const BuyerCalendarPage = () => {
       </main>
       <footer className={styles.footer}>
         <button className={styles.homeButton} onClick={() => router.push(`/user/${pageUserId}/buyer`)}>
-          <Image src="/images/home.svg" alt="Home" width={24} height={24} />
-        </button>
-        <button className={styles.dashboardButton} onClick={() => router.push(`/user/${pageUserId}/buyer`)}>
-          Home
+          <Image src="/images/home.svg" alt="Home" width={40} height={40} />
         </button>
       </footer>
 
