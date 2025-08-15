@@ -30,7 +30,6 @@ import { createAccountLink } from "@/app/actions/stripe/create-account-link";
 import { createPortalSession } from "@/app/actions/stripe/create-portal-session";
 import { FirebaseError } from "firebase/app";
 import SwitchControl from "@/app/components/shared/SwitchControl";
-import Logo from "@/app/components/brand/Logo";
 import { toast } from "sonner";
 import { getProfileInfoUserAction, updateNotificationEmailAction, updateNotificationSmsAction, updateProfileVisibilityAction, updateUserProfileAction } from "@/actions/user/user";
 import StripeModal from "@/app/components/settings/stripeModal";
@@ -38,6 +37,8 @@ import StripeElementsProvider from "@/lib/stripe/StripeElementsProvider";
 import { FlowStep, UserRole, UserSettingsData } from "@/app/types/SettingsTypes";
 import ScreenHeaderWithBack from "@/app/components/layout/ScreenHeaderWithBack";
 import { authClient } from "@/lib/firebase/clientApp";
+import PhoneNumberModal from "./phoneNumberModal";
+import PasswordInputField from "@/app/components/form/PasswodInputField";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -271,7 +272,7 @@ export default function SettingsPage() {
   };
 
   // Stripe Connect Onboarding
-      const handleResendVerification = async () => {
+  const handleResendVerification = async () => {
     if (!user) return;
     setIsResendingEmail(true);
     try {
@@ -426,7 +427,7 @@ export default function SettingsPage() {
       </div>
     );
   }
-
+  console.log(user.emailVerified);
   return (
     <div className={styles.container}>
       <div className={styles.card}>
@@ -438,18 +439,20 @@ export default function SettingsPage() {
             <div className={styles.verificationSection}>
               <div className={styles.verificationHeader}>
                 <AlertTriangle className={styles.warningIcon} />
-                <h2 className={styles.sectionTitle}>Verify Your Email Address</h2>
+                <h2 className={styles.verificationModalTitle}>Verify Your Email Address</h2>
               </div>
               <p className={styles.verificationText}>
                 To secure your account and access all features, please verify your email address. A verification link has been sent to <strong>{user.email}</strong>.
               </p>
-              <button 
-                onClick={handleResendVerification}
-                className={styles.resendButton}
-                disabled={isResendingEmail}
-              >
+              <div className={styles.verificationActions}>
+                <button 
+                  onClick={handleResendVerification}
+                  className={styles.resendButton}
+                  disabled={isResendingEmail}
+                >
                 {isResendingEmail ? 'Sending...' : 'Resend Verification Email'}
-              </button>
+                </button>
+              </div>
             </div>
           )}
           {error && <p className={styles.errorMessage}>{error}</p>}
@@ -467,10 +470,10 @@ export default function SettingsPage() {
               >
                 <CheckCircle size={20} /> Stripe account connected and active.
               </div>
-            )}
+          )}
 
           {/* Profile Information Section */}
-          <section className={styles.section}>
+          <section className={styles.section} id="profile-information">
             <h2 className={styles.sectionTitle}>Personal Information</h2>
             {/* ... (DisplayName, Email - as before) ... */}
             <form onSubmit={handleProfileUpdate} className={styles.form}>
@@ -532,6 +535,10 @@ export default function SettingsPage() {
             </form>
           </section>
 
+          {user && !user.phoneNumber && (
+            <PhoneNumberModal userPhone={user.phoneNumber || ""} />
+          )}
+
           {/* Payment Settings Section */}
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>
@@ -553,7 +560,7 @@ export default function SettingsPage() {
             />
           </section>
 
-          {/* Payment Settings Section */}
+          {/* Preferences Section */}
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>Notification Preferences</h2>
             <SwitchControl
@@ -570,7 +577,7 @@ export default function SettingsPage() {
             />
           </section>
 
-          {/* Payment Settings Section */}
+          {/* Privacy Section */}
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>Privacy Settings</h2>
             <SwitchControl
@@ -581,7 +588,7 @@ export default function SettingsPage() {
             />
           </section>
 
-          {/* Payment Settings Section */}
+          {/* Discord Section */}
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>Community Discord channel</h2>
             <label htmlFor="phone" className={styles.label}>
@@ -589,7 +596,7 @@ export default function SettingsPage() {
             </label>
           </section>
 
-          {/* Payment Settings Section */}
+          {/* Policy Section */}
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>User policy</h2>
             <label htmlFor="phone" className={styles.label}>
@@ -600,8 +607,7 @@ export default function SettingsPage() {
           {/* Account Security Section */}
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>
-              <Shield size={20} style={{ marginRight: "0.5rem" }} /> Account
-              Security
+              <Shield size={20} style={{ marginRight: "0.5rem" }} /> Account Security
             </h2>
             <form
               onSubmit={handleChangePassword}
@@ -609,51 +615,42 @@ export default function SettingsPage() {
             >
               <div className={styles.formGroup}>
                 <label htmlFor="currentPassword" className={styles.label}>
-                  Contraseña actual
+                  Current Password
                 </label>
-                <InputField
+                <PasswordInputField
+                  password={currentPassword}
+                  setPassword={setCurrentPassword}
                   id="currentPassword"
                   name="currentPassword"
-                  type="password"
-                  value={currentPassword}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    setCurrentPassword(e.target.value)
-                  }
-                  placeholder="Ingresa tu contraseña actual"
+                  placeholder="Enter your current password"
                   required
                 />
               </div>
 
               <div className={styles.formGroup}>
                 <label htmlFor="newPassword" className={styles.label}>
-                  Nueva contraseña
+                  New Password
                 </label>
-                <InputField
+                <PasswordInputField
+                  password={newPassword}
+                  setPassword={setNewPassword}
                   id="newPassword"
                   name="newPassword"
-                  type="password"
-                  value={newPassword}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    setNewPassword(e.target.value)
-                  }
-                  placeholder="Mínimo 6 caracteres"
+                  placeholder="Minimum 10 characters"
                   required
                 />
               </div>
 
               <div className={styles.formGroup}>
                 <label htmlFor="confirmNewPassword" className={styles.label}>
-                  Confirmar nueva contraseña
+                  Confirm New Password
                 </label>
-                <InputField
+                <PasswordInputField
+                  password={confirmNewPassword}
+                  setPassword={setConfirmNewPassword}
                   id="confirmNewPassword"
                   name="confirmNewPassword"
-                  type="password"
-                  value={confirmNewPassword}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    setConfirmNewPassword(e.target.value)
-                  }
-                  placeholder="Repite la nueva contraseña"
+                  placeholder="Type new password again"
                   required
                 />
               </div>
@@ -664,7 +661,7 @@ export default function SettingsPage() {
                   className={styles.button}
                   disabled={isSavingProfile}
                 >
-                  {isSavingProfile ? "Cambiando..." : "Cambiar contraseña"}
+                  {isSavingProfile ? "Changing..." : "Change Password"}
                 </button>
               </div>
             </form>
@@ -678,6 +675,7 @@ export default function SettingsPage() {
               </button>
             </div>
           </section>
+
 
           <section className={styles.bottomNavSection}>
             <div className={styles.bottomNav}>
@@ -703,7 +701,10 @@ export default function SettingsPage() {
               className={styles.modalContent}
               onClick={(e) => e.stopPropagation()}
             >
-              <h3 className={styles.modalTitle}>Confirm Account Deletion</h3>
+              <div className={styles.modalHeader}>
+                <AlertTriangle size={24} color="red" />
+                <h3 className={styles.modalTitle}>Confirm Account Deletion</h3>
+              </div>
               <p>
                 Are you absolutely sure you want to delete your account? This
                 action is permanent and cannot be undone. All your data, gigs,
