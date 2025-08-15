@@ -84,7 +84,6 @@ export default function NotificationsPage() {
 
   async function fetchNotifications(token: string) {
     const { notifications } = await getAllNotificationsAction(token);
-    console.log(notifications, "notifications")
 
     return notifications
       .map((n: Notification) => ({
