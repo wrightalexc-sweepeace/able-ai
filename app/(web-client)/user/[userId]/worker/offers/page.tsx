@@ -1,3 +1,5 @@
+/* eslint-disable max-lines-per-function */
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -115,7 +117,7 @@ export default function WorkerOffersPage() {
       setIsLoadingData(true);
       fetchWorkerData(pageUserId)
         .then((data) => {
-          console.log("Debug - Data received:", data);
+          console.log("Debug - offer received:", data);
           setOffers(data.offers);
           setAcceptedGigs(data.acceptedGigs);
           setError(null);
@@ -227,7 +229,8 @@ export default function WorkerOffersPage() {
     const offer = offers.find(o => o.id === offerId);
     if (offer) {
       setSelectedGig(offer);
-      setIsModalOpen(true);
+      router.push(`/user/${pageUserId}/worker/gigs/${offerId}`);
+      // setIsModalOpen(true);
     }
   };
   const handleGoToHome = () => {
@@ -262,31 +265,23 @@ export default function WorkerOffersPage() {
   return (
     <div className={styles.container}>
       <ScreenHeaderWithBack title="Gig Offers" onBackClick={() => router.back()} />
-      <div className={styles.pageWrapper}>
-        {" "}
-        {/* Use styles */}
-        <div className={styles.infoBanner}>
-          {" "}
-          {/* Use styles */}
-
-          {/* <p className={styles.infoText}>Accept these gigs within the time shown or we will offer them to someone else!</p> */}
-          {uid && (
-            <AiSuggestionBanner
-              suggestions={aiSuggestions}
-              currentIndex={currentIndex}
-              isLoading={isLoadingSuggestions}
-              error={suggestionsError}
-              dismissed={suggestionsDismissed} // Pass the dismissed state
-              onDismiss={dismissSuggestions}
-              onRefresh={refreshSuggestions}
-              goToNext={goToNext}
-              goToPrev={goToPrev}
-              userId={uid}
-            />
-          )}
-        </div>
+      {uid && (
+        <AiSuggestionBanner
+          suggestions={aiSuggestions}
+          currentIndex={currentIndex}
+          isLoading={isLoadingSuggestions}
+          error={suggestionsError}
+          dismissed={suggestionsDismissed} // Pass the dismissed state
+          onDismiss={dismissSuggestions}
+          onRefresh={refreshSuggestions}
+          goToNext={goToNext}
+          goToPrev={goToPrev}
+          userId={uid}
+        />
+      )}
+      <div className={styles.pageWrapper}>        
         <div className={styles.pageHeader}>
-          <h1 className={styles.pageTitle}>Gig Offers</h1>
+          <h1 className={styles.sectionTitle}>Pending Gigs</h1>
           <button 
             onClick={() => router.push(`/user/${pageUserId}/worker/calendar`)}
             className={styles.calendarNavButton}
@@ -358,7 +353,9 @@ export default function WorkerOffersPage() {
                     Accepted Upcoming Gigs
                   </h2>{" "}
                   {/* Title for accepted */}
-                  <Calendar size={32} color="#ffffff" />
+                  <Link href={`/user/${pageUserId}/worker/calendar`} passHref>
+                    <Calendar size={24} color="#ffffff" />
+                  </Link>
                 </div>
                 {acceptedGigs.map((gig) => (
                   <AcceptedGigCard // Use the new component
@@ -385,7 +382,7 @@ export default function WorkerOffersPage() {
             >
               {" "}
               {/* Use styles */}
-              <Image src="/images/home.svg" alt="Home" width={50} height={50} />
+              <Image src="/images/home.svg" alt="Home" width={40} height={40} />
             </button>
           </Link>
         </footer>
