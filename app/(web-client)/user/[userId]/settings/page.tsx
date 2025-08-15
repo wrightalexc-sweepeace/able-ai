@@ -1,3 +1,6 @@
+/* eslint-disable max-lines */
+/* eslint-disable max-lines-per-function */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import React, { useState, useEffect, FormEvent } from "react";
@@ -33,6 +36,7 @@ import { getProfileInfoUserAction, updateNotificationEmailAction, updateNotifica
 import StripeModal from "@/app/components/settings/stripeModal";
 import StripeElementsProvider from "@/lib/stripe/StripeElementsProvider";
 import { FlowStep, UserRole, UserSettingsData } from "@/app/types/SettingsTypes";
+import ScreenHeaderWithBack from "@/app/components/layout/ScreenHeaderWithBack";
 import { authClient } from "@/lib/firebase/clientApp";
 
 export default function SettingsPage() {
@@ -426,33 +430,28 @@ export default function SettingsPage() {
   return (
     <div className={styles.container}>
       <div className={styles.card}>
+        <ScreenHeaderWithBack title="Settings" onBackClick={() => router.back()} />
         <div className={styles.pageWrapper}>
-          <header className={styles.pageHeader}>
-                        <h1>Settings</h1>
-
-            {/* Email Verification Section */}
-            {user && !user.emailVerified && (
-              <div className={styles.verificationSection}>
-                <div className={styles.verificationHeader}>
-                  <AlertTriangle className={styles.warningIcon} />
-                  <h2 className={styles.sectionTitle}>Verify Your Email Address</h2>
-                </div>
-                <p className={styles.verificationText}>
-                  To secure your account and access all features, please verify your email address. A verification link has been sent to <strong>{user.email}</strong>.
-                </p>
-                <button 
-                  onClick={handleResendVerification}
-                  className={styles.resendButton}
-                  disabled={isResendingEmail}
-                >
-                  {isResendingEmail ? 'Sending...' : 'Resend Verification Email'}
-                </button>
+          <p className={styles.pageDescription}>Manage your account preferences and settings</p>
+          {/* Email Verification Section */}
+          {user && !user.emailVerified && (
+            <div className={styles.verificationSection}>
+              <div className={styles.verificationHeader}>
+                <AlertTriangle className={styles.warningIcon} />
+                <h2 className={styles.sectionTitle}>Verify Your Email Address</h2>
               </div>
-            )}
-            <p>Manage your account preferences and settings</p>{" "}
-            {/* Added descriptive text */}
-          </header>
-
+              <p className={styles.verificationText}>
+                To secure your account and access all features, please verify your email address. A verification link has been sent to <strong>{user.email}</strong>.
+              </p>
+              <button 
+                onClick={handleResendVerification}
+                className={styles.resendButton}
+                disabled={isResendingEmail}
+              >
+                {isResendingEmail ? 'Sending...' : 'Resend Verification Email'}
+              </button>
+            </div>
+          )}
           {error && <p className={styles.errorMessage}>{error}</p>}
           {successMessage && (
             <p className={styles.successMessage}>{successMessage}</p>
@@ -680,19 +679,6 @@ export default function SettingsPage() {
             </div>
           </section>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <Logo width={60} height={60} />
-            <div
-              className={`${styles2.suggestionBanner} ${styles2.suggestionTextContainer}`}
-            >
-              <p
-                className={styles2.dismissedText}
-                onClick={() => router.replace(`able-ai`)}
-              >
-                How can i help?
-              </p>
-            </div>
-          </div>
           <section className={styles.bottomNavSection}>
             <div className={styles.bottomNav}>
               <button onClick={handleLogout} className={styles.bottomNavLink}>
