@@ -39,6 +39,7 @@ export const SkillsTable = pgTable("skills", {
   skillVideoUrl: text("skill_video_url"),
   adminTags: text("admin_tags").array(),
   ableGigs: integer("able_gigs"),
+  images: jsonb("images").$type<string[]>().default(sql`'[]'::jsonb`),
   createdAt: timestamp("created_at", { mode: "date", withTimezone: true })
     .default(sql`CURRENT_TIMESTAMP`)
     .notNull(),

@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "seed": "npx tsx seed.ts"
   },
   "dependencies": {
     "@auth/firebase-adapter": "^2.9.1",
@@ -15,10 +16,12 @@
     "@mui/icons-material": "^7.1.0",
     "@mui/material": "^7.1.0",
     "@radix-ui/react-switch": "^1.2.4",
+    "@react-google-maps/api": "^2.20.7",
     "@stripe/react-stripe-js": "^3.7.0",
     "@stripe/stripe-js": "^7.5.0",
-    "@react-google-maps/api": "^2.20.7",
+    "dotenv": "^17.2.1",
     "drizzle-orm": "^0.43.1",
+    "drizzle-seed": "^0.3.1",
     "firebase": "^11.8.1",
     "firebase-admin": "^12.7.0",
     "lucide-react": "^0.510.0",
