@@ -181,7 +181,7 @@ export const getSkillDetailsWorker = async (id: string) => {
         : "",
       customerReviewsText: workerProfile?.fullBio,
       ableGigs: skill?.ableGigs,
-      experienceYears: skill?.experienceMonths / 12,
+      experienceYears: skill?.experienceYears,
       Eph: skill?.agreedRate,
       location: workerProfile?.location || "",
       address: workerProfile?.address || "",
@@ -201,6 +201,69 @@ export const getSkillDetailsWorker = async (id: string) => {
     return { success: true, data: skillProfile };
   } catch (error) {
     console.error(`Error fetching skill: ${error}`);
+    return { success: false, data: null, error };
+  }
+};
+
+export const createSkillWorker = async (
+  token: string,
+  {
+    name,
+    experienceYears,
+    agreedRate,
+    skillVideoUrl,
+    adminTags = [],
+    images = [],
+  }: {
+    name: string;
+    experienceYears: number;
+    agreedRate: number | string;
+    skillVideoUrl?: string;
+    adminTags?: string[];
+    images?: string[];
+  }
+) => {
+  try {
+    if (!token) throw new Error("Token is required");
+    const { uid } = await isUserAuthenticated(token);
+    if (!uid) throw new Error("Unauthorized");
+
+      const user = await db.query.UsersTable.findFirst({
+    where: eq(UsersTable.firebaseUid, uid),
+  });
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  const workerProfile = await db.query.GigWorkerProfilesTable.findFirst({
+    where: eq(GigWorkerProfilesTable.userId, user.id),
+  });
+  
+    if (!workerProfile) {
+    throw new Error("Worker profile not found");
+  }
+
+    const [newSkill] = await db
+      .insert(SkillsTable)
+      .values({
+        workerProfileId: workerProfile.id,
+        name,
+        experienceMonths: 0,
+        experienceYears,
+        agreedRate: String(agreedRate),
+        skillVideoUrl: skillVideoUrl || null,
+        adminTags: adminTags.length > 0 ? adminTags : null,
+        ableGigs: null,
+        images,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .returning();
+
+    return { success: true, data: newSkill };
+  } catch (error) {
+    console.error("Error creating skill:", error);
     return { success: false, data: null, error };
   }
 };
@@ -271,3 +334,37 @@ export const updateProfileImageAction = async (
   }
 };
 
+export const deleteImageAction = async (
+  token: string,
+  skillId: string,
+  imageUrl: string
+) => {
+  try {
+    if (!token) throw new Error("User ID is required");
+
+    const { uid } = await isUserAuthenticated(token);
+    if (!uid) throw ERROR_CODES.UNAUTHORIZED;
+
+    const skill = await db.query.SkillsTable.findFirst({
+      where: eq(SkillsTable.id, skillId),
+      columns: { images: true },
+    });
+
+    if (!skill) throw "Skill not found";
+
+    const updatedImages = skill?.images?.filter((img) => img !== imageUrl);
+
+    await db
+      .update(SkillsTable)
+      .set({
+        images: updatedImages,
+        updatedAt: new Date(),
+      })
+      .where(eq(SkillsTable.id, skillId));
+
+    return { success: true, data: updatedImages };
+  } catch (error) {
+    console.error("Error deleting image:", error);
+    return { success: false, data: null, error };
+  }
+}
