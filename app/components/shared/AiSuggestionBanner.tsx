@@ -116,7 +116,7 @@ export default function AiSuggestionBanner({
 
   if (isLoading) {
     return (
-      <div className={`${styles.suggestionTextContainer} ${className}`}>
+      <div className={`${styles.suggestionTextContainer} ${className} ${styles.suggestionBanner}`}>
         <div className={`${styles.skeletonLine} ${styles.skeletonLineLong}`}>...</div>
         <div className={`${styles.skeletonLine} ${styles.skeletonLineShort}`}>...</div>
         <div className={`${styles.skeletonLine} ${styles.skeletonLineLong}`}>...</div>
