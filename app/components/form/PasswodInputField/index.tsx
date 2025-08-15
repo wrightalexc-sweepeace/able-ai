@@ -5,7 +5,7 @@ import { Eye, EyeOff } from 'lucide-react';
 
 interface PasswordInputFieldProps {
   password: string;
-  setPassword: React.Dispatch<React.SetStateAction<string>>;
+  setPassword: React.Dispatch<React.SetStateAction<string>> | ((value: string) => void);
   id: string;
   name: string;
   placeholder: string;
