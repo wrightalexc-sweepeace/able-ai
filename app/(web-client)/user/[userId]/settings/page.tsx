@@ -553,7 +553,7 @@ export default function SettingsPage() {
             />
           </section>
 
-          {/* Payment Settings Section */}
+          {/* Preferences Section */}
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>Notification Preferences</h2>
             <SwitchControl
@@ -570,7 +570,7 @@ export default function SettingsPage() {
             />
           </section>
 
-          {/* Payment Settings Section */}
+          {/* Privacy Section */}
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>Privacy Settings</h2>
             <SwitchControl
@@ -581,7 +581,7 @@ export default function SettingsPage() {
             />
           </section>
 
-          {/* Payment Settings Section */}
+          {/* Discord Section */}
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>Community Discord channel</h2>
             <label htmlFor="phone" className={styles.label}>
@@ -589,7 +589,7 @@ export default function SettingsPage() {
             </label>
           </section>
 
-          {/* Payment Settings Section */}
+          {/* Policy Section */}
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>User policy</h2>
             <label htmlFor="phone" className={styles.label}>
