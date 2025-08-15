@@ -30,7 +30,6 @@ import { createAccountLink } from "@/app/actions/stripe/create-account-link";
 import { createPortalSession } from "@/app/actions/stripe/create-portal-session";
 import { FirebaseError } from "firebase/app";
 import SwitchControl from "@/app/components/shared/SwitchControl";
-import Logo from "@/app/components/brand/Logo";
 import { toast } from "sonner";
 import { getProfileInfoUserAction, updateNotificationEmailAction, updateNotificationSmsAction, updateProfileVisibilityAction, updateUserProfileAction } from "@/actions/user/user";
 import StripeModal from "@/app/components/settings/stripeModal";
@@ -39,6 +38,7 @@ import { FlowStep, UserRole, UserSettingsData } from "@/app/types/SettingsTypes"
 import ScreenHeaderWithBack from "@/app/components/layout/ScreenHeaderWithBack";
 import { authClient } from "@/lib/firebase/clientApp";
 import PhoneNumberModal from "./phoneNumberModal";
+import PasswordInputField from "@/app/components/form/PasswodInputField";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -607,8 +607,7 @@ export default function SettingsPage() {
           {/* Account Security Section */}
           <section className={styles.section}>
             <h2 className={styles.sectionTitle}>
-              <Shield size={20} style={{ marginRight: "0.5rem" }} /> Account
-              Security
+              <Shield size={20} style={{ marginRight: "0.5rem" }} /> Account Security
             </h2>
             <form
               onSubmit={handleChangePassword}
@@ -616,51 +615,42 @@ export default function SettingsPage() {
             >
               <div className={styles.formGroup}>
                 <label htmlFor="currentPassword" className={styles.label}>
-                  Contraseña actual
+                  Current Password
                 </label>
-                <InputField
+                <PasswordInputField
+                  password={currentPassword}
+                  setPassword={setCurrentPassword}
                   id="currentPassword"
                   name="currentPassword"
-                  type="password"
-                  value={currentPassword}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    setCurrentPassword(e.target.value)
-                  }
-                  placeholder="Ingresa tu contraseña actual"
+                  placeholder="Enter your current password"
                   required
                 />
               </div>
 
               <div className={styles.formGroup}>
                 <label htmlFor="newPassword" className={styles.label}>
-                  Nueva contraseña
+                  New Password
                 </label>
-                <InputField
+                <PasswordInputField
+                  password={newPassword}
+                  setPassword={setNewPassword}
                   id="newPassword"
                   name="newPassword"
-                  type="password"
-                  value={newPassword}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    setNewPassword(e.target.value)
-                  }
-                  placeholder="Mínimo 6 caracteres"
+                  placeholder="Minimum 10 characters"
                   required
                 />
               </div>
 
               <div className={styles.formGroup}>
                 <label htmlFor="confirmNewPassword" className={styles.label}>
-                  Confirmar nueva contraseña
+                  Confirm New Password
                 </label>
-                <InputField
+                <PasswordInputField
+                  password={confirmNewPassword}
+                  setPassword={setConfirmNewPassword}
                   id="confirmNewPassword"
                   name="confirmNewPassword"
-                  type="password"
-                  value={confirmNewPassword}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    setConfirmNewPassword(e.target.value)
-                  }
-                  placeholder="Repite la nueva contraseña"
+                  placeholder="Type new password again"
                   required
                 />
               </div>
@@ -671,7 +661,7 @@ export default function SettingsPage() {
                   className={styles.button}
                   disabled={isSavingProfile}
                 >
-                  {isSavingProfile ? "Cambiando..." : "Cambiar contraseña"}
+                  {isSavingProfile ? "Changing..." : "Change Password"}
                 </button>
               </div>
             </form>
@@ -685,6 +675,7 @@ export default function SettingsPage() {
               </button>
             </div>
           </section>
+
 
           <section className={styles.bottomNavSection}>
             <div className={styles.bottomNav}>
