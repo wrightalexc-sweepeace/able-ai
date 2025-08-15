@@ -14,6 +14,7 @@ import { getCalendarEvents } from "@/actions/events/get-calendar-events";
 // Import the CSS module for this page
 import styles from "./WorkerCalendarPage.module.css";
 import Image from "next/image";
+import ScreenHeaderWithBack from "@/app/components/layout/ScreenHeaderWithBack";
 
 const FILTERS = ["Manage availability", "Accepted gigs", "See gig offers"];
 
@@ -159,6 +160,7 @@ const WorkerCalendarPage = () => {
 
   return (
     <div className={styles.container}>
+      <ScreenHeaderWithBack onBackClick={() => router.back()} />
       <CalendarHeader
         date={date}
         view={view}
@@ -190,10 +192,7 @@ const WorkerCalendarPage = () => {
       </main>
       <footer className={styles.footer}>
         <button className={styles.homeButton} onClick={() => router.push(`/user/${pageUserId}/worker`)}>
-          <Image src="/images/home.svg" alt="Home" width={24} height={24} />
-        </button>
-        <button className={styles.dashboardButton} onClick={() => router.push(`/user/${pageUserId}/worker`)}>
-          Dashboard
+          <Image src="/images/home.svg" alt="Home" width={40} height={40} />
         </button>
       </footer>
 
