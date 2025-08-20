@@ -142,6 +142,12 @@ const WorkerCalendarPage = () => {
           console.error('Error fetching availability:', availabilityRes.error);
         }
 
+        // Debug: Log what we're getting
+        console.log('availabilityRes:', availabilityRes);
+        console.log('availabilityRes.availability:', availabilityRes.availability);
+        console.log('typeof availabilityRes.availability:', typeof availabilityRes.availability);
+        console.log('Array.isArray(availabilityRes.availability):', Array.isArray(availabilityRes.availability));
+
         const calendarData: CalendarEvent[] = calendarRes.events;
         const parsed = calendarData.map((event: CalendarEvent) => ({ ...event, start: new Date(event.start), end: new Date(event.end) }));
         
@@ -156,7 +162,14 @@ const WorkerCalendarPage = () => {
         const allEventsCombined = [...parsed, ...availabilityEvents];
         
         setAllEvents(allEventsCombined);
-        setAvailabilitySlots(availabilityRes.availability || []);
+        
+        // Ensure availabilitySlots is always an array
+        const availabilityArray = Array.isArray(availabilityRes.availability) 
+          ? availabilityRes.availability 
+          : availabilityRes.availability 
+            ? [availabilityRes.availability] 
+            : [];
+        setAvailabilitySlots(availabilityArray);
         
         const filteredEvents = filterEvents(allEventsCombined, activeFilter);
         setEvents(filteredEvents);
@@ -196,7 +209,7 @@ const WorkerCalendarPage = () => {
   const handleEventClick = (event: CalendarEvent) => {
     if (event.status === 'AVAILABLE') {
       // For availability events, show availability edit modal
-      const slot = availabilitySlots.find(s => s.id === event.originalSlotId);
+      const slot = Array.isArray(availabilitySlots) ? availabilitySlots.find(s => s.id === event.originalSlotId) : null;
       setSelectedAvailabilitySlot(slot || null);
       setIsAvailabilityModalOpen(true);
     } else if (event.status === 'OFFER') {
@@ -249,9 +262,22 @@ const WorkerCalendarPage = () => {
   // Handle availability management
   const handleAvailabilitySave = async (data: any) => {
     console.log('handleAvailabilitySave called with data:', data);
+    console.log('handleAvailabilitySave data type:', typeof data);
+    console.log('handleAvailabilitySave data keys:', Object.keys(data || {}));
+    
     if (!user) {
       console.log('No user found');
       return;
+    }
+
+    // Test server action first
+    try {
+      const { testAvailabilityAction } = await import('@/actions/availability/test-availability');
+      console.log('Testing server action...');
+      const testResult = await testAvailabilityAction(user.uid);
+      console.log('Test result:', testResult);
+    } catch (testError) {
+      console.error('Test action failed:', testError);
     }
 
     try {
@@ -261,12 +287,29 @@ const WorkerCalendarPage = () => {
         const { updateAvailabilitySlot } = await import('@/actions/availability/manage-availability');
         const result = await updateAvailabilitySlot(user.uid, selectedAvailabilitySlot.id, data);
         console.log('Update result:', result);
+        
+        if (result.error) {
+          console.error('Update failed:', result.error);
+          return;
+        }
       } else {
         // Create new slot
         console.log('Creating new slot');
         const { createAvailabilitySlot } = await import('@/actions/availability/manage-availability');
+        console.log('createAvailabilitySlot function imported:', typeof createAvailabilitySlot);
+        console.log('About to call createAvailabilitySlot with:', { userId: user.uid, data });
         const result = await createAvailabilitySlot(user.uid, data);
         console.log('Create result:', result);
+        console.log('Create result type:', typeof result);
+        console.log('Create result keys:', Object.keys(result || {}));
+        
+        if (result.error) {
+          console.error('Create failed:', result.error);
+          console.error('Full result object:', result);
+          console.error('Error details:', result.details);
+          console.error('Error type:', result.errorType);
+          return;
+        }
       }
       
       // Close the modal
@@ -288,7 +331,15 @@ const WorkerCalendarPage = () => {
 
         const allEventsCombined = [...parsed, ...availabilityEvents];
         setAllEvents(allEventsCombined);
-        setAvailabilitySlots(availabilityRes.availability || []);
+        
+        // Ensure availabilitySlots is always an array
+        const availabilityArray = Array.isArray(availabilityRes.availability) 
+          ? availabilityRes.availability 
+          : availabilityRes.availability 
+            ? [availabilityRes.availability] 
+            : [];
+        setAvailabilitySlots(availabilityArray);
+
         setEvents(filterEvents(allEventsCombined, activeFilter));
       };
       
@@ -324,7 +375,15 @@ const WorkerCalendarPage = () => {
 
         const allEventsCombined = [...parsed, ...availabilityEvents];
         setAllEvents(allEventsCombined);
-        setAvailabilitySlots(availabilityRes.availability || []);
+        
+        // Ensure availabilitySlots is always an array
+        const availabilityArray = Array.isArray(availabilityRes.availability) 
+          ? availabilityRes.availability 
+          : availabilityRes.availability 
+            ? [availabilityRes.availability] 
+            : [];
+        setAvailabilitySlots(availabilityArray);
+
         setEvents(filterEvents(allEventsCombined, activeFilter));
       };
       
@@ -382,7 +441,15 @@ const WorkerCalendarPage = () => {
 
         const allEventsCombined = [...parsed, ...availabilityEvents];
         setAllEvents(allEventsCombined);
-        setAvailabilitySlots(availabilityRes.availability || []);
+        
+        // Ensure availabilitySlots is always an array
+        const availabilityArray = Array.isArray(availabilityRes.availability) 
+          ? availabilityRes.availability 
+          : availabilityRes.availability 
+            ? [availabilityRes.availability] 
+            : [];
+        setAvailabilitySlots(availabilityArray);
+
         setEvents(filterEvents(allEventsCombined, activeFilter));
       };
       

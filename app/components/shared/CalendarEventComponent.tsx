@@ -187,6 +187,16 @@ const CalendarEventComponent: React.FC<CalendarEventComponentProps> = ({
           </button>
         </div>
       )}
+
+      {/* Edit button for availability events */}
+      {event.status === 'AVAILABLE' && (
+        <div className={styles.actionButtons}>
+          <button className={`${styles.actionButton} ${styles.editAvailabilityBtn}`}>
+            <Eye size={12} className={styles.viewIcon} />
+            Edit
+          </button>
+        </div>
+      )}
     </div>
   );
 };
