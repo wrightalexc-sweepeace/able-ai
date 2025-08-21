@@ -62,7 +62,7 @@ function getGigAcceptActionText(gig: GigDetails, lastRoleUsed: string): string {
 			return 'Agree to Rate - Accept and Hold Payment';
 		}
 	}
-	else if (status === 'PENDING') {
+	if (status === 'PENDING') {
 		if (lastRoleUsed === "GIG_WORKER") {
 			return 'Accept Gig';
 		} else {
@@ -80,6 +80,8 @@ const GigDetailsComponent = ({ userId, role, gig, setGig, isAvailableOffer = fal
 	const [isWaitingHoldPayment, setIsWaitingHoldPayment] = useState(false);
 
 	const gigDuration = calculateDuration(gig.startTime, gig.endTime);
+	const buyer = gig.buyerName.split(" ")[0];
+	const totalPaid = gig.hourlyRate * parseInt(gig.duration.split(" ")[0]); // Assuming duration is in "X hours" format
 	const amendId = "123";
 
 	const getButtonLabel = (action: string) => {
@@ -87,126 +89,77 @@ const GigDetailsComponent = ({ userId, role, gig, setGig, isAvailableOffer = fal
 
 		switch (action) {
 			case 'accept':
-				return getGigAcceptActionText(gig, lastRoleUsed);
+				if (status === 'PENDING') {
+					return lastRoleUsed === "GIG_WORKER"
+					? 'Accept Gig'
+					: 'Offer Sent - awaiting acceptance';
+				}
+				return 'Gig Accepted';
+
 			case 'start':
-				return status === 'PENDING' || status === 'ACCEPTED' ? (lastRoleUsed === "GIG_WORKER" ? 'Mark as you started the gig' : 'Mark as started') : (lastRoleUsed === "GIG_WORKER" ? 'Gig Started' : `${workerName} has started the gig`);
+				if (status === 'PENDING' || status === 'ACCEPTED') {
+					return lastRoleUsed === "GIG_WORKER"
+						? 'Mark as you started the gig'
+						: 'Mark as started';
+				} 
+				return lastRoleUsed === 'GIG_WORKER'
+					? 'Gig Started'
+					: `${workerName} has started the gig`;
 			case 'complete':
-				if (!gig.isWorkerSubmittedFeedback && !gig.isBuyerSubmittedFeedback) {
-					if (lastRoleUsed === "GIG_WORKER") {
-						return status === 'PENDING' || status === 'ACCEPTED' || status === 'IN_PROGRESS' ? 'Mark as complete' : 'Gig Completed';
+				if (status === 'PENDING' || status === 'ACCEPTED' || status === 'IN_PROGRESS') {
+					return lastRoleUsed === 'GIG_WORKER' ? 'Mark as complete' : `Mark as complete, pay ${workerName}`;
+				} else {
+					// If the gig is completed, show the appropriate message
+					if (gig.isWorkerSubmittedFeedback && !gig.isBuyerSubmittedFeedback) {
+						return lastRoleUsed === "GIG_WORKER" ? 'Gig Completed' : `🕒Confirm, pay and review ${workerName}`;
+					} else if (gig.isBuyerSubmittedFeedback && !gig.isWorkerSubmittedFeedback) {
+						return lastRoleUsed === "GIG_WORKER" ? 'Buyer confirmed & paid: leave feedback' : `${workerName} has completed the gig`;
 					} else {
-						return status === 'PENDING' || status === 'ACCEPTED' || status === 'IN_PROGRESS' ? `Mark as complete, pay ${workerName}` : `${workerName} has completed the gig`;
+						return lastRoleUsed === "GIG_WORKER" ? 'Gig Completed' : `${workerName} has completed the gig`;
 					}
-				}
-				else if (gig.isBuyerSubmittedFeedback && lastRoleUsed === "GIG_WORKER") {
-					return status === 'PENDING' || status === 'ACCEPTED' || status === 'IN_PROGRESS' ? 'Buyer confirmed & paid: leave feedback' : 'Gig Completed';
-				}
-				else if (gig.isWorkerSubmittedFeedback && lastRoleUsed === "GIG_WORKER") {
-					return status === 'PENDING' || status === 'ACCEPTED' || status === 'IN_PROGRESS' ? `🕒Confirm, pay and review ${workerName}` : 'Gig Completed';
 				}
 
 			case 'awaiting':
 				if (lastRoleUsed === "GIG_WORKER") {
-					return status === 'PENDING' || status === 'ACCEPTED' || status === 'IN_PROGRESS' || status === 'COMPLETED' ? 'Request payment' : 'Payment requested';
+					return !gig.isBuyerSubmittedFeedback ? `Waiting for ${buyer} to confirm and pay` : `Paid £${totalPaid}`;
 				}
-				return status === 'PENDING' || status === 'ACCEPTED' || status === 'IN_PROGRESS' || status === 'COMPLETED' ? 'Pay' : 'Payment done';
-			case 'requested':
-				return 'Payment requested';
-			case 'confirmed':
-				return 'Payment done';
+				return gig.isBuyerSubmittedFeedback ? `Paid £${totalPaid}` : 'Pay';
 			default:
 				return '';
 		}
 	};
 
-	const handleGigAction = async (action: 'accept' | 'start' | 'complete' | 'requestAmendment' | 'reportIssue' | 'awaiting' | 'confirmed' | 'requested' | 'delete') => {
-		if (!gig) return;
-		setIsActionLoading(true);
-		console.log(`Performing action: ${action} for gig: ${gig.id}`);
-
-		try {
+	const handleGigAction = async (action: 'accept' | 'start' | 'complete' | 'requestAmendment' | 'reportIssue' | 'awaiting' | 'confirmed' | 'requested') => {
+        if (!gig) return;
+        setIsActionLoading(true);
+        console.log(`Performing action: ${action} for gig: ${gig.id}`);
+        // TODO: API call to backend, e.g., POST /api/gigs/worker/${gig.id}/action
+        // Body: { action: 'start' } or { action: 'complete', details: {...} }
+        try {
 			await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API
 			// On success, update gig state locally or refetch
-			if (action === 'accept' && gig) {
-				if (gig.statusInternal === 'PAYMENT_HELD_PENDING_ACCEPTANCE' && lastRoleUsed === 'GIG_WORKER') {
-					await updateGigOfferStatus({ gigId: gig.id, userId, role, action });
-					setGig({ ...gig, status: 'ACCEPTED' });
-				}
-
-				if (gig.statusInternal === 'PENDING_WORKER_ACCEPTANCE' && lastRoleUsed === 'BUYER') {
-					setIsWaitingHoldPayment(true);
-
-					const resp = await holdGigFunds({
-						gigId: gig.id,
-						firebaseUid: userId,
-						serviceAmountInCents: gig.estimatedEarnings * 100,
-						currency: 'usd'
-					});
-
-					if (resp.error) throw new Error('Error trying to hold payment');
-
-					setGig({ ...gig, status: 'PENDING', statusInternal: 'PAYMENT_HELD_PENDING_ACCEPTANCE' });
-					toast.success('successful payment hold');
-				}
+			if (action === 'accept' && gig && lastRoleUsed === 'GIG_WORKER') {
+				setGig({ ...gig, status: 'ACCEPTED' });
+				// Show success message
 			}
 			else if (action === 'start' && gig) {
 				setGig({ ...gig, status: 'IN_PROGRESS' });
-				// Show success message
 			} else if (action === 'complete' && gig) {
-				setGig({ ...gig, status: 'COMPLETED' });
+				setGig({ ...gig, status: 'COMPLETED'});
+				// redirect to feedback page 
 				if (lastRoleUsed === "GIG_WORKER") {
-					// Redirect to feedback page if worker
 					router.push(`/user/${user?.uid}/worker/gigs/${gig.id}/feedback`);
 				} else {
-					// Redirect to payment page if buyer
 					router.push(`/user/${user?.uid}/buyer/gigs/${gig.id}/feedback`);
 				}
 
 			}
-			else if (action === 'awaiting') {
-				if (lastRoleUsed === "GIG_WORKER") {
-					setGig({ ...gig, status: 'REQUESTED' });
-					// Show success message
-				}
-			}
-			else if (action === 'confirmed') {
-				setGig({ ...gig, status: 'CONFIRMED' });
-				// Show success message
-			} else if (action === 'requestAmendment') {
-				setGig({ ...gig, status: 'REQUESTED_AMENDMENT' });
-				router.push(`/gigs/${gig.id}/amends/${amendId}`);
-				// Show success message
-			}
-			else if (action === 'delete') {
-				if (!user?.uid) {
-					toast.error('User not authenticated');
-					return;
-				}
-
-				const result = await deleteGig({ gigId: gig.id, userId: user.uid });
-				
-				if (result.error) {
-					toast.error(result.error);
-				} else {
-					toast.success('Gig deleted successfully');
-					// Redirect to buyer home page
-					router.push(`/user/${user.uid}/buyer`);
-				}
-			}
-			// Handle other actions
-		} catch (err: unknown) {
-			if (err instanceof Error) {
-				console.error(err.message || `Failed to ${action} gig.`);
-				if (action === 'accept' && gig.statusInternal === 'PENDING_WORKER_ACCEPTANCE' && lastRoleUsed === 'BUYER')
-					toast.error('Error in payment hold');
-			} else {
-				console.error(`Unknown error performing action ${action} on gig:`, err);
-			}
-		} finally {
-			setIsWaitingHoldPayment(false);
-			setIsActionLoading(false);
-		}
-	};
+        } catch (err: any) {
+            console.log(err.message || `Failed to ${action} gig.`);
+        } finally {
+            setIsActionLoading(false);
+        }
+    };
 
 	return (
 		<div className={styles.container}>
@@ -300,10 +253,10 @@ const GigDetailsComponent = ({ userId, role, gig, setGig, isAvailableOffer = fal
 				{/* Primary Actions Section - Adapted to new structure */}
 				<section className={styles.actionSection}>
 					<GigActionButton
-						label={!isWaitingHoldPayment ? getButtonLabel('accept') : 'processing...'}
+						label={getButtonLabel('accept')}
 						handleGigAction={() => handleGigAction('accept')}
-						isActive={!isWaitingHoldPayment && gig.status === 'PENDING'}
-						isDisabled={gig.status !== 'PENDING'}
+						isActive={gig.status === 'PENDING'}
+						isDisabled={lastRoleUsed === "BUYER" || gig.status !== 'PENDING'}
 					/>
 
 					{/* 2. Start Gig */}
@@ -318,16 +271,27 @@ const GigDetailsComponent = ({ userId, role, gig, setGig, isAvailableOffer = fal
 					<GigActionButton
 						label={getButtonLabel('complete')}
 						handleGigAction={() => handleGigAction('complete')}
-						isActive={gig.status === 'IN_PROGRESS'}
-						isDisabled={gig.status !== 'IN_PROGRESS'}
+						isActive={
+							(gig.status === 'IN_PROGRESS' || gig.status === 'COMPLETED') &&
+							(
+							(lastRoleUsed === "GIG_WORKER" && !gig.isWorkerSubmittedFeedback) ||
+							(lastRoleUsed === "BUYER" && !gig.isBuyerSubmittedFeedback)
+							)
+						}
+						isDisabled={
+							(lastRoleUsed === "GIG_WORKER" && gig.isWorkerSubmittedFeedback) ||
+							(lastRoleUsed === "BUYER" && gig.isBuyerSubmittedFeedback)
+						}
 					/>
 
 					{/* 4. Awaiting Buyer Confirmation */}
 					<GigActionButton
 						label={getButtonLabel('awaiting')}
-						handleGigAction={() => handleGigAction('awaiting')}
-						isActive={gig.status === 'COMPLETED'}
-						isDisabled={gig.status !== 'COMPLETED'}
+						isActive={
+							(lastRoleUsed === "GIG_WORKER" && gig.isWorkerSubmittedFeedback) ||
+							(lastRoleUsed === "BUYER" && gig.isBuyerSubmittedFeedback)
+						}
+						isDisabled={true}
 					/>
 
 					{/* Info messages for other statuses

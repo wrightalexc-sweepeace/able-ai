@@ -1,5 +1,4 @@
 .actionButton {
-  cursor: not-allowed;
   padding: 0.75rem 1rem;
   border: 0;
   border-radius: 1.5rem;
@@ -21,4 +20,6 @@
   background-color: var(--secondary-color);
 }
 
-
+.disabled {
+  cursor: not-allowed;
+}
