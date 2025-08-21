@@ -81,7 +81,7 @@ const GigDetailsComponent = ({ userId, role, gig, setGig, isAvailableOffer = fal
 
 	const gigDuration = calculateDuration(gig.startTime, gig.endTime);
 	const buyer = gig.buyerName.split(" ")[0];
-	const totalPaid = gig.hourlyRate * parseInt(gig.duration.split(" ")[0]); // Assuming duration is in "X hours" format
+	const totalAmount = gig.hourlyRate * parseInt(gig.duration.split(" ")[0]); // Assuming duration is in "X hours" format
 	const amendId = "123";
 
 	const getButtonLabel = (action: string) => {
@@ -121,9 +121,9 @@ const GigDetailsComponent = ({ userId, role, gig, setGig, isAvailableOffer = fal
 
 			case 'awaiting':
 				if (lastRoleUsed === "GIG_WORKER") {
-					return !gig.isBuyerSubmittedFeedback ? `Waiting for ${buyer} to confirm and pay` : `Paid £${totalPaid}`;
+					return !gig.isBuyerSubmittedFeedback ? `Waiting for ${buyer} to confirm and pay` : `${buyer} Paid £${totalAmount}`;
 				}
-				return gig.isBuyerSubmittedFeedback ? `Paid £${totalPaid}` : 'Pay';
+				return gig.isBuyerSubmittedFeedback ? `Paid £${totalAmount}` : 'Pay';
 			default:
 				return '';
 		}
