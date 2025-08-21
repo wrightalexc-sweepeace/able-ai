@@ -2,7 +2,7 @@ import styles from "./GigActionButton.module.css";
 import { getLastRoleUsed } from "@/lib/last-role-used";
 
 interface ActionButtonProps {
-  label: string;
+  label: React.ReactNode;
   handleGigAction?: () => void;
   isActive?: boolean;
   isDisabled?: boolean;

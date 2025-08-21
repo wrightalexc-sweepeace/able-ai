@@ -1,5 +1,5 @@
 /* eslint-disable max-lines-per-function */
-import { Calendar, Info, MessageSquare } from 'lucide-react';
+import { Calendar, Check, Info, MessageSquare } from 'lucide-react';
 import Logo from '../brand/Logo';
 import styles from './GigDetails.module.css';
 import { useRouter } from 'next/navigation';
@@ -118,12 +118,23 @@ const GigDetailsComponent = ({ userId, role, gig, setGig, isAvailableOffer = fal
 						return lastRoleUsed === "GIG_WORKER" ? 'Gig Completed' : `${workerName} has completed the gig`;
 					}
 				}
-
 			case 'awaiting':
 				if (lastRoleUsed === "GIG_WORKER") {
-					return !gig.isBuyerSubmittedFeedback ? `Waiting for ${buyer} to confirm and pay` : `${buyer} Paid £${totalAmount}`;
+					return !gig.isBuyerSubmittedFeedback 
+					? `Waiting for ${buyer} to confirm and pay` 
+					: (
+						<span className={styles.awaitingText}>
+							<Check color="#000000" /> {buyer} Paid £{totalAmount}
+						</span>
+					);
 				}
-				return gig.isBuyerSubmittedFeedback ? `Paid £${totalAmount}` : 'Pay';
+				return gig.isBuyerSubmittedFeedback 
+					? (
+						<span className={styles.awaitingText}>
+							<Check color="#000000" /> Paid £{totalAmount}
+						</span>
+					)
+					: 'Pay';
 			default:
 				return '';
 		}
