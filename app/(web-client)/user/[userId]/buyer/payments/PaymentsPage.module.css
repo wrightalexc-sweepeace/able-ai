@@ -33,6 +33,11 @@
   outline: 0;
   background-color: transparent;
   color: #ffffff;
+  transition: color 0.2s ease;
+}
+
+.backButton:hover {
+  color: var(--secondary-color);
 }
 
 .totalsNote {
