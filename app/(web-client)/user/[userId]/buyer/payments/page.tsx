@@ -126,10 +126,10 @@ export default function BuyerPaymentsPage() {
     <div className={styles.container}>
       <div className={styles.pageWrapper}>
         <header className={styles.header}>
-          <div className={styles.headerLeftContainer}>
-            <ClipboardList size={15} color='#ffffff' />
-            <h1 className={styles.pageTitle}>Payments</h1>
-          </div>
+          <button onClick={() => router.back()} className={styles.backButton}>
+              <ArrowLeft size={16} />
+          </button>
+          <h1 className={styles.pageTitle}>Payments</h1>
           <button onClick={() => setShowFilterModal(true)} className={styles.filterButton}>
             <Filter size={16} /> Filter
           </button>
@@ -247,12 +247,6 @@ export default function BuyerPaymentsPage() {
             <div className={styles.emptyState}>No data available for chart.</div>
           ) : null}
         </div> */}
-
-        <footer className={styles.footer}>
-          <Link href={`/user/${pageUserId}/buyer`} passHref>
-            <Image src="/images/home.svg" alt="Home" width={40} height={40} />
-          </Link>
-        </footer>
       </div>
     </div>
   );
