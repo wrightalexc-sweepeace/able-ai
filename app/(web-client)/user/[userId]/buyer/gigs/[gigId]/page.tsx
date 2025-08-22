@@ -19,7 +19,7 @@ async function fetchBuyerGigDetails(user: User, gigId: string): Promise<GigDetai
   console.log("Fetching gig details for buyer:", user?.uid, "gig:", gigId);
 
   // Force QA mock mode so any gigId returns mock during integration
-  const isViewQA = true;
+  const isViewQA = false;
   const { gig, status } = await getGigDetails({ gigId, userId: user?.uid, role: 'buyer', isViewQA });
 
   if (!gig || status !== 200) return null;

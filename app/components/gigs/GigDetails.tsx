@@ -81,7 +81,6 @@ const GigDetailsComponent = ({ userId, role, gig, setGig, isAvailableOffer = fal
 
 	const gigDuration = calculateDuration(gig.startTime, gig.endTime);
 	const buyer = gig.buyerName.split(" ")[0];
-	const totalAmount = gig.hourlyRate * parseInt(gig.duration.split(" ")[0]); // Assuming duration is in "X hours" format
 	const amendId = "123";
 
 	const getButtonLabel = (action: string) => {
@@ -124,14 +123,14 @@ const GigDetailsComponent = ({ userId, role, gig, setGig, isAvailableOffer = fal
 					? `Waiting for ${buyer} to confirm and pay` 
 					: (
 						<span className={styles.awaitingText}>
-							<Check color="#000000" /> {buyer} Paid £{totalAmount}
+							<Check color="#000000" /> {buyer} Paid £{gig.estimatedEarnings}
 						</span>
 					);
 				}
 				return gig.isBuyerSubmittedFeedback 
 					? (
 						<span className={styles.awaitingText}>
-							<Check color="#000000" /> Paid £{totalAmount}
+							<Check color="#000000" /> Paid £{gig.estimatedEarnings}
 						</span>
 					)
 					: 'Pay';
@@ -140,7 +139,7 @@ const GigDetailsComponent = ({ userId, role, gig, setGig, isAvailableOffer = fal
 		}
 	};
 
-	const handleGigAction = async (action: 'accept' | 'start' | 'complete' | 'requestAmendment' | 'reportIssue' | 'awaiting' | 'confirmed' | 'requested') => {
+	const handleGigAction = async (action: 'accept' | 'start' | 'complete' | 'requestAmendment' | 'reportIssue' | 'awaiting' | 'confirmed' | 'requested' | 'delete') => {
         if (!gig) return;
         setIsActionLoading(true);
         console.log(`Performing action: ${action} for gig: ${gig.id}`);
@@ -151,22 +150,50 @@ const GigDetailsComponent = ({ userId, role, gig, setGig, isAvailableOffer = fal
 			// On success, update gig state locally or refetch
 			if (action === 'accept' && gig && lastRoleUsed === 'GIG_WORKER') {
 				setGig({ ...gig, status: 'ACCEPTED' });
-				// Show success message
+				await updateGigOfferStatus({ gigId: gig.id, userId: userId, role: role, action: 'accept' });
 			}
 			else if (action === 'start' && gig) {
 				setGig({ ...gig, status: 'IN_PROGRESS' });
+				await updateGigOfferStatus({ gigId: gig.id, userId: userId, role: role, action: 'start' });
 			} else if (action === 'complete' && gig) {
 				setGig({ ...gig, status: 'COMPLETED'});
+				await updateGigOfferStatus({ gigId: gig.id, userId: userId, role: role, action: 'complete' });
 				// redirect to feedback page 
 				if (lastRoleUsed === "GIG_WORKER") {
 					router.push(`/user/${user?.uid}/worker/gigs/${gig.id}/feedback`);
 				} else {
 					router.push(`/user/${user?.uid}/buyer/gigs/${gig.id}/feedback`);
 				}
-
+			} else if (action === 'confirmed') {
+				setGig({ ...gig, status: 'CONFIRMED' });
+				// Show success message
+			} else if (action === 'requestAmendment') {
+				setGig({ ...gig, status: 'REQUESTED_AMENDMENT' });
+				router.push(`/gigs/${gig.id}/amends/${amendId}`);
+				// Show success message
 			}
-        } catch (err: any) {
-            console.log(err.message || `Failed to ${action} gig.`);
+			else if (action === 'delete') {
+				if (!user?.uid) {
+					toast.error('User not authenticated');
+					return;
+				}
+
+				const result = await deleteGig({ gigId: gig.id, userId: user.uid });
+				
+				if (result.error) {
+					toast.error(result.error);
+				} else {
+					toast.success('Gig deleted successfully');
+					// Redirect to buyer home page
+					router.push(`/user/${user.uid}/buyer`);
+				}
+			}
+		} catch (err: unknown) {
+            if (err instanceof Error) {
+                console.error(`Failed to ${action} gig:`, err.message);
+            } else {
+                console.error(`An unknown error occurred during action '${action}':`, err);
+            }
         } finally {
             setIsActionLoading(false);
         }
@@ -298,6 +325,7 @@ const GigDetailsComponent = ({ userId, role, gig, setGig, isAvailableOffer = fal
 					{/* 4. Awaiting Buyer Confirmation */}
 					<GigActionButton
 						label={getButtonLabel('awaiting')}
+						handleGigAction={() => handleGigAction('awaiting')}
 						isActive={
 							(lastRoleUsed === "GIG_WORKER" && gig.isWorkerSubmittedFeedback) ||
 							(lastRoleUsed === "BUYER" && gig.isBuyerSubmittedFeedback)
