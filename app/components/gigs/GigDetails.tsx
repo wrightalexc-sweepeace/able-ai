@@ -311,10 +311,14 @@ const GigDetailsComponent = ({ userId, role, gig, setGig, isAvailableOffer = fal
 						label={getButtonLabel('complete')}
 						handleGigAction={() => handleGigAction('complete')}
 						isActive={
-							(gig.status === 'IN_PROGRESS' || gig.status === 'CONFIRMED' || gig.status === 'AWAITING_BUYER_CONFIRMATION') &&
 							(
-							(lastRoleUsed === "GIG_WORKER" && !gig.isWorkerSubmittedFeedback) ||
-							(lastRoleUsed === "BUYER" && !gig.isBuyerSubmittedFeedback)
+								gig.status === 'IN_PROGRESS' || 
+								gig.status === 'COMPLETED' || 
+								gig.status === 'CONFIRMED' || 
+								gig.status === 'AWAITING_BUYER_CONFIRMATION'
+							) && (
+								(lastRoleUsed === "GIG_WORKER" && !gig.isWorkerSubmittedFeedback) ||
+								(lastRoleUsed === "BUYER" && !gig.isBuyerSubmittedFeedback)
 							)
 						}
 						isDisabled={
