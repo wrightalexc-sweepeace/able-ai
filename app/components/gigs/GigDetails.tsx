@@ -15,6 +15,7 @@ import { holdGigFunds } from '@/app/actions/stripe/create-hold-gig-Funds';
 import { deleteGig } from '@/actions/gigs/delete-gig';
 import { toast } from 'sonner';
 import ScreenHeaderWithBack from '../layout/ScreenHeaderWithBack';
+import GigStatusIndicator from '../shared/GigStatusIndicator';
 
 
 const formatGigDate = (isoDate: string) => new Date(isoDate).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
@@ -323,9 +324,9 @@ const GigDetailsComponent = ({ userId, role, gig, setGig, isAvailableOffer = fal
 					/>
 
 					{/* 4. Awaiting Buyer Confirmation */}
-					<GigActionButton
+
+					<GigStatusIndicator
 						label={getButtonLabel('awaiting')}
-						handleGigAction={() => handleGigAction('awaiting')}
 						isActive={
 							(lastRoleUsed === "GIG_WORKER" && gig.isWorkerSubmittedFeedback) ||
 							(lastRoleUsed === "BUYER" && gig.isBuyerSubmittedFeedback)
