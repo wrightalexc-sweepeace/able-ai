@@ -95,3 +95,5 @@ export const stripeAccountStatusEnum = pgEnum("stripe_account_status_enum", [
   "restricted",
   "disabled",
 ]);
+
+const reviewRoleEnum = pgEnum("review_role", ["BUYER", "WORKER"]);
