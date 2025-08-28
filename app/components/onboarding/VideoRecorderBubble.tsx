@@ -13,9 +13,10 @@ interface VideoRecorderBubbleProps {
   prompt?: string;
   setIsEditingVideo?: (isEditing: boolean) => void;
   isCancelButtonVisible?: boolean;
+  isInline?: boolean;
 }
 
-const VideoRecorderBubble: React.FC<VideoRecorderBubbleProps> = ({ onVideoRecorded, prompt, setIsEditingVideo, isCancelButtonVisible = true }) => {
+const VideoRecorderBubble: React.FC<VideoRecorderBubbleProps> = ({ onVideoRecorded, prompt, setIsEditingVideo, isCancelButtonVisible = true, isInline = true  }) => {
   const webcamRef = useRef<Webcam>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const [isRecording, setIsRecording] = useState(false);
@@ -61,7 +62,7 @@ const VideoRecorderBubble: React.FC<VideoRecorderBubbleProps> = ({ onVideoRecord
 
     mediaRecorder.ondataavailable = (event) => {
       if (event.data.size > 0) {
-        setRecordedChunks(prev => [...prev, event.data]);
+        setRecordedChunks((prev) => [...prev, event.data]);
       }
     };
 
@@ -73,7 +74,10 @@ const VideoRecorderBubble: React.FC<VideoRecorderBubbleProps> = ({ onVideoRecord
   };
 
   const stopRecording = () => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+    if (
+      mediaRecorderRef.current &&
+      mediaRecorderRef.current.state !== "inactive"
+    ) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
     }
@@ -103,7 +107,12 @@ const VideoRecorderBubble: React.FC<VideoRecorderBubbleProps> = ({ onVideoRecord
       {prompt && <div className={styles.prompt}>{prompt}</div>}
       {!showRecorder ? (
         <div className={styles.initial}>
-          <button onClick={handleRecording} className={styles.recordButton}>
+          <button
+            onClick={handleRecording}
+            className={`${styles.recordButton} ${
+              isInline ? styles.inline : styles.column
+            }`}
+          >
             <MonitorPlay color="#fff" className={styles.monitorPlay} />
             <span>RECORD VIDEO</span>
           </button>
