@@ -82,6 +82,8 @@ interface DashboardData {
       description?: string | null;
     };
   }[];
+  skillCounts?: { name: string; value: number }[];
+  totalPayments?: { name: string; a: number }[];
 }
 
 export default function BuyerProfilePage() {
@@ -109,6 +111,7 @@ export default function BuyerProfilePage() {
         ...badge,
         icon: badge.icon || DefaultBadgeIcon,
       }));
+
       setDashboardData({ ...profile, badges: updatedBadges });
       setError(null);
     } else {
@@ -345,21 +348,19 @@ export default function BuyerProfilePage() {
                   id: 1,
                   icon: ThumbsUp,
                   value: dashboardData?.responseRateInternal || 0,
-                  label: "Would work with Benji again",
+                  label: `Would work with ${user.displayName} again`,
                   iconColor: "#0070f3",
                 }}
               />
-              {dashboardData?.averageRating && (
                 <StatisticItemDisplay
                   stat={{
                     id: 2,
                     icon: MessageSquare,
-                    value: dashboardData.averageRating,
+                    value: dashboardData?.averageRating || 0,
                     label: "Response rate",
                     iconColor: "#0070f3",
                   }}
                 />
-              )}
             </div>
           </ContentCard>
         </section>
@@ -388,8 +389,8 @@ export default function BuyerProfilePage() {
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>Workforce Analytics</h2>
           <div className={styles.analyticsChartsContainer}>
-            <PieChartComponent />
-            <BarChartComponent />
+            <PieChartComponent skillCounts={dashboardData?.skillCounts} />
+            <BarChartComponent totalPayments={dashboardData?.totalPayments} />
           </div>
         </section>
 
@@ -397,14 +398,18 @@ export default function BuyerProfilePage() {
         <section className={styles.section}>
           <h2 className={styles.sectionTitle}>Badges Awarded</h2>
           <div className={styles.badges}>
-            {dashboardData?.badges?.map((badge) => (
-              <div className={styles.badge} key={badge.id}>
-                <AwardDisplayBadge
-                  {...(badge?.badge?.icon ? { icon: badge.badge?.icon } : {})}
-                  textLines={badge?.badge?.description ?? ""}
-                />
-              </div>
-            ))}
+            {dashboardData && dashboardData.badges.length > 0 ? (
+              dashboardData?.badges?.map((badge) => (
+                <div className={styles.badge} key={badge.id}>
+                  <AwardDisplayBadge
+                    {...(badge?.badge?.icon ? { icon: badge.badge?.icon } : {})}
+                    textLines={badge?.badge?.description ?? ""}
+                  />
+                </div>
+              ))
+            ) : (
+              <p style={{color: "#fff"}}>No badges available</p>
+            )}
           </div>
         </section>
 
