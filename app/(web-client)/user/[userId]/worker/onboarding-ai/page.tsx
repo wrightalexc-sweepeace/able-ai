@@ -8,7 +8,7 @@ import ChatBotLayout from "@/app/components/onboarding/ChatBotLayout";
 import MessageBubble from "@/app/components/onboarding/MessageBubble";
 
 import CalendarPickerBubble from "@/app/components/onboarding/CalendarPickerBubble";
-import VideoRecorderBubble from "@/app/components/onboarding/VideoRecorderBubble";
+import VideoRecorderOnboarding from "@/app/components/onboarding/VideoRecorderOnboarding";
 import LocationPickerBubble from '@/app/components/onboarding/LocationPickerBubble';
 import ShareLinkBubble from "@/app/components/onboarding/ShareLinkBubble";
 import SanitizedConfirmationBubble from "@/app/components/onboarding/SanitizedConfirmationBubble";
@@ -119,12 +119,14 @@ import {
 } from "firebase/storage";
 import { firebaseApp } from "@/lib/firebase/clientApp";
 import { updateVideoUrlProfileAction, saveWorkerProfileFromOnboardingAction, createWorkerProfileAction } from "@/actions/user/gig-worker-profile";
+import { VALIDATION_CONSTANTS } from "@/app/constants/validation";
 
 // Define required fields and their configs - matching gig creation pattern
 const requiredFields: RequiredField[] = [
   { name: "about", type: "text", placeholder: "Tell us about yourself and your background...", defaultPrompt: "Tell me about yourself and what kind of work you can offer!", rows: 3 },
   { name: "experience", type: "text", placeholder: "Tell us about your experience...", defaultPrompt: "What experience do you have in your field?", rows: 3 },
   { name: "skills", type: "text", placeholder: "List your skills and certifications...", defaultPrompt: "What skills and certifications do you have?", rows: 3 },
+  { name: "equipment", type: "text", placeholder: "List any equipment you have...", defaultPrompt: "What equipment do you have that you can use for your work?", rows: 3 },
   { name: "hourlyRate", type: "number", placeholder: "£15", defaultPrompt: "What's your preferred hourly rate?" },
   { name: "location", type: "location", defaultPrompt: "Where are you based? This helps us find gigs near you!" },
   { name: "availability", type: "availability", defaultPrompt: "When are you available to work? Let's set up your weekly schedule!" },
@@ -149,6 +151,7 @@ interface FormData {
   about?: string;
   experience?: string;
   skills?: string;
+  equipment?: string;
   hourlyRate?: number;
   location?: { lat: number; lng: number } | string;
   availability?: {
@@ -191,6 +194,8 @@ interface FormData {
   isAISuggested?: boolean; // New: Whether the job title was AI-suggested
   summaryData?: FormData; // New: Data for profile summary display
 };
+
+
 
 // AI response types for better type safety
 interface AIValidationResponse {
@@ -350,17 +355,15 @@ async function interpretJobTitle(userExperience: string, ai: any): Promise<{ job
 function isUnrelatedResponse(userInput: string, currentPrompt: string): boolean {
   // Simple heuristic: check if response contains common unrelated phrases
   const unrelatedPhrases = [
-    'help', 'support', 'contact', 'human', 'person', 'agent', 'representative',
-    'complaint', 'issue', 'problem', 'broken', 'not working', 'error',
-    'customer service', 'speak to someone', 'talk to human', 'real person',
-    'please', 'need', 'want', 'can i', 'could i', 'i need', 'i want',
+    'problem', 'broken', 'not working', 'error',
+   'speak to someone', 'talk to human', 'real person',
     // Curse words and inappropriate language
     'fuck', 'shit', 'damn', 'bitch', 'ass', 'asshole', 'bastard', 'crap',
-    'piss', 'dick', 'cock', 'pussy', 'cunt', 'whore', 'slut', 'fucker',
+    'piss', 'dick', 'pussy', 'cunt', 'whore', 'slut', 'fucker',
     'motherfucker', 'fucking', 'shitty', 'damned', 'bloody', 'bugger',
     'wanker', 'twat', 'bellend', 'knob', 'prick', 'tosser', 'arse',
     'bollocks', 'wank', 'fanny', 'minge', 'gash', 'snatch', 'cooch',
-    'pussy', 'vagina', 'penis', 'cock', 'dick', 'willy', 'johnson'
+    'pussy', 'vagina', 'penis', 'dick', 'willy', 'johnson'
   ];
   
   const userLower = userInput.toLowerCase().trim();
@@ -431,17 +434,7 @@ function isUnrelatedResponse(userInput: string, currentPrompt: string): boolean 
   // If the prompt is asking for specific information types, be more lenient with short responses
   const isSpecificQuestion = promptAskingFor.jobTitle || promptAskingFor.rate || promptAskingFor.location || promptAskingFor.yesNo;
   
-  console.log('Unrelated response check:', {
-    userInput: userLower,
-    promptKeywords: relevantKeywords,
-    hasUnrelatedPhrase,
-    isTooShort,
-    hasRelevantKeywords,
-    isValidShortResponse,
-    isSpecificQuestion,
-    promptAskingFor,
-    result: hasUnrelatedPhrase || (isTooShort && !hasRelevantKeywords && !isValidShortResponse && !isSpecificQuestion)
-  });
+
   
   // Only flag as unrelated if:
   // 1. It contains unrelated phrases, OR
@@ -452,7 +445,7 @@ function isUnrelatedResponse(userInput: string, currentPrompt: string): boolean 
 // Helper: save support case to database
 async function saveSupportCaseToDatabase(userData: any, conversationHistory: any[], reason: string): Promise<string> {
   try {
-    console.log('Saving support case to database:', { userData, conversationHistory, reason });
+
     
     // Get user ID from userData
     const userId = userData?.userId;
@@ -470,7 +463,7 @@ async function saveSupportCaseToDatabase(userData: any, conversationHistory: any
     });
 
     if (escalationResult.success && escalationResult.issueId) {
-      console.log('✅ Escalated issue created successfully:', escalationResult.issueId);
+
       return escalationResult.issueId;
     } else {
       console.error('❌ Failed to create escalated issue:', escalationResult.error);
@@ -487,9 +480,7 @@ async function saveSupportCaseToDatabase(userData: any, conversationHistory: any
 // Helper: generate AI-powered profile summary from form data
 async function generateAIProfileSummary(formData: FormData, ai: any): Promise<string> {
   try {
-    console.log('generateAIProfileSummary called with ai:', ai);
     if (!ai) {
-      console.log('AI not available, using fallback');
       // Fallback to basic summary if AI is not available
       const fallbackSummary = `You are a ${formData.about || 'worker'} with ${formData.experience || 'experience'} with skills including ${formData.skills || 'various skills'}, charging £${formData.hourlyRate || '0'} per hour, stationed in ${formData.location || 'your location'}, and available ${formData.availability ? 'during your specified times' : 'as needed'}.`;
       return fallbackSummary;
@@ -539,10 +530,8 @@ Create a natural summary that flows well and sounds like a human describing the 
 
     if (result.ok && result.data) {
       const data = result.data as { summary: string };
-      console.log('AI Profile Summary generated:', data.summary);
       return data.summary;
     } else {
-      console.log('AI Profile Summary failed:', result);
     }
   } catch (error) {
     console.error('AI profile summary generation failed:', error);
@@ -550,7 +539,7 @@ Create a natural summary that flows well and sounds like a human describing the 
   
   // Fallback to basic summary
   const fallbackSummary = `You are a ${formData.about || 'worker'} with ${formData.experience || 'experience'} with skills including ${formData.skills || 'various skills'}, charging £${formData.hourlyRate || '0'} per hour, stationed in ${formData.location || 'your location'}, and available ${formData.availability ? 'during your specified times' : 'as needed'}.`;
-  console.log('Using fallback profile summary:', fallbackSummary);
+
   return fallbackSummary;
 }
 
@@ -637,6 +626,16 @@ function formatSummaryValue(value: unknown, field?: string): string {
     if (field === 'hourlyRate') {
       const numValue = typeof value === 'string' ? parseFloat(value) : value;
       return isNaN(numValue as number) ? String(value) : `£${numValue}`;
+    }
+    
+    if (field === 'equipment') {
+      if (typeof value === 'string') {
+        return value;
+      }
+      if (Array.isArray(value)) {
+        return value.map((item: any) => item.name || item).join(', ');
+      }
+      return String(value);
     }
     
     if (field === 'videoIntro' && typeof value === 'string' && value.startsWith('http')) {
@@ -837,11 +836,11 @@ export default function OnboardWorkerPage() {
       }
 
       try {
-        console.log('Creating worker profile automatically...');
+
         const result = await createWorkerProfileAction(user.token);
         
         if (result.success && result.workerProfileId) {
-          console.log('Worker profile created successfully:', result.workerProfileId);
+
           setWorkerProfileId(result.workerProfileId);
         } else {
           console.error('Failed to create worker profile:', result.error);
@@ -898,6 +897,9 @@ export default function OnboardWorkerPage() {
           about: formData.about || '',
           experience: formData.experience || '',
           skills: formData.skills || '',
+          equipment: typeof formData.equipment === 'string' && formData.equipment.trim().length > 0
+            ? formData.equipment.split(',').map((item: string) => ({ name: item.trim(), description: undefined }))
+            : [],
           hourlyRate: String(formData.hourlyRate || ''),
           location: formData.location || '',
           availability: formData.availability || { days: [], startTime: '09:00', endTime: '17:00' },
@@ -1107,7 +1109,7 @@ Be conversational, intelligent, and always ask for confirmation in natural langu
       });
 
       if (escalationTrigger.shouldEscalate) {
-        console.log('🚨 Escalation triggered due to AI failure:', escalationTrigger);
+
         
         const description = generateEscalationDescription(escalationTrigger, 'AI validation failed', {
           userRole: 'worker',
@@ -1142,7 +1144,7 @@ Be conversational, intelligent, and always ask for confirmation in natural langu
         });
 
         if (escalationTrigger.shouldEscalate) {
-          console.log('🚨 Escalation trigger detected:', escalationTrigger);
+
           
           const description = generateEscalationDescription(escalationTrigger, valueToUse, {
             userRole: 'worker',
@@ -1188,14 +1190,11 @@ Be conversational, intelligent, and always ask for confirmation in natural langu
         .find(s => s.type === 'bot' && s.content);
       
       if (previousBotMessage && previousBotMessage.content) {
-        console.log('Checking unrelated response:', { userInput: valueToUse, botQuestion: previousBotMessage.content });
         const isUnrelated = isUnrelatedResponse(valueToUse, previousBotMessage.content);
         
         if (isUnrelated) {
-          console.log('Unrelated response detected!', { userInput: valueToUse, botQuestion: previousBotMessage.content });
           const newCount = unrelatedResponseCount + 1;
           setUnrelatedResponseCount(newCount);
-          console.log('Unrelated response count:', newCount);
           
           if (newCount >= 3) {
             // Escalate to human support after 3 unrelated responses
@@ -1340,7 +1339,11 @@ Be conversational, intelligent, and always ask for confirmation in natural langu
                {
                  id: Date.now() + 3,
                  type: "bot",
-                 content: `You need two references (at least one recommendation per skill) from previous managers, colleagues or teachers. If you don't have experience you can get a reference from a friend or someone in your network.\n\nSend this link to get your reference: ${recommendationLink}\n\nPlease check out your gigfolio and share with your network - if your connections make a hire on Able you get £5!`,
+                 content: `You need one reference per skill, from previous managers, colleagues or teachers.
+
+If you do not have experience you can get a character reference from a friend or someone in your network. 
+
+Share this link to get your reference\n\nSend this link to get your reference: ${recommendationLink}\n\nPlease check out your gigfolio and share with your network \n\n`,
                  isNew: true,
                }
              ]);
@@ -1351,17 +1354,28 @@ Be conversational, intelligent, and always ask for confirmation in natural langu
                  {
                    id: Date.now() + 4,
                    type: "bot",
-                   content: "Watch out for notifications of your first shift offer! If you don't accept within 90 minutes we will offer the gig to someone else.",
+                   content: "if your connections make a hire on Able you get £5!",
                    isNew: true,
                  }
                ]);
              }, 1500);
+             setTimeout(() => {
+              setChatSteps((prev) => [
+                ...prev,
+                {
+                  id: Date.now() + 5,
+                  type: "bot",
+                  content: "Watch out for notifications of your first shift offer! If you don't accept within 90 minutes we will offer the gig to someone else.",
+                  isNew: true,
+                }
+              ]);
+            }, 1500);
 
              setTimeout(() => {
                setChatSteps((prev) => [
                  ...prev,
                  {
-                   id: Date.now() + 5,
+                   id: Date.now() + 6,
                    type: "bot",
                    content: "We might offer you gigs outside of your defined skill area, watch out for those opportunities too!",
                    isNew: true,
@@ -1712,16 +1726,27 @@ Be conversational, intelligent, and always ask for confirmation in natural langu
             {
               id: Date.now() + 2,
               type: "bot",
-              content: `You need two references (at least one recommendation per skill) from previous managers, colleagues or teachers. If you don't have experience you can get a reference from a friend or someone in your network.\n\nSend this link to get your reference: ${recommendationLink}\n\nPlease check out your gigfolio and share with your network - if your connections make a hire on Able you get £5!`,
+              content: `You need one reference per skill, from previous managers, colleagues or teachers. If you do not have experience you can get a character reference from a friend or someone in your network. Share this link to get your reference: ${recommendationLink}\n\nPlease check out your gigfolio and share with your network \n\n`,
               isNew: true,
             }
           ]);
-
           setTimeout(() => {
             setChatSteps((prev) => [
               ...prev,
               {
                 id: Date.now() + 3,
+                type: "bot",
+                content: "if your connections make a hire on Able you get £5!",
+                isNew: true,
+              }
+            ]);
+          }, 1500);
+          
+          setTimeout(() => {
+            setChatSteps((prev) => [
+              ...prev,
+              {
+                id: Date.now() + 4,
                 type: "bot",
                 content: "Watch out for notifications of your first shift offer! If you don't accept within 90 minutes we will offer the gig to someone else.",
                 isNew: true,
@@ -1733,7 +1758,7 @@ Be conversational, intelligent, and always ask for confirmation in natural langu
             setChatSteps((prev) => [
               ...prev,
               {
-                id: Date.now() + 4,
+                id: Date.now() + 5,
                 type: "bot",
                 content: "We might offer you gigs outside of your defined skill area, watch out for those opportunities too!",
                 isNew: true,
@@ -1937,7 +1962,7 @@ Be conversational, intelligent, and always ask for confirmation in natural langu
           {
             id: Date.now() + 2,
             type: "bot",
-            content: `You need two references (at least one recommendation per skill) from previous managers, colleagues or teachers. If you don't have experience you can get a reference from a friend or someone in your network.\n\nSend this link to get your reference: ${recommendationLink}\n\nPlease check out your gigfolio and share with your network - if your connections make a hire on Able you get £5!`,
+            content: `You need one reference per skill, from previous managers, colleagues or teachers.\n\nIf you do not have experience you can get a character reference from a friend or someone in your network.\n\nShare this link to get your reference: ${recommendationLink}\n\nPlease check out your gigfolio and share with your network \n\nif your connections make a hire on Able you get £5!`,
             isNew: true,
           }
         ]);
@@ -2241,7 +2266,7 @@ Be conversational, intelligent, and always ask for confirmation in natural langu
             {
               id: Date.now() + 2,
               type: "bot",
-              content: reformulationPrompt,
+              content: "Sure — please provide your updated message.",
               isNew: true,
             },
             {
@@ -2520,6 +2545,9 @@ Be conversational, intelligent, and always ask for confirmation in natural langu
                           about: step.summaryData?.about || '',
                           experience: step.summaryData?.experience || '',
                           skills: step.summaryData?.skills || '',
+                          equipment: typeof step.summaryData?.equipment === 'string' && step.summaryData.equipment.trim().length > 0
+                            ? step.summaryData.equipment.split(',').map((item: string) => ({ name: item.trim(), description: undefined }))
+                            : [],
                           hourlyRate: String(step.summaryData?.hourlyRate || ''),
                           location: step.summaryData?.location || '',
                           availability: step.summaryData?.availability || { days: [], startTime: '09:00', endTime: '17:00' },
@@ -2716,7 +2744,7 @@ Be conversational, intelligent, and always ask for confirmation in natural langu
                         }
                       }}
                     >
-                      {reformulateClicked ? 'Reformulated' : (isReformulatingThisField ? 'Reformulating...' : 'Reformulate')}
+                    {reformulateClicked ? (step.fieldName === 'videoIntro' ? 'Re-shot' : 'Edited') : (isReformulatingThisField ? (step.fieldName === 'videoIntro' ? 'Re-shooting...' : 'Editing...') : (step.fieldName === 'videoIntro' ? 'Re-shoot' : 'Edit message'))}
                     </button>
                   </div>
                 </div>
@@ -2784,7 +2812,7 @@ Be conversational, intelligent, and always ask for confirmation in natural langu
                  if (step.type === "bot") {
            // Check if this is a reference message or follow-up messages (no AI avatar)
            if (step.content && typeof step.content === 'string' && (
-             step.content.includes("You need two references") ||
+             step.content.includes("You need one reference per skill") ||
              step.content.includes("Watch out for notifications") ||
              step.content.includes("We might offer you gigs")
            )) {
@@ -2805,7 +2833,7 @@ Be conversational, intelligent, and always ask for confirmation in natural langu
                     borderBottomLeftRadius: '4px'
                   }}>
                                        {/* Make URLs clickable with copy/share functionality for reference messages */}
-                    {step.content.includes("You need two references") ? (
+                    {step.content.includes("You need one reference per skill") ? (
                       (step.content as string).split(/(https?:\/\/[^\s\n]+)/g).map((part, index) => {
                         if (part.match(/(https?:\/\/[^\s\n]+)/g)) {
                           return (
@@ -2981,11 +3009,20 @@ Be conversational, intelligent, and always ask for confirmation in natural langu
                              
                              try {
                                setIsSubmitting(true);
+                               // Validate hourly rate before saving
+                               const hourlyRate = parseFloat(String(summaryData.hourlyRate || '0'));
+                               if (hourlyRate < VALIDATION_CONSTANTS.WORKER.MIN_HOURLY_RATE) {
+                                 setError(`Hourly rate must be at least £${VALIDATION_CONSTANTS.WORKER.MIN_HOURLY_RATE}. Please update your rate and try again.`);
+                                 setIsSubmitting(false);
+                                 return;
+                               }
+                               
                                // Ensure all required fields are present from summary data
                                const requiredData = {
                                  about: summaryData.about || '',
                                  experience: summaryData.experience || '',
                                  skills: summaryData.skills || '',
+                                 equipment: summaryData.equipment ? summaryData.equipment.split(',').map((item: string) => ({ name: item.trim(), description: undefined })) : [],
                                  hourlyRate: String(summaryData.hourlyRate || ''),
                                  location: summaryData.location || '',
                                  availability: summaryData.availability || { days: [], startTime: '09:00', endTime: '17:00' },
@@ -3419,7 +3456,7 @@ Be conversational, intelligent, and always ask for confirmation in natural langu
                     >
                       <option value="never">Never ends</option>
                       <option value="on_date">Until date</option>
-                      <option value="after_occurrences">After times</option>
+                      <option value="after_occurrences">After number of times</option>
                     </select>
 
                     {currentAvailability.ends === 'on_date' && (
@@ -3863,7 +3900,7 @@ Be conversational, intelligent, and always ask for confirmation in natural langu
               {/* AI-Generated Video Script */}
               <AIVideoScriptDisplay formData={formData} ai={ai} />
 
-              <VideoRecorderBubble
+              <VideoRecorderOnboarding
                 onVideoRecorded={(file) => handleVideoUpload(file, step.inputConfig?.name, step.id)}
               />
             </div>

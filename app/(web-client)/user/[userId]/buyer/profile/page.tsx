@@ -299,7 +299,7 @@ export default function BuyerProfilePage() {
                           cursor: "pointer",
                         }}
                       >
-                        Edit video
+                        Re-SHOOT
                       </button>
                     </div>
                   )}
