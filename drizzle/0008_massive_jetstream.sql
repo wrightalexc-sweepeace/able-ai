@@ -1,1 +1,0 @@
-ALTER TABLE "skills" ADD COLUMN "experience_years" numeric(4, 1) NOT NULL;

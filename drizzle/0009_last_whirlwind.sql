@@ -1,1 +1,0 @@
-ALTER TABLE "reviews" ADD COLUMN "target_role" "active_role_context_enum";

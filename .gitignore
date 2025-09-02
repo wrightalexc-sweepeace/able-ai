@@ -32,22 +32,16 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
-.env
-!.env.example
 
 # vercel
 .vercel
 
 # typescript
 *.tsbuildinfo
+next-env.d.ts
 
-# firebase
-ableai-mvp-firebase-adminsdk-fbsvc-b84d672846.json
-.firebase
-
-!public/firebase-config.json
-
-# editor settings
-settings.json
-
-.open-next
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+!.env.example

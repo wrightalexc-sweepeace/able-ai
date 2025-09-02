@@ -1,4 +1,4 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+This is a [Next.js](https://nextjs.org/) project bootstrapped with [`c3`](https://developers.cloudflare.com/pages/get-started/c3).
 
 ## Getting Started
 
@@ -16,90 +16,52 @@ bun dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Cloudflare integration
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Besides the `dev` script mentioned above `c3` has added a few extra scripts that allow you to integrate the application with the [Cloudflare Pages](https://pages.cloudflare.com/) environment, these are:
+  - `pages:build` to build the application for Pages using the [`@cloudflare/next-on-pages`](https://github.com/cloudflare/next-on-pages) CLI
+  - `preview` to locally preview your Pages application using the [Wrangler](https://developers.cloudflare.com/workers/wrangler/) CLI
+  - `deploy` to deploy your Pages application using the [Wrangler](https://developers.cloudflare.com/workers/wrangler/) CLI
 
-## Learn More
+> __Note:__ while the `dev` script is optimal for local development you should preview your Pages application as well (periodically or before deployments) in order to make sure that it can properly work in the Pages environment (for more details see the [`@cloudflare/next-on-pages` recommended workflow](https://github.com/cloudflare/next-on-pages/blob/main/internal-packages/next-dev/README.md#recommended-development-workflow))
 
-To learn more about Next.js, take a look at the following resources:
+### Bindings
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Cloudflare [Bindings](https://developers.cloudflare.com/pages/functions/bindings/) are what allows you to interact with resources available in the Cloudflare Platform.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+You can use bindings during development, when previewing locally your application and of course in the deployed application:
 
-## Deploy on Cloudflare
+- To use bindings in dev mode you need to define them in the `next.config.js` file under `setupDevBindings`, this mode uses the `next-dev` `@cloudflare/next-on-pages` submodule. For more details see its [documentation](https://github.com/cloudflare/next-on-pages/blob/05b6256/internal-packages/next-dev/README.md).
 
-This application is configured to deploy on Cloudflare Workers using OpenNext.
+- To use bindings in the preview mode you need to add them to the `pages:preview` script accordingly to the `wrangler pages dev` command. For more details see its [documentation](https://developers.cloudflare.com/workers/wrangler/commands/#dev-1) or the [Pages Bindings documentation](https://developers.cloudflare.com/pages/functions/bindings/).
 
-### Prerequisites
+- To use bindings in the deployed application you will need to configure them in the Cloudflare [dashboard](https://dash.cloudflare.com/). For more details see the  [Pages Bindings documentation](https://developers.cloudflare.com/pages/functions/bindings/).
 
-1. **Cloudflare Account** - [Sign up here](https://dash.cloudflare.com/sign-up)
-2. **API Token** from Cloudflare Dashboard
-3. **GitHub Repository** with secrets configured
+#### KV Example
 
-### Setup GitHub Secrets
+`c3` has added for you an example showing how you can use a KV binding.
 
-Add the following secrets to your GitHub repository:
+In order to enable the example:
+- Search for javascript/typescript lines containing the following comment:
+  ```ts
+  // KV Example:
+  ```
+  and uncomment the commented lines below it (also uncomment the relevant imports).
+- In the `wrangler.jsonc` file add the following configuration line:
+  ```
+  "kv_namespaces": [{ "binding": "MY_KV_NAMESPACE", "id": "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" }],
+  ```
+- If you're using TypeScript run the `cf-typegen` script to update the `env.d.ts` file:
+  ```bash
+  npm run cf-typegen
+  # or
+  yarn cf-typegen
+  # or
+  pnpm cf-typegen
+  # or
+  bun cf-typegen
+  ```
 
-1. Go to **Settings** → **Secrets and variables** → **Actions**
-2. Add the following secrets:
-   - `CLOUDFLARE_API_TOKEN` - Your Cloudflare API token
-   - `CLOUDFLARE_ACCOUNT_ID` - Your Cloudflare account ID
+After doing this you can run the `dev` or `preview` script and visit the `/api/hello` route to see the example in action.
 
-### Environment Variables
-
-The application supports the following environment variables (add them to Cloudflare Workers dashboard):
-
-#### Required Variables:
-- `CLOUDFLARE_API_TOKEN` - Your Cloudflare API token
-- `CLOUDFLARE_ACCOUNT_ID` - Your Cloudflare account ID
-
-#### Application Variables:
-- `NEXTJS_ENV=production`
-- `NILEDB_USER=your_db_user`
-- `NILEDB_PASSWORD=your_db_password`
-- `NILEDB_POSTGRES_URL=your_connection_string`
-
-### Deploy Commands
-
-#### Local Development & Testing
-```bash
-# Install dependencies (includes wrangler and opennext)
-npm install
-
-# Build for Cloudflare Workers
-npm run build
-
-# Deploy to Cloudflare Workers
-npm run deploy
-```
-
-#### Automatic GitHub Actions Deployment
-
-Pushes to the `main` branch automatically deploy to production.
-Pull requests create preview deployments.
-
-### Cloudflare Dashboard Configuration
-
-1. **Access Workers & Pages** - Go to [Cloudflare Dashboard](https://dash.cloudflare.com/)
-2. **Variables** - Configure environment variables in Workers dashboard
-3. **Monitoring** - View logs, metrics, and performance data
-4. **Custom Domain** - Add custom domain if desired
-
-Your application will be available at: `https://able-ai-client.your-subdomain.workers.dev`
-
-### Troubleshooting
-
-#### Build Issues
-- Ensure all environment variables are correctly set
-- Check that `wrangler.toml` configuration is valid
-- Verify OpenNext build output in `.open-next` directory
-
-#### Runtime Issues
-- Check Cloudflare Workers logs for errors
-- Verify environment variables in dashboard
-- Confirm database connections and credentials
-
-Check out [OpenNext documentation](https://opennext.js.org/) and [Cloudflare Workers documentation](https://developers.cloudflare.com/workers/) for more details.
+Finally, if you also want to see the example work in the deployed application make sure to add a `MY_KV_NAMESPACE` binding to your Pages application in its [dashboard kv bindings settings section](https://dash.cloudflare.com/?to=/:account/pages/view/:pages-project/settings/functions#kv_namespace_bindings_section). After having configured it make sure to re-deploy your application.
