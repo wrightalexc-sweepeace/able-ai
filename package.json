@@ -5,7 +5,9 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
+    "build:next": "npx opennextjs-cloudflare build",
     "start": "next start",
+    "deploy": "wrangler deploy",
     "lint": "next lint",
     "seed": "npx tsx seed.ts"
   },
@@ -40,6 +42,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@opennextjs/cloudflare": "^1.7.0",
     "@types/google.maps": "^3.58.1",
     "@types/node": "^20",
     "@types/pg": "^8.15.1",
