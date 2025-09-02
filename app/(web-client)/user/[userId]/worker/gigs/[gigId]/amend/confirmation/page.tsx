@@ -47,14 +47,14 @@ export default function AmendGigConfirmationPage() {
         const gigResponse = await fetch(`/api/gigs/${gigId}`);
         if (gigResponse.ok) {
           const gigData = await gigResponse.json();
-          setGig(gigData);
+          // setGig(gigData);
         }
 
         // Fetch amendment request
         const amendmentResponse = await fetch(`/api/gigs/${gigId}/amendment-request`);
         if (amendmentResponse.ok) {
           const amendmentData = await amendmentResponse.json();
-          setAmendmentRequest(amendmentData);
+          // setAmendmentRequest(amendmentData);
         }
       } catch (error) {
         console.error('Error fetching data:', error);

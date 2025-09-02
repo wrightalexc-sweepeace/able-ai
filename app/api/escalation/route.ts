@@ -1,26 +1,28 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { 
-  createEscalatedIssue, 
-  updateEscalatedIssue, 
-  getUserEscalatedIssues, 
+import {
+  createEscalatedIssue,
+  updateEscalatedIssue,
+  getUserEscalatedIssues,
   getOpenEscalatedIssues,
   getEscalatedIssuesByStatus,
-  deleteEscalatedIssue 
+  deleteEscalatedIssue,
+  CreateEscalatedIssueParams,
+  UpdateEscalatedIssueParams
 } from '@/actions/escalation';
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const body = await request.json() as { action: string; [key: string]: any };
     const { action, ...params } = body;
 
     switch (action) {
       case 'create':
-        const createResult = await createEscalatedIssue(params);
+        const createResult = await createEscalatedIssue(params as CreateEscalatedIssueParams);
         if (createResult.success) {
-          return NextResponse.json({ 
-            success: true, 
+          return NextResponse.json({
+            success: true,
             issueId: createResult.issueId,
-            issue: createResult.issue 
+            issue: createResult.issue
           });
         } else {
           return NextResponse.json(
@@ -30,11 +32,11 @@ export async function POST(request: NextRequest) {
         }
 
       case 'update':
-        const updateResult = await updateEscalatedIssue(params);
+        const updateResult = await updateEscalatedIssue(params as UpdateEscalatedIssueParams);
         if (updateResult.success) {
-          return NextResponse.json({ 
-            success: true, 
-            issue: updateResult.issue 
+          return NextResponse.json({
+            success: true,
+            issue: updateResult.issue
           });
         } else {
           return NextResponse.json(

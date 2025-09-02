@@ -38,7 +38,7 @@ export default function AmendGigPage() {
         const response = await fetch(`/api/gigs/${gigId}`);
         if (response.ok) {
           const gigData = await response.json();
-          setGig(gigData);
+          // setGig(gigData);
         } else {
           console.error('Failed to fetch gig');
         }

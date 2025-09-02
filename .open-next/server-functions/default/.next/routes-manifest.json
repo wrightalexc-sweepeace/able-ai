@@ -1,0 +1,467 @@
+{
+  "version": 3,
+  "pages404": true,
+  "caseSensitive": false,
+  "basePath": "",
+  "redirects": [
+    {
+      "source": "/:path+/",
+      "destination": "/:path+",
+      "internal": true,
+      "statusCode": 308,
+      "regex": "^(?:/((?:[^/]+?)(?:/(?:[^/]+?))*))/$"
+    }
+  ],
+  "headers": [],
+  "dynamicRoutes": [
+    {
+      "page": "/api/workers/[workerId]",
+      "regex": "^/api/workers/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPworkerId": "nxtPworkerId"
+      },
+      "namedRegex": "^/api/workers/(?<nxtPworkerId>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/gigs/[gigId]/amends/[amendId]",
+      "regex": "^/gigs/([^/]+?)/amends/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPgigId": "nxtPgigId",
+        "nxtPamendId": "nxtPamendId"
+      },
+      "namedRegex": "^/gigs/(?<nxtPgigId>[^/]+?)/amends/(?<nxtPamendId>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/gigs/[gigId]/amends/[amendId]/review",
+      "regex": "^/gigs/([^/]+?)/amends/([^/]+?)/review(?:/)?$",
+      "routeKeys": {
+        "nxtPgigId": "nxtPgigId",
+        "nxtPamendId": "nxtPamendId"
+      },
+      "namedRegex": "^/gigs/(?<nxtPgigId>[^/]+?)/amends/(?<nxtPamendId>[^/]+?)/review(?:/)?$"
+    },
+    {
+      "page": "/gigs/[gigId]/chat",
+      "regex": "^/gigs/([^/]+?)/chat(?:/)?$",
+      "routeKeys": {
+        "nxtPgigId": "nxtPgigId"
+      },
+      "namedRegex": "^/gigs/(?<nxtPgigId>[^/]+?)/chat(?:/)?$"
+    },
+    {
+      "page": "/gigs/[gigId]/delegate",
+      "regex": "^/gigs/([^/]+?)/delegate(?:/)?$",
+      "routeKeys": {
+        "nxtPgigId": "nxtPgigId"
+      },
+      "namedRegex": "^/gigs/(?<nxtPgigId>[^/]+?)/delegate(?:/)?$"
+    },
+    {
+      "page": "/gigs/[gigId]/report-issue",
+      "regex": "^/gigs/([^/]+?)/report\\-issue(?:/)?$",
+      "routeKeys": {
+        "nxtPgigId": "nxtPgigId"
+      },
+      "namedRegex": "^/gigs/(?<nxtPgigId>[^/]+?)/report\\-issue(?:/)?$"
+    },
+    {
+      "page": "/user/[userId]/able-ai",
+      "regex": "^/user/([^/]+?)/able\\-ai(?:/)?$",
+      "routeKeys": {
+        "nxtPuserId": "nxtPuserId"
+      },
+      "namedRegex": "^/user/(?<nxtPuserId>[^/]+?)/able\\-ai(?:/)?$"
+    },
+    {
+      "page": "/user/[userId]/buyer",
+      "regex": "^/user/([^/]+?)/buyer(?:/)?$",
+      "routeKeys": {
+        "nxtPuserId": "nxtPuserId"
+      },
+      "namedRegex": "^/user/(?<nxtPuserId>[^/]+?)/buyer(?:/)?$"
+    },
+    {
+      "page": "/user/[userId]/buyer/calendar",
+      "regex": "^/user/([^/]+?)/buyer/calendar(?:/)?$",
+      "routeKeys": {
+        "nxtPuserId": "nxtPuserId"
+      },
+      "namedRegex": "^/user/(?<nxtPuserId>[^/]+?)/buyer/calendar(?:/)?$"
+    },
+    {
+      "page": "/user/[userId]/buyer/gigs/new",
+      "regex": "^/user/([^/]+?)/buyer/gigs/new(?:/)?$",
+      "routeKeys": {
+        "nxtPuserId": "nxtPuserId"
+      },
+      "namedRegex": "^/user/(?<nxtPuserId>[^/]+?)/buyer/gigs/new(?:/)?$"
+    },
+    {
+      "page": "/user/[userId]/buyer/gigs/[gigId]",
+      "regex": "^/user/([^/]+?)/buyer/gigs/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPuserId": "nxtPuserId",
+        "nxtPgigId": "nxtPgigId"
+      },
+      "namedRegex": "^/user/(?<nxtPuserId>[^/]+?)/buyer/gigs/(?<nxtPgigId>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/user/[userId]/buyer/gigs/[gigId]/feedback",
+      "regex": "^/user/([^/]+?)/buyer/gigs/([^/]+?)/feedback(?:/)?$",
+      "routeKeys": {
+        "nxtPuserId": "nxtPuserId",
+        "nxtPgigId": "nxtPgigId"
+      },
+      "namedRegex": "^/user/(?<nxtPuserId>[^/]+?)/buyer/gigs/(?<nxtPgigId>[^/]+?)/feedback(?:/)?$"
+    },
+    {
+      "page": "/user/[userId]/buyer/gigs/[gigId]/noReply",
+      "regex": "^/user/([^/]+?)/buyer/gigs/([^/]+?)/noReply(?:/)?$",
+      "routeKeys": {
+        "nxtPuserId": "nxtPuserId",
+        "nxtPgigId": "nxtPgigId"
+      },
+      "namedRegex": "^/user/(?<nxtPuserId>[^/]+?)/buyer/gigs/(?<nxtPgigId>[^/]+?)/noReply(?:/)?$"
+    },
+    {
+      "page": "/user/[userId]/buyer/gigs/[gigId]/offerDeclined",
+      "regex": "^/user/([^/]+?)/buyer/gigs/([^/]+?)/offerDeclined(?:/)?$",
+      "routeKeys": {
+        "nxtPuserId": "nxtPuserId",
+        "nxtPgigId": "nxtPgigId"
+      },
+      "namedRegex": "^/user/(?<nxtPuserId>[^/]+?)/buyer/gigs/(?<nxtPgigId>[^/]+?)/offerDeclined(?:/)?$"
+    },
+    {
+      "page": "/user/[userId]/buyer/gigs/[gigId]/rehire",
+      "regex": "^/user/([^/]+?)/buyer/gigs/([^/]+?)/rehire(?:/)?$",
+      "routeKeys": {
+        "nxtPuserId": "nxtPuserId",
+        "nxtPgigId": "nxtPgigId"
+      },
+      "namedRegex": "^/user/(?<nxtPuserId>[^/]+?)/buyer/gigs/(?<nxtPgigId>[^/]+?)/rehire(?:/)?$"
+    },
+    {
+      "page": "/user/[userId]/buyer/payments",
+      "regex": "^/user/([^/]+?)/buyer/payments(?:/)?$",
+      "routeKeys": {
+        "nxtPuserId": "nxtPuserId"
+      },
+      "namedRegex": "^/user/(?<nxtPuserId>[^/]+?)/buyer/payments(?:/)?$"
+    },
+    {
+      "page": "/user/[userId]/buyer/payments/invoice",
+      "regex": "^/user/([^/]+?)/buyer/payments/invoice(?:/)?$",
+      "routeKeys": {
+        "nxtPuserId": "nxtPuserId"
+      },
+      "namedRegex": "^/user/(?<nxtPuserId>[^/]+?)/buyer/payments/invoice(?:/)?$"
+    },
+    {
+      "page": "/user/[userId]/buyer/profile",
+      "regex": "^/user/([^/]+?)/buyer/profile(?:/)?$",
+      "routeKeys": {
+        "nxtPuserId": "nxtPuserId"
+      },
+      "namedRegex": "^/user/(?<nxtPuserId>[^/]+?)/buyer/profile(?:/)?$"
+    },
+    {
+      "page": "/user/[userId]/chat",
+      "regex": "^/user/([^/]+?)/chat(?:/)?$",
+      "routeKeys": {
+        "nxtPuserId": "nxtPuserId"
+      },
+      "namedRegex": "^/user/(?<nxtPuserId>[^/]+?)/chat(?:/)?$"
+    },
+    {
+      "page": "/user/[userId]/notifications",
+      "regex": "^/user/([^/]+?)/notifications(?:/)?$",
+      "routeKeys": {
+        "nxtPuserId": "nxtPuserId"
+      },
+      "namedRegex": "^/user/(?<nxtPuserId>[^/]+?)/notifications(?:/)?$"
+    },
+    {
+      "page": "/user/[userId]/referral",
+      "regex": "^/user/([^/]+?)/referral(?:/)?$",
+      "routeKeys": {
+        "nxtPuserId": "nxtPuserId"
+      },
+      "namedRegex": "^/user/(?<nxtPuserId>[^/]+?)/referral(?:/)?$"
+    },
+    {
+      "page": "/user/[userId]/settings",
+      "regex": "^/user/([^/]+?)/settings(?:/)?$",
+      "routeKeys": {
+        "nxtPuserId": "nxtPuserId"
+      },
+      "namedRegex": "^/user/(?<nxtPuserId>[^/]+?)/settings(?:/)?$"
+    },
+    {
+      "page": "/user/[userId]/settings/onboarding-retry",
+      "regex": "^/user/([^/]+?)/settings/onboarding\\-retry(?:/)?$",
+      "routeKeys": {
+        "nxtPuserId": "nxtPuserId"
+      },
+      "namedRegex": "^/user/(?<nxtPuserId>[^/]+?)/settings/onboarding\\-retry(?:/)?$"
+    },
+    {
+      "page": "/user/[userId]/settings/onboarding-success",
+      "regex": "^/user/([^/]+?)/settings/onboarding\\-success(?:/)?$",
+      "routeKeys": {
+        "nxtPuserId": "nxtPuserId"
+      },
+      "namedRegex": "^/user/(?<nxtPuserId>[^/]+?)/settings/onboarding\\-success(?:/)?$"
+    },
+    {
+      "page": "/user/[userId]/settings/payment-method-setup-success",
+      "regex": "^/user/([^/]+?)/settings/payment\\-method\\-setup\\-success(?:/)?$",
+      "routeKeys": {
+        "nxtPuserId": "nxtPuserId"
+      },
+      "namedRegex": "^/user/(?<nxtPuserId>[^/]+?)/settings/payment\\-method\\-setup\\-success(?:/)?$"
+    },
+    {
+      "page": "/user/[userId]/worker",
+      "regex": "^/user/([^/]+?)/worker(?:/)?$",
+      "routeKeys": {
+        "nxtPuserId": "nxtPuserId"
+      },
+      "namedRegex": "^/user/(?<nxtPuserId>[^/]+?)/worker(?:/)?$"
+    },
+    {
+      "page": "/user/[userId]/worker/calendar",
+      "regex": "^/user/([^/]+?)/worker/calendar(?:/)?$",
+      "routeKeys": {
+        "nxtPuserId": "nxtPuserId"
+      },
+      "namedRegex": "^/user/(?<nxtPuserId>[^/]+?)/worker/calendar(?:/)?$"
+    },
+    {
+      "page": "/user/[userId]/worker/chat",
+      "regex": "^/user/([^/]+?)/worker/chat(?:/)?$",
+      "routeKeys": {
+        "nxtPuserId": "nxtPuserId"
+      },
+      "namedRegex": "^/user/(?<nxtPuserId>[^/]+?)/worker/chat(?:/)?$"
+    },
+    {
+      "page": "/user/[userId]/worker/earnings",
+      "regex": "^/user/([^/]+?)/worker/earnings(?:/)?$",
+      "routeKeys": {
+        "nxtPuserId": "nxtPuserId"
+      },
+      "namedRegex": "^/user/(?<nxtPuserId>[^/]+?)/worker/earnings(?:/)?$"
+    },
+    {
+      "page": "/user/[userId]/worker/gigs/[gigId]",
+      "regex": "^/user/([^/]+?)/worker/gigs/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPuserId": "nxtPuserId",
+        "nxtPgigId": "nxtPgigId"
+      },
+      "namedRegex": "^/user/(?<nxtPuserId>[^/]+?)/worker/gigs/(?<nxtPgigId>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/user/[userId]/worker/gigs/[gigId]/amend",
+      "regex": "^/user/([^/]+?)/worker/gigs/([^/]+?)/amend(?:/)?$",
+      "routeKeys": {
+        "nxtPuserId": "nxtPuserId",
+        "nxtPgigId": "nxtPgigId"
+      },
+      "namedRegex": "^/user/(?<nxtPuserId>[^/]+?)/worker/gigs/(?<nxtPgigId>[^/]+?)/amend(?:/)?$"
+    },
+    {
+      "page": "/user/[userId]/worker/gigs/[gigId]/amend/confirmation",
+      "regex": "^/user/([^/]+?)/worker/gigs/([^/]+?)/amend/confirmation(?:/)?$",
+      "routeKeys": {
+        "nxtPuserId": "nxtPuserId",
+        "nxtPgigId": "nxtPgigId"
+      },
+      "namedRegex": "^/user/(?<nxtPuserId>[^/]+?)/worker/gigs/(?<nxtPgigId>[^/]+?)/amend/confirmation(?:/)?$"
+    },
+    {
+      "page": "/user/[userId]/worker/gigs/[gigId]/complete",
+      "regex": "^/user/([^/]+?)/worker/gigs/([^/]+?)/complete(?:/)?$",
+      "routeKeys": {
+        "nxtPuserId": "nxtPuserId",
+        "nxtPgigId": "nxtPgigId"
+      },
+      "namedRegex": "^/user/(?<nxtPuserId>[^/]+?)/worker/gigs/(?<nxtPgigId>[^/]+?)/complete(?:/)?$"
+    },
+    {
+      "page": "/user/[userId]/worker/gigs/[gigId]/feedback",
+      "regex": "^/user/([^/]+?)/worker/gigs/([^/]+?)/feedback(?:/)?$",
+      "routeKeys": {
+        "nxtPuserId": "nxtPuserId",
+        "nxtPgigId": "nxtPgigId"
+      },
+      "namedRegex": "^/user/(?<nxtPuserId>[^/]+?)/worker/gigs/(?<nxtPgigId>[^/]+?)/feedback(?:/)?$"
+    },
+    {
+      "page": "/user/[userId]/worker/offers",
+      "regex": "^/user/([^/]+?)/worker/offers(?:/)?$",
+      "routeKeys": {
+        "nxtPuserId": "nxtPuserId"
+      },
+      "namedRegex": "^/user/(?<nxtPuserId>[^/]+?)/worker/offers(?:/)?$"
+    },
+    {
+      "page": "/user/[userId]/worker/onboarding-ai",
+      "regex": "^/user/([^/]+?)/worker/onboarding\\-ai(?:/)?$",
+      "routeKeys": {
+        "nxtPuserId": "nxtPuserId"
+      },
+      "namedRegex": "^/user/(?<nxtPuserId>[^/]+?)/worker/onboarding\\-ai(?:/)?$"
+    },
+    {
+      "page": "/user/[userId]/worker/profile",
+      "regex": "^/user/([^/]+?)/worker/profile(?:/)?$",
+      "routeKeys": {
+        "nxtPuserId": "nxtPuserId"
+      },
+      "namedRegex": "^/user/(?<nxtPuserId>[^/]+?)/worker/profile(?:/)?$"
+    },
+    {
+      "page": "/user/[userId]/worker/profile/skills/[skillId]",
+      "regex": "^/user/([^/]+?)/worker/profile/skills/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPuserId": "nxtPuserId",
+        "nxtPskillId": "nxtPskillId"
+      },
+      "namedRegex": "^/user/(?<nxtPuserId>[^/]+?)/worker/profile/skills/(?<nxtPskillId>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/user/[userId]/worker/profile/skills/[skillId]/portfolio/[portfolioItemId]",
+      "regex": "^/user/([^/]+?)/worker/profile/skills/([^/]+?)/portfolio/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPuserId": "nxtPuserId",
+        "nxtPskillId": "nxtPskillId",
+        "nxtPportfolioItemId": "nxtPportfolioItemId"
+      },
+      "namedRegex": "^/user/(?<nxtPuserId>[^/]+?)/worker/profile/skills/(?<nxtPskillId>[^/]+?)/portfolio/(?<nxtPportfolioItemId>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/user/[userId]/worker/rtw",
+      "regex": "^/user/([^/]+?)/worker/rtw(?:/)?$",
+      "routeKeys": {
+        "nxtPuserId": "nxtPuserId"
+      },
+      "namedRegex": "^/user/(?<nxtPuserId>[^/]+?)/worker/rtw(?:/)?$"
+    },
+    {
+      "page": "/user/[userId]/worker/[workerId]/recommendation",
+      "regex": "^/user/([^/]+?)/worker/([^/]+?)/recommendation(?:/)?$",
+      "routeKeys": {
+        "nxtPuserId": "nxtPuserId",
+        "nxtPworkerId": "nxtPworkerId"
+      },
+      "namedRegex": "^/user/(?<nxtPuserId>[^/]+?)/worker/(?<nxtPworkerId>[^/]+?)/recommendation(?:/)?$"
+    },
+    {
+      "page": "/worker/[workerId]/profile",
+      "regex": "^/worker/([^/]+?)/profile(?:/)?$",
+      "routeKeys": {
+        "nxtPworkerId": "nxtPworkerId"
+      },
+      "namedRegex": "^/worker/(?<nxtPworkerId>[^/]+?)/profile(?:/)?$"
+    },
+    {
+      "page": "/worker/[workerId]/profile/skills/[skillId]",
+      "regex": "^/worker/([^/]+?)/profile/skills/([^/]+?)(?:/)?$",
+      "routeKeys": {
+        "nxtPworkerId": "nxtPworkerId",
+        "nxtPskillId": "nxtPskillId"
+      },
+      "namedRegex": "^/worker/(?<nxtPworkerId>[^/]+?)/profile/skills/(?<nxtPskillId>[^/]+?)(?:/)?$"
+    },
+    {
+      "page": "/worker/[workerId]/recommendation",
+      "regex": "^/worker/([^/]+?)/recommendation(?:/)?$",
+      "routeKeys": {
+        "nxtPworkerId": "nxtPworkerId"
+      },
+      "namedRegex": "^/worker/(?<nxtPworkerId>[^/]+?)/recommendation(?:/)?$"
+    }
+  ],
+  "staticRoutes": [
+    {
+      "page": "/",
+      "regex": "^/(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/(?:/)?$"
+    },
+    {
+      "page": "/_not-found",
+      "regex": "^/_not\\-found(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/_not\\-found(?:/)?$"
+    },
+    {
+      "page": "/admin/escalated-issues",
+      "regex": "^/admin/escalated\\-issues(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/admin/escalated\\-issues(?:/)?$"
+    },
+    {
+      "page": "/favicon.ico",
+      "regex": "^/favicon\\.ico(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/favicon\\.ico(?:/)?$"
+    },
+    {
+      "page": "/legal/privacy",
+      "regex": "^/legal/privacy(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/legal/privacy(?:/)?$"
+    },
+    {
+      "page": "/legal/terms",
+      "regex": "^/legal/terms(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/legal/terms(?:/)?$"
+    },
+    {
+      "page": "/reset-password",
+      "regex": "^/reset\\-password(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/reset\\-password(?:/)?$"
+    },
+    {
+      "page": "/select-role",
+      "regex": "^/select\\-role(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/select\\-role(?:/)?$"
+    },
+    {
+      "page": "/signin",
+      "regex": "^/signin(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/signin(?:/)?$"
+    },
+    {
+      "page": "/usermgmt",
+      "regex": "^/usermgmt(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/usermgmt(?:/)?$"
+    }
+  ],
+  "dataRoutes": [],
+  "rsc": {
+    "header": "RSC",
+    "varyHeader": "RSC, Next-Router-State-Tree, Next-Router-Prefetch, Next-Router-Segment-Prefetch",
+    "prefetchHeader": "Next-Router-Prefetch",
+    "didPostponeHeader": "x-nextjs-postponed",
+    "contentTypeHeader": "text/x-component",
+    "suffix": ".rsc",
+    "prefetchSuffix": ".prefetch.rsc",
+    "prefetchSegmentHeader": "Next-Router-Segment-Prefetch",
+    "prefetchSegmentSuffix": ".segment.rsc",
+    "prefetchSegmentDirSuffix": ".segments"
+  },
+  "rewriteHeaders": {
+    "pathHeader": "x-nextjs-rewritten-path",
+    "queryHeader": "x-nextjs-rewritten-query"
+  },
+  "rewrites": []
+}

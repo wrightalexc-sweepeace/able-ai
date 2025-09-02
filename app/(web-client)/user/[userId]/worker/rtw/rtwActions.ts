@@ -112,7 +112,7 @@ export async function runRtwCheckAndStore(params: {
         throw new Error(`Provider error ${res.status}: ${body.slice(0, 300)}`);
       }
 
-      const json = await res.json();
+      const json: any = await res.json();
       status = json?.status ?? json; // some docs show response.status
     }
 

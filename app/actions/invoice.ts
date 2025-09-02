@@ -85,7 +85,7 @@ export async function getInvoiceData(userId: string, invoiceId: string): Promise
       throw new Error('Failed to fetch invoice data');
     }
 
-    const data = await response.json();
+    const data: InvoiceData = await response.json();
     return data;
   } catch (error) {
     console.error('Error fetching invoice data:', error);

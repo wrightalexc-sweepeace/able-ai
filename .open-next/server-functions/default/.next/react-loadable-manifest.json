@@ -1,0 +1,14 @@
+{
+  "app/(web-client)/user/[userId]/worker/calendar/page.tsx -> @/actions/availability/manage-availability": {
+    "id": 69186,
+    "files": [
+      "static/chunks/9186.5329e0a72bd04e3a.js"
+    ]
+  },
+  "app/(web-client)/user/[userId]/worker/calendar/page.tsx -> @/actions/availability/test-availability": {
+    "id": 32305,
+    "files": [
+      "static/chunks/2305.62e7d1b857043b16.js"
+    ]
+  }
+}
