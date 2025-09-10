@@ -284,18 +284,6 @@ service cloud.firestore {
       allow create, update, delete: if false;
     }
 
-    // Assuming you are using Firebase SDK for NextAuth.js adapter, default rules from adapter might be sufficient.
-    // If you manage these paths manually or need tighter control:
-    match /nextauth_users/{userId} {
-      allow read, write: if isOwner(userId); // Or broader if admin needs access
-    }
-    match /nextauth_sessions/{sessionId} {
-      allow read, write: if isAuthenticated() && get(/databases/$(database)/documents/nextauth_users/$(resource.data.userId)).data.firebaseUid == request.auth.uid; // Example, adapt to your session structure
-    }
-    match /nextauth_verification_tokens/{token} {
-      allow read, delete: if true; // Typically open for creation and one-time read/delete by system
-    }
-
     // --- Admin Support Chat Collection ---
     // Assumes /adminChats/{chatId} has a userId field linking to the user being supported
     match /adminChats/{chatId} {

@@ -12,13 +12,14 @@ import { getMessaging } from "firebase/messaging";
 // It's STRONGLY recommended to load these from environment variables
 // and ensure they are ONLY available on the client-side.
 const firebaseConfig = {
-  apiKey: "AIzaSyBF7DIyylS8ByVbXxdmnmLkKpLyXSdEbQA",
-  authDomain: "ableai-mvp.firebaseapp.com",
-  projectId: "ableai-mvp",
-  storageBucket: "ableai-mvp.firebasestorage.app",
-  messagingSenderId: "697522507372",
-  appId: "1:697522507372:web:7ce039897f0e597d4d9249"
-}
+  apiKey: "AIzaSyCuWx7Q7VzlY1gWRKB0NS2d_SbO3zwKZ-w",
+  authDomain: "ablegigai.firebaseapp.com",
+  projectId: "ablegigai",
+  storageBucket: "ablegigai.firebasestorage.app",
+  messagingSenderId: "16028623649",
+  appId: "1:16028623649:web:5067cebb100cf7976f5460",
+  measurementId: "G-B8FHZM279X"
+};
 
 
 // Initialize Firebase App
