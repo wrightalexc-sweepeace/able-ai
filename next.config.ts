@@ -8,7 +8,6 @@ const nextConfig: NextConfig = {
       },
     ],
   },
-  output: 'standalone',
   serverExternalPackages: ["jose"]
 };
 
