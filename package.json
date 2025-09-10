@@ -9,8 +9,8 @@
     "lint": "next lint",
     "pages:build": "opennextjs-cloudflare build",
     "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
-    "preview": "npm run pages:build && wrangler pages dev",
-    "deploy": "wrangler pages deploy",
+    "preview": "npm run pages:build && opennextjs-cloudflare deploy",
+    "deploy": "opennextjs-cloudflare deploy -- --minify",
     "cf-typegen": "wrangler types --env-interface CloudflareEnv ./env.d.ts",
     "lint-cache": "eslint . --cache",
     "typecheck": "npx tsc -p tsconfig.json --noEmit --skipLibCheck"
