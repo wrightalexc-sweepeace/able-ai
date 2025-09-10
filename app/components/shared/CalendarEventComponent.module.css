@@ -1,0 +1,652 @@
+/* app/components/shared/CalendarEventComponent.module.css */
+
+.eventContainer {
+  width: 100%;
+  height: 100%;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  line-height: 1.2;
+  overflow: hidden;
+  position: relative;
+  animation: eventSlideIn 0.4s ease-out;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  min-height: 0;
+  box-sizing: border-box;
+  color: #272100;
+}
+
+@keyframes eventSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.eventHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.25rem;
+  width: 100%;
+  min-height: 0;
+  flex-shrink: 0;
+}
+
+.eventTitle {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+  font-size: 0.75rem;
+  line-height: 1.1;
+  margin: 0;
+}
+
+@keyframes checkPulse {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.eventDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+  width: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.eventTime {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.65rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  animation: timeGlow 0.8s ease-out;
+  flex-shrink: 0;
+}
+
+@keyframes timeGlow {
+  from {
+    opacity: 0;
+    transform: translateX(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.timeIcon {
+  flex-shrink: 0;
+}
+
+.statusSection {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  animation: statusFadeIn 0.6s ease-out;
+  flex-shrink: 0;
+}
+
+@keyframes statusFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.statusAccepted {
+  background-color: var(--primary-color);
+  color: #000000;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.75rem;
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  animation: offerPulse 2s ease-in-out infinite;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.statusBuyerAccepted {
+  background-color: var(--secondary-color);
+  color: #000000;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.75rem;
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  animation: offerPulse 2s ease-in-out infinite;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@keyframes offerPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 rgba(59, 130, 246, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 8px rgba(59, 130, 246, 0.6);
+  }
+}
+
+.statusOffer {
+  background-color: #525252;
+  color: #e0e0e0;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.75rem;
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.statusInProgress {
+  background-color: #f59e0b;
+  color: #000000;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.75rem;
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  animation: progressGlow 2s ease-in-out infinite;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@keyframes progressGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 rgba(245, 158, 11, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 8px rgba(245, 158, 11, 0.6);
+  }
+}
+
+.statusCompleted {
+  background-color: var(--success-color);
+  color: #000000;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.75rem;
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.statusCancelled {
+  background-color: var(--error-color);
+  color: #ffffff;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.75rem;
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.statusAvailable {
+  background-color: #10b981;
+  color: #ffffff;
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.75rem;
+  font-size: 0.6rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  animation: availableGlow 2s ease-in-out infinite;
+}
+
+@keyframes availableGlow {
+  0%, 100% {
+    box-shadow: 0 0 0 rgba(16, 185, 129, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+  }
+}
+
+.participantInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.65rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  animation: userBounce 0.8s ease-out;
+  flex-shrink: 0;
+}
+
+@keyframes userBounce {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.userIcon {
+  flex-shrink: 0;
+}
+
+.participantName {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+}
+
+.actionButtons {
+  display: flex;
+  margin-top: 0.5rem;
+  animation: buttonSlideUp 0.6s ease-out;
+  flex-shrink: 0;
+  justify-content: flex-end;
+}
+
+@keyframes buttonSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.actionButton {
+  width: 120px;
+  height: 36px;
+  padding: 0px 8px;
+  border: 0;
+  border-radius: 8px;
+  box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+  color: #000000;
+  font-size: 14px;
+  font-family: "Roboto";
+  font-weight: 600;
+  line-height: 24px;
+  outline: none;
+}
+
+.actionButton:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.pendingBtn {
+  color: #ffffff;
+   background-color: #2b2b2b;
+}
+
+.acceptBtn {
+  background-color: var(--primary-color);
+}
+
+.editAvailabilityBtn {
+  background-color: #10b981;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.editAvailabilityBtn:hover {
+  background-color: #059669;
+  color: #ffffff;
+}
+
+.editAvailabilityBtn {
+  background-color: #10b981;
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.editAvailabilityBtn:hover {
+  background-color: #059669;
+  color: #ffffff;
+}
+
+.participantSplit {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+.participantLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.participantRight {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.viewIcon {
+  flex-shrink: 0;
+  color: inherit;
+}
+
+/* Month view styles - minimal content */
+.eventContainer[data-view="month"] {
+  padding: 0.125rem 0.25rem;
+  justify-content: center;
+  align-items: center;
+  min-height: 20px;
+  overflow: hidden;
+}
+
+.eventContainer[data-view="month"] .eventTitle {
+  font-size: 0.65rem;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+  margin: 0;
+}
+
+.eventContainer[data-view="month"] .eventDetails,
+.eventContainer[data-view="month"] .actionButtons {
+  display: none;
+}
+
+/* Week view styles - compact content */
+.eventContainer[data-view="week"] {
+  padding: 0.2rem 0.4rem;
+  min-height: 24px;
+  overflow: hidden;
+}
+
+.eventContainer[data-view="week"] .eventTitle {
+  font-size: 0.7rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+  margin: 0;
+}
+
+.eventContainer[data-view="week"] .eventTime {
+  font-size: 0.6rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.eventContainer[data-view="week"] .statusSection {
+  font-size: 0.55rem;
+}
+
+.eventContainer[data-view="week"] .participantInfo,
+.eventContainer[data-view="week"] .actionButtons {
+  display: none;
+}
+
+/* Day view styles - full content */
+.eventContainer[data-view="day"] {
+  padding: 0.5rem;
+  min-height: 28px;
+  overflow: hidden;
+  border-radius: 1.5rem;
+  border: 1px solid #2b2b2b;
+}
+
+.dayAcceptedBg {
+  background-color: var(--primary-color);
+}
+
+.dayAcceptedBgBuyer {
+  background-color: var(--secondary-color);
+}
+
+.dayOfferStyle {
+   background-color: #808080;
+   color: #ffffff;
+}
+
+.eventContainer[data-view="day"] .eventTitle {
+  font-size: 0.75rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+  margin: 0;
+}
+
+.eventContainer[data-view="day"] .eventTime {
+  font-size: 0.65rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.eventContainer[data-view="day"] .statusSection {
+  font-size: 0.6rem;
+}
+
+.eventContainer[data-view="day"] .participantInfo {
+  font-size: 0.65rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* .eventContainer[data-view="day"] .actionButton {
+  font-size: 0.6rem;
+  padding: 0.2rem 0.4rem;
+} */
+
+/* Responsive design for small screens */
+@media (max-width: 768px) {
+  .eventContainer {
+    padding: 0.2rem 0.4rem;
+    font-size: 0.7rem;
+  }
+
+  .eventTitle {
+    font-size: 0.7rem;
+  }
+
+  .eventTime {
+    font-size: 0.6rem;
+  }
+
+  .statusSection {
+    font-size: 0.55rem;
+  }
+
+  .participantInfo {
+    font-size: 0.6rem;
+  }
+
+  /* .actionButton {
+    font-size: 0.55rem;
+    padding: 0.2rem 0.35rem;
+  } */
+
+  /* Month view on mobile */
+  .eventContainer[data-view="month"] {
+    padding: 0.1rem 0.2rem;
+    min-height: 18px;
+  }
+
+  .eventContainer[data-view="month"] .eventTitle {
+    font-size: 0.6rem;
+  }
+
+  /* Week view on mobile */
+  .eventContainer[data-view="week"] {
+    padding: 0.15rem 0.3rem;
+    min-height: 22px;
+  }
+
+  .eventContainer[data-view="week"] .eventTitle {
+    font-size: 0.65rem;
+  }
+
+  .eventContainer[data-view="week"] .eventTime {
+    font-size: 0.55rem;
+  }
+
+  .eventContainer[data-view="week"] .statusSection {
+    font-size: 0.5rem;
+  }
+
+  /* Day view on mobile */
+  .eventContainer[data-view="day"] {
+    min-height: 26px;
+  }
+
+  .eventContainer[data-view="day"] .eventTitle {
+    font-size: 0.7rem;
+  }
+
+  .eventContainer[data-view="day"] .eventTime {
+    font-size: 0.6rem;
+  }
+
+  .eventContainer[data-view="day"] .statusSection {
+    font-size: 0.55rem;
+  }
+
+  .eventContainer[data-view="day"] .participantInfo {
+    font-size: 0.6rem;
+  }
+
+  /* .eventContainer[data-view="day"] .actionButton {
+    font-size: 0.55rem;
+    padding: 0.15rem 0.3rem;
+  } */
+}
+
+/* Extra small screens */
+@media (max-width: 480px) {
+  .eventContainer {
+    padding: 0.15rem 0.3rem;
+    font-size: 0.65rem;
+  }
+
+  .eventTitle {
+    font-size: 0.65rem;
+  }
+
+  .eventTime {
+    font-size: 0.55rem;
+  }
+
+  .statusSection {
+    font-size: 0.5rem;
+  }
+
+  .participantInfo {
+    font-size: 0.55rem;
+  }
+
+  /* .actionButton {
+    font-size: 0.5rem;
+    padding: 0.15rem 0.25rem;
+  } */
+
+  /* Month view on extra small screens */
+  .eventContainer[data-view="month"] {
+    padding: 0.075rem 0.15rem;
+    min-height: 16px;
+  }
+
+  .eventContainer[data-view="month"] .eventTitle {
+    font-size: 0.55rem;
+  }
+
+  /* Week view on extra small screens */
+  .eventContainer[data-view="week"] {
+    padding: 0.125rem 0.25rem;
+    min-height: 20px;
+  }
+
+  .eventContainer[data-view="week"] .eventTitle {
+    font-size: 0.6rem;
+  }
+
+  .eventContainer[data-view="week"] .eventTime {
+    font-size: 0.5rem;
+  }
+
+  .eventContainer[data-view="week"] .statusSection {
+    font-size: 0.45rem;
+  }
+
+  /* Day view on extra small screens */
+  .eventContainer[data-view="day"] {
+    min-height: 24px;
+  }
+
+  .eventContainer[data-view="day"] .eventTitle {
+    font-size: 0.65rem;
+  }
+
+  .eventContainer[data-view="day"] .eventTime {
+    font-size: 0.55rem;
+  }
+
+  .eventContainer[data-view="day"] .statusSection {
+    font-size: 0.5rem;
+  }
+
+  .eventContainer[data-view="day"] .participantInfo {
+    font-size: 0.55rem;
+  }
+
+  /* .eventContainer[data-view="day"] .actionButton {
+    font-size: 0.5rem;
+    padding: 0.125rem 0.2rem;
+  } */
+}
+

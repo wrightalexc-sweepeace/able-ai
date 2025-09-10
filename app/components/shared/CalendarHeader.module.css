@@ -1,0 +1,398 @@
+/* app/components/shared/CalendarHeader.module.css */
+
+.headerContainer {
+  background: #161616;
+  padding: 1.25rem 1rem 0.5rem 1rem;
+  border-bottom: 1px solid #232323;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  width: 100%;
+  overflow: hidden;
+}
+
+.topBar {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.menuButton {
+  background: none;
+  border: none;
+  color: #e0e0e0;
+  font-size: 2rem;
+  cursor: pointer;
+  margin-right: 0.5rem;
+}
+
+.viewSwitcher {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1rem;
+  padding: 0.15rem;
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  flex-wrap: wrap;
+}
+
+.viewButton {
+  background: #3a3a3a;
+  color: #e0e0e0;
+  border: none;
+  border-radius: 0.5rem;
+  padding: 0.45rem 1.2rem;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  z-index: 1;
+  white-space: nowrap;
+  min-width: fit-content;
+  width: 200px;
+}
+
+.viewButton::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.viewButton:hover::before {
+  left: 100%;
+}
+
+.activeView {
+  background: #fff;
+  color: #181818;
+  font-weight: 700;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  animation: activeViewPulse 0.6s ease-out;
+  transform: scale(1.05);
+}
+
+@keyframes activeViewPulse {
+  0% {
+    transform: scale(0.95);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1.05);
+  }
+}
+
+.dateRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.2rem;
+  margin-top: 0.2rem;
+  animation: dateRowSlideIn 0.8s ease-out;
+  width: 100%;
+}
+
+@keyframes dateRowSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dateDisplay {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.01em;
+  font-family: inherit;
+  transition: all 0.3s ease;
+  animation: dateDisplayGlow 2s ease-in-out infinite;
+  text-align: center;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.clickableDate {
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  transition: all 0.3s ease;
+}
+
+.clickableDate:hover {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.4);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+}
+
+@keyframes dateDisplayGlow {
+  0%, 100% {
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.1);
+  }
+  50% {
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.3);
+  }
+}
+
+.navButton {
+  background: none;
+  border: none;
+  color: #b0b0b0;
+  font-size: 1.3rem;
+  cursor: pointer;
+  border-radius: 0.7rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.navButton:hover {
+  color: #fff;
+}
+
+.navButton:active {
+  transform: translateY(0);
+}
+
+.filterRow {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 0.2rem;
+  margin-bottom: 0.2rem;
+  flex-wrap: wrap;
+  animation: filterRowSlideUp 1s ease-out;
+  width: 100%;
+}
+
+@keyframes filterRowSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.filterPill {
+  background: #808080;
+  color: #e0e0e0;
+  border: none;
+  border-radius: 1.5rem;
+  padding: 0.45rem 1.2rem;
+  width: 200px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  white-space: nowrap;
+  text-align: center;
+  min-width: 0;
+}
+
+.filterPill::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.6s ease;
+}
+
+.filterPill:hover::before {
+  left: 100%;
+}
+
+.activePillWorker {
+  background: var(--primary-color);
+  color: #000000;
+  font-weight: 700;
+  animation: activePillWorkerPulse 0.8s ease-out;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes activePillWorkerPulse {
+  0% {
+    transform: scale(0.9);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  }
+  100% {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+}
+
+.activePillBuyer {
+  background: var(--secondary-color);
+  color: #000000;
+  font-weight: 700;
+  animation: activePillBuyerPulse 0.8s ease-out;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes activePillBuyerPulse {
+  0% {
+    transform: scale(0.9);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  }
+  100% {
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  }
+}
+
+/* View transition animations */
+.viewSwitcher {
+  animation: viewSwitcherSlideIn 0.6s ease-out;
+}
+
+@keyframes viewSwitcherSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Filter transition animations */
+.filterRow {
+  animation: filterRowSlideUp 1s ease-out;
+}
+
+
+/* Responsive design for small screens */
+@media (max-width: 768px) {
+  .headerContainer {
+    padding: 1rem 0.75rem 0.5rem 0.75rem;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .viewSwitcher {
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .viewButton {
+    padding: 0.375rem 0.8rem;
+    font-size: 0.75rem;
+    width: 100px;
+    min-width: 0;
+  }
+
+  .dateRow {
+    gap: 1rem;
+    width: 100%;
+  }
+
+  .dateDisplay {
+    font-size: 1.125rem;
+    min-width: 0;
+  }
+
+  .navButton {
+    font-size: 1.2rem;
+    flex-shrink: 0;
+  }
+
+  .filterRow {
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .filterPill {
+    padding: 0.375rem 0.8rem;
+    flex: 1;
+    max-width: 130px;
+    font-size: 0.75rem;
+    min-width: 0;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 480px) {
+  .headerContainer {
+    padding: 0.75rem 0.5rem 0.5rem 0.5rem;
+    gap: 0.375rem;
+    width: 100%;
+  }
+
+  .viewSwitcher {
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .viewButton {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.7rem;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .dateRow {
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .dateDisplay {
+    font-size: 1rem;
+    min-width: 0;
+  }
+
+  .navButton {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+  }
+
+  .filterRow {
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .filterPill {
+    padding: 0.3rem 0.6rem;
+    flex: 1;
+    font-size: 0.7rem;
+    min-width: 0;
+    max-width: 115px;
+  }
+} 

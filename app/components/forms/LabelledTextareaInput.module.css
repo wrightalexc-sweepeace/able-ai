@@ -1,0 +1,27 @@
+.formField {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.fieldLabel {
+  color: #ffffff;
+  font-size: 1rem;
+  font-family: "Roboto";
+  font-weight: 400;
+  line-height: 19px;
+}
+.textareaInput {
+  background-color: #2b2b2b;
+  color: #e0e0e0;
+  padding: 0.75rem 1rem;
+  border: 1px solid #4A4A4A;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  resize: vertical;
+  min-height: 100px;
+  outline: none;
+  resize: none;
+}
+.textareaInput::placeholder {
+  color: #c2c2c2;
+} 

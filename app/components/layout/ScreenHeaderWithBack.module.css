@@ -1,0 +1,38 @@
+.header {
+  background-color: #2b2b2b;
+  padding: 1rem 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  width: 100%;
+}
+.backButton {
+  background: none;
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+}
+.title {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+} 
+
+.chat {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--secondary-color);
+  transition: color 0.2s ease;
+  font-weight: 700;
+  font-size: 1.1rem;
+
+  &:hover {
+    text-decoration: none;
+    
+  }
+}

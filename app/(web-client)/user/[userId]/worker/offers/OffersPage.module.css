@@ -1,0 +1,235 @@
+/* app/user/[userId]/worker/offers/OffersPage.module.css */
+
+.container {
+  min-height: 100vh;
+  background-color: #000;
+  color: #e0e0e0;
+  font-family: var(--font-family);
+  position: relative;
+}
+
+.pageWrapper {
+  width: 100%;
+  max-width: 450px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  overflow-y: scroll;
+  margin-bottom: 3rem;
+   padding: 1rem 1rem 0;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.pageHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.calendarNavButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(121, 240, 247, 0.1);
+  border: 1px solid rgba(121, 240, 247, 0.2);
+  border-radius: 8px;
+  padding: 0.5rem 0.75rem;
+  color: var(--text-white);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.calendarNavButton:hover {
+  background: rgba(121, 240, 247, 0.2);
+  border-color: rgba(121, 240, 247, 0.4);
+  transform: scale(1.05);
+}
+
+.calendarNavButton span {
+  color: var(--text-white);
+}
+
+.sectionTitle {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  font-family: var(--font-family);
+}
+
+.sectionHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.offerList {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 0.25rem; /* Small padding for scrollbar */
+  animation: fadeIn 0.8s ease-out;
+}
+
+.infoBanner {
+    display: flex;
+    /* gap: 0.4rem; */
+    margin-bottom: 16px;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.footer {
+  display: flex;
+  justify-content: center;
+  background-color: #2b2b2b;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 0.5rem;
+}
+
+.homeButton {
+  background: none;
+  border: none;
+  color: #a0a0a0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s ease;
+}
+.homeButton:hover {
+  color: var(--primary-color);
+}
+
+.emptyState, .loadingContainer {
+  text-align: center;
+  color: #737373;
+  padding: 3rem 1rem;
+  font-size: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex-grow: 1;
+}
+.loadingContainer { 
+  min-height: 50vh; 
+  animation: fadeIn 0.5s ease-out;
+}
+
+.loadingContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.loadingSpinner {
+  animation: spin 1s linear infinite;
+  color: #3b82f6;
+}
+
+.loadingText {
+  color: #888;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+/* Styles for Accepted Gigs section */
+.acceptedSection .card {
+    border-left: 4px solid #3b82f6; /* Example accent color */
+}
+
+.acceptedSection .card .buttons {
+    display: none; /* Hide buttons for accepted gigs */
+}
+
+@media (max-width: 600px) { /* Adjust breakpoint as needed */
+    .acceptedSection .card {
+        padding: 12px; /* Reduce padding on smaller screens */
+    }
+
+    .acceptedSection .card .gigDetails {
+        display: flex; /* Use flexbox for single line */
+        flex-wrap: wrap; /* Allow wrapping if needed, though we expect it to fit */
+        align-items: center;
+        margin-bottom: 0; /* Remove bottom margin */
+    }
+
+    .acceptedSection .card .gigDetails p {
+        margin-bottom: 0; /* Remove margin between details */
+        margin-right: 1rem; /* Add spacing between items */
+    }
+
+    .acceptedSection .card .gigDetails .gigLocation,
+    .acceptedSection .card .gigDetails .gigTime,
+    .acceptedSection .card .gigDetails .gigPay, /* Hide unnecessary details */
+    .acceptedSection .card .timerContainer {
+        display: none; /* Hide these elements on mobile */
+    }
+
+    .acceptedSection .card .role {
+        margin-bottom: 0.5rem; /* Adjust margin below role */
+        font-size: 1rem; /* Adjust font size */
+    }
+
+    /* Ensure date is visible and part of the flex line */
+    .acceptedSection .card .gigDetails .gigDate {
+        display: flex; /* Keep flex display */
+        align-items: center; /* Vertically align icon and text */
+    }
+
+    /* Adjust icon size for smaller view */
+    .acceptedSection .card .detailIcon {
+        width: 10px;
+        height: 10px;
+    }
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+} 
