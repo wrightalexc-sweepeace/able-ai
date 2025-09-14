@@ -19,7 +19,7 @@ const eslintConfig = [
       'max-lines': ['warn', { max: 350, skipBlankLines: true, skipComments: true }],
       'max-lines-per-function': ['warn', { max: 150, skipBlankLines: true, skipComments: true }],
     },
-    ignorePatterns: ["**/drizzle/**"],
+    ignorePatterns: ["**/drizzle/**", "next-env.d.ts"],
   }),
 ];
 
