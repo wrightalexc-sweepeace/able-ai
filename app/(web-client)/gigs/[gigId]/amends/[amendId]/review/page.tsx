@@ -21,4 +21,4 @@ export default function ConfirmAmendedGigDetailsPage() {
       lastRoleUsed={lastRoleUsed}
     />
   );
-}
+} 

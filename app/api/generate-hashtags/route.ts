@@ -8,13 +8,7 @@ export async function POST(request: NextRequest) {
   try {
     console.log('API route called - starting hashtag generation');
     
-    const { profileData } = await request.json() as { profileData: {
-      about?: string;
-      experience?: string;
-      skills?: string;
-      equipment?: { name: string }[];
-      location?: string;
-    }};
+    const { profileData } = await request.json() as { profileData: { about: string; experience: string; skills: string; equipment: any[]; location: string } };
     console.log('Received profile data:', { 
       about: profileData.about ? 'present' : 'missing',
       experience: profileData.experience ? 'present' : 'missing',
@@ -111,13 +105,7 @@ Generate 3 relevant hashtags for this worker:`;
     // Use fallback hashtags instead of failing
     console.log('Using fallback hashtags due to API error');
     try {
-      const { profileData } = await request.json() as { profileData: {
-        about?: string;
-        experience?: string;
-        skills?: string;
-        equipment?: { name: string }[];
-        location?: string;
-      }};
+      const { profileData } = await request.json() as { profileData: { about: string; experience: string; skills: string; equipment: any[]; location: string } };
       const fallbackHashtags = [
         `#${profileData.skills?.split(',')[0]?.trim().toLowerCase().replace(/\s+/g, '-') || 'worker'}`,
         `#${profileData.about?.split(' ')[0]?.toLowerCase() || 'professional'}`,

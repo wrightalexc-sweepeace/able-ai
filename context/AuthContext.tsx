@@ -11,6 +11,7 @@ import { useFirebase } from "./FirebaseContext";
 
 type Claims = {
   role: string;
+  haveWorkerProfile?: boolean;
 };
 
 export type User = FirebaseUser & {
@@ -50,29 +51,40 @@ async function fetchTokenResultWithPolling(
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const { authClient, loading: loadingAuth } = useFirebase();
-  
+  const { authClient, loading: loadingAuth,  } = useFirebase();
+
   useEffect(() => {
     let unsubscribe: () => void = () => {};
-    if(!loadingAuth && authClient) {
+    if (!loadingAuth && authClient) {
       unsubscribe = onAuthStateChanged(authClient, async (firebaseUser) => {
-      if (firebaseUser) {
-        const tokenResult = await fetchTokenResultWithPolling(firebaseUser);
-        if (tokenResult) {
-          const enrichedUser = Object.assign(firebaseUser, {
-            token: tokenResult.token,
-            claims: tokenResult.claims as Claims,
-          });
-          setUser(enrichedUser);
-        } else {
-          setUser(null);
+        try {
+          if (firebaseUser) {
+            const tokenResult = await fetchTokenResultWithPolling(firebaseUser);
+            if (tokenResult) {
+              const enrichedUser = Object.assign(firebaseUser, {
+                token: tokenResult.token,
+                claims: tokenResult.claims as Claims,
+              });
+              setUser(enrichedUser);
+            } else {
+              setUser(null);
+            }
+          } else {
+            setUser(null);
+          }
+        } catch (error) {
+          if (error instanceof Error) {
+            debugger;
+            console.error("Error fetching token result:", error.message);
+          }
         }
-      } else {
-        setUser(null);
-      }
 
+        setLoading(false);
+      });
+    } else {
       setLoading(false);
-    });
+      setUser(null);
+      console.error("Auth client not initialized or still loading.");
     }
 
     return () => unsubscribe();

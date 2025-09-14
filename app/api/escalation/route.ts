@@ -12,12 +12,12 @@ import {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json() as { action: string } & CreateEscalatedIssueParams & UpdateEscalatedIssueParams;
+    const body = await request.json() as CreateEscalatedIssueParams | UpdateEscalatedIssueParams;
     const { action, ...params } = body;
 
     switch (action) {
       case 'create':
-        const createResult = await createEscalatedIssue(params);
+        const createResult = await createEscalatedIssue(params as CreateEscalatedIssueParams);
         if (createResult.success) {
           return NextResponse.json({ 
             success: true, 
@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
         }
 
       case 'update':
-        const updateResult = await updateEscalatedIssue(params);
+        const updateResult = await updateEscalatedIssue(params as UpdateEscalatedIssueParams);
         if (updateResult.success) {
           return NextResponse.json({ 
             success: true, 

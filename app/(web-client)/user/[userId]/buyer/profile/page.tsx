@@ -15,13 +15,16 @@ import {
   getGigBuyerProfileAction,
   updateVideoUrlBuyerProfileAction,
 } from "@/actions/user/gig-buyer-profile";
-import { firebaseApp } from "@/lib/firebase/clientApp";
+import { authClient, firebaseApp } from "@/lib/firebase/clientApp";
 import {
   getStorage,
   ref as storageRef,
   uploadBytesResumable,
   getDownloadURL,
 } from "firebase/storage";
+import {
+  signOut as firebaseSignOut,
+} from "firebase/auth";
 import { toast } from "sonner";
 import DashboardData from "@/app/types/BuyerProfileTypes";
 import mockDashboardData from "./mockBuyerProfile";
@@ -50,7 +53,7 @@ export default function BuyerProfilePage() {
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [
     error,
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+     
     setError,
   ] = useState<string | null>(null);
   const [isEditingVideo, setIsEditingVideo] = useState(false);
@@ -92,6 +95,9 @@ export default function BuyerProfilePage() {
     } else {
       setError("Failed to fetch profile data");
       setDashboardData(null);
+      await firebaseSignOut(authClient);
+      console.error("Failed to fetch profile data, signing out user");
+      router.push("/"); // Redirect to home on error
     }
 
     setIsLoadingData(false);
@@ -211,7 +217,7 @@ export default function BuyerProfilePage() {
 
   return (
     <div className={styles.container}>
-      <ScreenHeaderWithBack onBackClick={() => router.back()} />
+      <ScreenHeaderWithBack />
       <div className={styles.pageWrapper}>
         {/* Profile Header */}
         <header className={styles.profileHeader}>

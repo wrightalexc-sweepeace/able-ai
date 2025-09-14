@@ -7,7 +7,7 @@ export async function POST(
 ) {
   try {
     const { gigId } = await params;
-    const body = await request.json() as { newWorkerId: string; reason?: string };
+    const body = await request.json() as { newWorkerId: string; reason: string };
     const { newWorkerId, reason } = body;
     const token = request.headers.get('authorization')?.replace('Bearer ', '') || '';
 

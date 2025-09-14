@@ -8,6 +8,7 @@ import DeleteSkillModal from "./deleteSkillModal";
 import { useAuth } from "@/context/AuthContext";
 import { toast } from "sonner";
 import { deleteSkillWorker } from "@/actions/user/edit-worker-profile";
+import Link from "next/link";
 
 interface SkillsDisplayTableProps {
   skills?: Skill[];
@@ -82,9 +83,11 @@ const SkillsDisplayTable: React.FC<SkillsDisplayTableProps> = ({
             <th className={styles.skillNameHeader}>
               Skills:
               {isSelfView && (
-                <button className={styles.addSkill} onClick={handleAddSkill}>
-                  + new
-                </button>
+                <Link href={`/user/${user?.uid}/worker/onboarding-ai`} className={styles.addSkill} >
+                    + new
+                </Link>
+                  // <button className={styles.addSkill} onClick={handleAddSkill}>
+                  // </button>
               )}
             </th>
             {hasAbleGigs && <th>Able gigs:</th>}
@@ -114,14 +117,14 @@ const SkillsDisplayTable: React.FC<SkillsDisplayTableProps> = ({
                 )}
                 {hasEph && <td>{skill.agreedRate}</td>}
                 {isSelfView && (
-                  <th aria-label="Actions">
+                  <td aria-label="Actions">
                     <button
                       className={styles.deleteButton}
                       onClick={() => openDeleteSkillModal(skill)}
                     >
-                      <Trash2 />
+                      <Trash2 size={16} />
                     </button>
-                  </th>
+                  </td>
                 )}
               </tr>
             ))

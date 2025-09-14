@@ -224,7 +224,7 @@ const SkillSplashScreen = ({
 
   return (
     <div className={styles.pageWrapper}>
-      <ScreenHeaderWithBack onBackClick={onBackClick} />
+      <ScreenHeaderWithBack />
       <div className={styles.skillSplashContainer}>
         <div className={styles.header}>
           <div className={styles.videoContainer}>
@@ -244,15 +244,18 @@ const SkillSplashScreen = ({
         {profile.hashtags && profile.hashtags.length > 0 && (
           <div className={styles.hashtags}>
             {profile.hashtags.map((tag, index) => (
-              <span key={index} className={styles.hashtag}>{tag}</span>
+              <span key={index} className={styles.hashtag}>
+                {tag}
+              </span>
             ))}
           </div>
         )}
 
         {/* Customer reviews */}
         {profile.customerReviewsText && (
-          <p className={styles.review}>
-            Customer reviews: {profile.customerReviewsText}
+          <p>
+            <span>Customer reviews:</span>
+            <span className={styles.review}>{profile.customerReviewsText}</span>
           </p>
         )}
 
@@ -297,14 +300,14 @@ const SkillSplashScreen = ({
                 height={31}
               />
               <p>
-                {profile.statistics.paymentsCollected}
+                £{profile.statistics.paymentsCollected}
                 <span>Payments collected</span>
               </p>
             </div>
             <div className={styles.stats}>
               <Image src="/images/tips.svg" alt="Tips" width={46} height={30} />
               <p>
-                {profile.statistics.tipsReceived}
+                £{profile.statistics.tipsReceived}
                 <span>Tips received</span>
               </p>
             </div>
@@ -401,54 +404,47 @@ const SkillSplashScreen = ({
         )}
 
         {/* Qualifications */}
-        {/* {profile.qualifications && profile.qualifications.length > 0 && (
-          <div className={styles.section}>
-            <h3 className={styles.sectionTitle}>Qualifications and training:</h3>
-            <ul className={styles.list}>
-              {profile?.qualifications?.map((q, index) => (
-                <li key={index}>
-                  {q.title}: {q.description}
-                </li>
-              ))}
-            </ul>
-          </div>
-        )} */}
-        {profile.workerProfileId && (
-          <Qualifications
-            qualifications={profile?.qualifications || []}
-            isSelfView={isSelfView}
-            workerId={profile.workerProfileId}
-            fetchUserProfile={() => fetchSkillData()}
-          />
-        )}
+        <Qualifications
+          qualifications={profile?.qualifications || []}
+          isSelfView={isSelfView}
+          workerId={profile.workerProfileId || ""}
+          fetchUserProfile={() => fetchSkillData()}
+          skillId={skillId}
+        />
         {/* Buyer Reviews */}
-        {profile.buyerReviews && profile.buyerReviews.length > 0 && (
-          <div className={styles.section}>
-            <h3 className={styles.sectionTitle}>Buyer Reviews</h3>
-            {profile?.buyerReviews?.map((review, index) => (
+        <div className={styles.section}>
+          <h3 className={styles.sectionTitle}>Buyer Reviews</h3>
+          {profile?.buyerReviews && profile.buyerReviews.length > 0 ? (
+            profile.buyerReviews.map((review, index) => (
               <ReviewCardItem
                 key={index}
-                reviewerName={review?.name}
-                date={review?.date.toString()}
-                comment={review?.text}
+                reviewerName={review?.author?.fullName || "Unknown"}
+                date={review?.createdAt?.toString()}
+                comment={review?.comment}
               />
-            ))}
-          </div>
-        )}
+            ))
+          ) : (
+            <p className={styles.emptyMessage}>No buyer reviews yet.</p>
+          )}
+        </div>
+
         {/* Recommendations */}
-        {profile.recommendations && profile.recommendations.length > 0 && (
-          <div className={styles.section}>
-            <h3 className={styles.sectionTitle}>Recommendations</h3>
-            {profile?.recommendations?.map((recommendation, index) => (
+        <div className={styles.section}>
+          <h3 className={styles.sectionTitle}>Recommendations</h3>
+          {profile?.recommendations && profile.recommendations.length > 0 ? (
+            profile.recommendations.map((recommendation, index) => (
               <RecommendationCardItem
                 key={index}
-                recommenderName={recommendation.name}
-                date={recommendation?.date?.toString()}
-                comment={recommendation?.text}
+                recommenderName={recommendation?.author?.fullName || recommendation?.recommenderName || "Unknown"}
+                date={recommendation?.createdAt?.toString()}
+                comment={recommendation?.comment}
               />
-            ))}
-          </div>
-        )}
+            ))
+          ) : (
+            <p className={styles.emptyMessage}>No recommendations yet.</p>
+          )}
+        </div>
+
         {isSelfView && linkUrl && navigator.clipboard && (
           <div className={styles.footerAction}>
             <button

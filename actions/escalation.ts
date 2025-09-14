@@ -10,6 +10,7 @@ export interface CreateEscalatedIssueParams {
   issueType: string;
   description: string;
   contextType?: 'onboarding' | 'support' | 'gig_issue' | 'payment' | 'technical';
+  action?: string;
 }
 
 export interface UpdateEscalatedIssueParams {
@@ -17,6 +18,7 @@ export interface UpdateEscalatedIssueParams {
   status?: 'OPEN' | 'IN_PROGRESS' | 'RESOLVED' | 'CLOSED';
   adminUserId?: string;
   resolutionNotes?: string;
+  action?: string;
 }
 
 /**

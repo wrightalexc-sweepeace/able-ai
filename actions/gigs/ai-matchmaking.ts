@@ -1,14 +1,12 @@
 "use server";
 
 import { db } from "@/lib/drizzle/db";
-import { 
-  UsersTable, 
-  GigWorkerProfilesTable, 
-  SkillsTable, 
+import {
+  UsersTable,
   WorkerAvailabilityTable,
-  GigsTable 
+  GigsTable
 } from "@/lib/drizzle/schema";
-import { eq, and, gte, lte, isNull, sql } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 
 
 // Helper function to calculate distance between two coordinates in kilometers
@@ -298,25 +296,41 @@ export async function findMatchingWorkers(
       
       // LOCATION IS MANDATORY - workers must be within 30km to be considered
       let withinRange = false; // Default to false - must have valid coordinates
-      if (gigCoords && worker.gigWorkerProfile?.latitude && worker.gigWorkerProfile?.longitude) {
-        const workerLat = parseFloat(worker.gigWorkerProfile.latitude.toString());
-        const workerLng = parseFloat(worker.gigWorkerProfile.longitude.toString());
+      
+      if (gigCoords) {
+        let workerCoords = null;
         
-        if (!isNaN(workerLat) && !isNaN(workerLng)) {
+        // Try to get coordinates from latitude/longitude fields first
+        if (worker.gigWorkerProfile?.latitude && worker.gigWorkerProfile?.longitude) {
+          const workerLat = parseFloat(worker.gigWorkerProfile.latitude.toString());
+          const workerLng = parseFloat(worker.gigWorkerProfile.longitude.toString());
+          
+          if (!isNaN(workerLat) && !isNaN(workerLng)) {
+            workerCoords = { lat: workerLat, lng: workerLng };
+          }
+        }
+        
+        // Fallback to parsing location string
+        if (!workerCoords && worker.gigWorkerProfile?.location) {
+          const parsed = extractCoordinates(worker.gigWorkerProfile.location);
+          if (parsed) {
+            workerCoords = { lat: parsed.lat, lng: parsed.lng };
+          }
+        }
+        
+        if (workerCoords) {
           const distance = calculateDistance(
             gigCoords.lat, 
             gigCoords.lng, 
-            workerLat, 
-            workerLng
+            workerCoords.lat, 
+            workerCoords.lng
           );
           withinRange = distance <= 30; // 30km radius is MANDATORY
           
           console.log(`Worker ${worker.fullName}: Distance ${distance.toFixed(2)}km, Within range: ${withinRange}, Has skills: ${hasSkills}, Available: ${isAvailable}`);
         } else {
-          console.log(`Worker ${worker.fullName}: Invalid worker coordinates (${workerLat}, ${workerLng}), REJECTED - no valid coordinates`);
+          console.log(`Worker ${worker.fullName}: No valid worker coordinates, REJECTED - no coordinates`);
         }
-      } else if (gigCoords) {
-        console.log(`Worker ${worker.fullName}: No worker coordinates (lat: ${worker.gigWorkerProfile?.latitude}, lng: ${worker.gigWorkerProfile?.longitude}), REJECTED - no coordinates`);
       } else {
         console.log(`Worker ${worker.fullName}: No gig coordinates, REJECTED - cannot calculate distance`);
       }
@@ -446,17 +460,10 @@ async function analyzeWorkerMatches(
       throw new Error(`API call failed: ${response.status}`);
     }
 
-    const { matches = [], ...result } = await response.json() as { matches: {
-      workerId: string;
-      workerName: string;
-      matchScore: number;
-      matchReasons: string[];
-      availability: any[];
-      skills: any[];
-    }[] };
+    const result = await response.json() as { ok: boolean; matches: any[] };
 
-    if (matches) {
-      return matches;
+    if (result.ok && result.matches) {
+      return result.matches;
     } else {
       console.error('AI matchmaking API failed:', result);
       // Fallback to intelligent matching without AI

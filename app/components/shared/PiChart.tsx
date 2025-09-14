@@ -19,7 +19,7 @@ const renderCustomizedLabel = ({
   outerRadius,
   name,
   value,
-}: PieLabelRenderProps) => {
+}: PieLabelRenderProps & { name: string; value?: number }) => {
   const RADIAN = Math.PI / 180;
   const nCx = Number(cx ?? 0);
   const nCy = Number(cy ?? 0);

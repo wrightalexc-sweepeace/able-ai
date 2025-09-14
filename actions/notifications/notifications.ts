@@ -115,12 +115,20 @@ export async function getAllNotificationsAction(token: string) {
   const generalSnapshot = await dbdoc
     .collection("notifications")
     .where("topic", "==", "general")
-    .get();
+    .get()
+    .catch((err) => {
+      console.error("Error fetching general notifications:", err);
+      return { docs: [] };
+    });
 
   const userSnapshot = await dbdoc
     .collection("notifications")
     .where("topic", "==", uid)
-    .get();
+    .get()
+    .catch((err) => {
+      console.error("Error fetching user notifications:", err);
+      return { docs: [] };
+    });
 
   const allDocs = [...userSnapshot.docs, ...generalSnapshot.docs];
 

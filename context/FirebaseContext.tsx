@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, ReactNode, useEffect } from "react";
 import type { FirebaseStorage } from "firebase/storage";
-import { initializeApp, getApps, getApp, type FirebaseApp } from "firebase/app";
+import { initializeApp, getApps, getApp, type FirebaseApp, FirebaseOptions } from "firebase/app";
 import { getAuth, type Auth } from "firebase/auth";
 import { getFirestore, type Firestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
@@ -33,21 +33,13 @@ export const FirebaseProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     async function initFirebase() {
       const res = await fetch("/firebase-config.json");
-      const firebaseConfig = await res.json() as {
-        apiKey: string;
-        authDomain: string;
-        projectId: string;
-        storageBucket: string;
-        messagingSenderId: string;
-        appId: string;
-        measurementId?: string;
-      };
+      const firebaseConfig = await res.json();
 
       let firebaseApp: FirebaseApp;
 
       if (getApps().length === 0) {
         console.log("[Firebase] Initializing new instance...");
-        firebaseApp = initializeApp(firebaseConfig);
+        firebaseApp = initializeApp(firebaseConfig as FirebaseOptions);
       } else {
         console.log("[Firebase] Reusing existing instance.");
         firebaseApp = getApp();

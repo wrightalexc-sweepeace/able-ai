@@ -112,21 +112,19 @@ export async function runRtwCheckAndStore(params: {
         throw new Error(`Provider error ${res.status}: ${body.slice(0, 300)}`);
       }
 
-      const json = (await res.json()) as {
-        status: {
-          outcome: Outcome;
-          expiry_date?: string;
-          govuk_check_details?: {
-            check_date?: string;
-            reference_number?: string;
-            company_name?: string;
-          };
-          evidence_available?: boolean;
-          last_checked_at?: string;
-          details?: string;
-          name_match?: boolean;
+      const json = await res.json() as { status: {
+        outcome: Outcome;
+        expiry_date: string | null;
+        details: string;
+        govuk_check_details: {
+          check_date: string;
+          reference_number: string;
+          company_name: string;
         };
-      };
+        evidence_available?: boolean;
+        last_checked_at: string | null;
+        name_match?: boolean;
+      } };
       status = json?.status ?? json; // some docs show response.status
     }
 

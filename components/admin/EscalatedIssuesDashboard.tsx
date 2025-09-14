@@ -35,7 +35,7 @@ export default function EscalatedIssuesDashboard({ isAdmin = false }: EscalatedI
     try {
       setLoading(true);
       const response = await fetch(`/api/escalation?action=by-status&status=${selectedStatus}`);
-      const data = await response.json() as { success: boolean; issues: EscalatedIssue[]; error?: string };
+      const data = await response.json() as { success: boolean; issues: EscalatedIssue[], error?: string };
       
       if (data.success) {
         setIssues(data.issues);

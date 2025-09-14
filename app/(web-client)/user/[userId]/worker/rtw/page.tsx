@@ -1,4 +1,4 @@
-/* eslint-disable max-lines-per-function */
+ 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // app/rtw/page.tsx
 "use client";
@@ -15,7 +15,7 @@ type Result = {
   dob: string;
   permission_expiry_date: string | null;
   govuk_check_details: { check_date: string; reference_number: string; company_name: string };
-  evidence_available: boolean;
+  evidence_available?: boolean;
   last_checked_at: string;
 
   // NEW: for the “Status” line

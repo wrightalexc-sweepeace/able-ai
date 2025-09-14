@@ -14,7 +14,6 @@ import {
   sendEmailVerification,
 } from "firebase/auth";
 import InputField from "@/app/components/form/InputField";
-import styles2 from "@/app/components/shared/AiSuggestionBanner.module.css";
 import styles from "./SettingsPage.module.css";
 import {
   Shield,
@@ -31,7 +30,7 @@ import { createPortalSession } from "@/app/actions/stripe/create-portal-session"
 import { FirebaseError } from "firebase/app";
 import SwitchControl from "@/app/components/shared/SwitchControl";
 import { toast } from "sonner";
-import { getProfileInfoUserAction, updateNotificationEmailAction, updateNotificationSmsAction, updateProfileVisibilityAction, updateUserProfileAction } from "@/actions/user/user";
+import { deleteUserAccountAction, getProfileInfoUserAction, updateNotificationEmailAction, updateNotificationSmsAction, updateProfileVisibilityAction, updateUserProfileAction } from "@/actions/user/user";
 import StripeModal from "@/app/components/settings/stripeModal";
 import StripeElementsProvider from "@/lib/stripe/StripeElementsProvider";
 import { FlowStep, UserRole, UserSettingsData } from "@/app/types/SettingsTypes";
@@ -39,6 +38,7 @@ import ScreenHeaderWithBack from "@/app/components/layout/ScreenHeaderWithBack";
 import { authClient } from "@/lib/firebase/clientApp";
 import PhoneNumberModal from "./phoneNumberModal";
 import PasswordInputField from "@/app/components/form/PasswodInputField";
+import Link from "next/link";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -146,8 +146,16 @@ export default function SettingsPage() {
     if (user) {
       // authUserId is now derived from user?.uid
       setIsLoadingSettings(true);
+      try {
+        fetchSettings();
+      } catch (error) {
+        console.error("Error fetching settings:", error);
+        if (error instanceof Error) {
+          debugger
+          setError(error.message || "Failed to load settings.");
+        }
+      }
       // Replace with your actual API call
-      fetchSettings();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]); // Update dependency array
@@ -260,7 +268,7 @@ export default function SettingsPage() {
     try {
       if (authClient) {
         await firebaseSignOut(authClient);
-        router.push("/signin");
+        router.push("/");
       }
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -323,42 +331,25 @@ export default function SettingsPage() {
     }
   };
 
-  // Manage Stripe Account / Payment Settings
-  const handleManageStripeAccount = async () => {
-    if (!user) return
-
-    clearMessages();
-    // setIsConnectingStripe(true); // Use a different loading state if needed
-    try {
-      const response = await createPortalSession(user?.uid);
-
-      if (response.error && response.status === 500) throw new Error(response.error);
-
-      if (response.status === 200 && response.url) {
-        window.location.href = response.url;
-      }
-
-    } catch (err: any) {
-      setError(err.message || "Failed to open Stripe Portal.");
-    } finally {
-      // setIsConnectingStripe(false); // Reset loading state
-    }
-  };
-
-  // Delete Account Confirmation
+// Delete Account Confirmation
   const handleDeleteAccountConfirmed = async () => {
     clearMessages();
     setIsDeletingAccount(true);
     try {
-      // TODO: API call to DELETE /api/users/account
       console.log("Deleting account...");
-      // Simulate API call
-      await new Promise((res) => setTimeout(res, 2000));
+
+      const result = await deleteUserAccountAction(user?.token);
+
+      if (!result.success) {
+        throw new Error(result.error || "Failed to delete account.");
+      }
+
       setSuccessMessage("Account deleted successfully. Redirecting...");
+
       // On success, logout and redirect
       if (authClient) {
         await firebaseSignOut(authClient);
-        router.push("/signin"); // Or home page
+        router.push("/");
       }
     } catch (err: unknown) {
       if (err instanceof Error) {
@@ -368,9 +359,10 @@ export default function SettingsPage() {
       }
     } finally {
       setIsDeletingAccount(false);
-      setShowDeleteAccountModal(false); // Close modal regardless of success/failure
+      setShowDeleteAccountModal(false);
     }
   };
+
 
   async function handleToggleEmailNotification() {
     try {
@@ -414,8 +406,6 @@ export default function SettingsPage() {
     }
   }
 
-
-
   if (isLoadingSettings) {
     return <Loader />;
   }
@@ -424,14 +414,15 @@ export default function SettingsPage() {
     return (
       <div className={styles.loadingContainer}>
         Unable to load settings. Please ensure you are logged in.
+        <Link href="/">Go to Home</Link>
       </div>
     );
   }
-  console.log(user.emailVerified);
+
   return (
     <div className={styles.container}>
       <div className={styles.card}>
-        <ScreenHeaderWithBack title="Settings" onBackClick={() => router.back()} />
+        <ScreenHeaderWithBack title="Settings" />
         <div className={styles.pageWrapper}>
           <p className={styles.pageDescription}>Manage your account preferences and settings</p>
           {/* Email Verification Section */}
@@ -723,7 +714,7 @@ export default function SettingsPage() {
                   className={`${styles.button} ${styles.danger}`}
                   disabled={isDeletingAccount}
                 >
-                  {isDeletingAccount ? "Deleting..." : "Yes, Delete My Account"}
+                  {isDeletingAccount ? "Deleting..." : "Are you sure? This is irreversible"}
                 </button>
               </div>
             </div>

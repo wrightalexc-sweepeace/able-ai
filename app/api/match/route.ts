@@ -139,36 +139,10 @@ export async function POST(request: NextRequest) {
   try {
     console.log('API route called - starting matchmaking');
     
-    const { gigContext, workerData } = await request.json() as {
-      gigContext: {
-        title: string;
-        description: string;
-        location: string;
-        startTime: string;
-        endTime: string;
-        hourlyRate: number;
-        additionalRequirements: string;
-      };
-      workerData: Array<{
-        workerId: string;
-        workerName: string;
-        location: string;
-        bio: string;
-        skills: Array<{
-          name: string;
-          experienceYears: number;
-          agreedRate: number;
-        }>;
-        availability: Array<{
-          dayOfWeek: string;
-          startTime: string;
-          endTime: string;
-        }>;
-      }>;
-    };
-    console.log('Received data:', {
-      gigContext: gigContext ? 'present' : 'missing',
-      workerData: workerData ? `${workerData.length} workers` : 'missing'
+    const { gigContext, workerData } = await request.json() as { gigContext: any; workerData: any[] };
+    console.log('Received data:', { 
+      gigContext: gigContext ? 'present' : 'missing', 
+      workerData: workerData ? `${workerData.length} workers` : 'missing' 
     });
 
     // Clean and optimize the data for Gemini
@@ -351,33 +325,7 @@ Be intelligent and thoughtful about matches. Consider transferable skills and re
     // Use fallback matching instead of failing
     console.log('Using fallback matching due to API error');
     try {
-      const { gigContext, workerData } = await request.json() as {
-        gigContext: {
-          title: string;
-          description: string;
-          location: string;
-          startTime: string;
-          endTime: string;
-          hourlyRate: number;
-          additionalRequirements: string;
-        };
-        workerData: Array<{
-          workerId: string;
-          workerName: string;
-          location: string;
-          bio: string;
-          skills: Array<{
-            name: string;
-            experienceYears: number;
-            agreedRate: number;
-          }>;
-          availability: Array<{
-            dayOfWeek: string;
-            startTime: string;
-            endTime: string;
-          }>;
-        }>;
-      };
+      const { gigContext, workerData } = await request.json() as { gigContext: any; workerData: any[] };
       const cleanGigContext = {
         title: gigContext.title,
         description: gigContext.description || 'No description provided',
