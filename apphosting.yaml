@@ -12,6 +12,28 @@ env:
     secret: stripe-secret-key
   - variable: STRIPE_WEBHOOK_SIGNING_SECRET
     secret: stripe-webhook-signing-secret
+  - variable: FIREBASE_SERVICE_ACCOUNT
+    secret: firebase-service-account
+  - variable: FIREBASE_PROJECT_ID
+    secret: firebase-project-id
+  - variable: FIREBASE_PRIVATE_KEY_ID
+    secret: firebase-private-key-id
+  - variable: FIREBASE_PRIVATE_KEY
+    secret: firebase-private-key
+  - variable: FIREBASE_CLIENT_EMAIL
+    secret: firebase-client-email
+  - variable: FIREBASE_CLIENT_ID
+    secret: firebase-client-id
+  - variable: FIREBASE_AUTH_URI
+    secret: firebase-auth-uri
+  - variable: FIREBASE_TOKEN_URI
+    secret: firebase-token-uri
+  - variable: FIREBASE_AUTH_PROVIDER_X509_CERT_URL
+    secret: firebase-auth-provider-x509-cert-url
+  - variable: FIREBASE_CLIENT_X509_CERT_URL
+    secret: firebase-client-x509-cert-url
+  - variable: FIREBASE_UNIVERSE_DOMAIN
+    secret: firebase-universe-domain
 runConfig:
   minInstances: 0
   maxInstances: 2
