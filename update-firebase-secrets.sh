@@ -1,6 +1,6 @@
 #!/bin/bash
 # based on https://medium.com/evenbit/configuring-firebase-app-hosting-with-google-secrets-manager-2b83c09f3ad9
-source ./.env.production
+source ./.env.production # Can be configured in other env
 
 #!/bin/bash
 command -v firebase >/dev/null 2>&1 || {
